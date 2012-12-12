@@ -46,40 +46,41 @@ bool config(string filename, User * user)
 {
 
 	vector < string > vconf = file_to_vector(filename);
-        map<string, string> conf;
+	map < string, string > conf;
 
-        for(vector<string>::iterator it = vconf.begin();
-        it != vconf.end(); it++) {
-                string token;
-                istringstream tokens(*it);
-                while(tokens >> token) {
-                        unsigned pos = token.find('=');
-                        if(pos != string::npos) {
-                                conf[token.substr(0, pos)] = token.substr(pos + 1);
-                        }
-                }
-        }
+	for (vector < string >::iterator it = vconf.begin();
+	     it != vconf.end(); it++) {
+		string token;
+		istringstream tokens(*it);
+		while (tokens >> token) {
+			unsigned pos = token.find('=');
+			if (pos != string::npos) {
+				conf[token.substr(0, pos)] =
+				    token.substr(pos + 1);
+			}
+		}
+	}
 
-        if(conf["username"].empty())
-                return false; 
+	if (conf["username"].empty())
+		return false;
 	user->username = conf["username"];
-        if(conf["password"].empty())
-                return false;
+	if (conf["password"].empty())
+		return false;
 	user->password = conf["password"];
-        if(conf["consumer_key"].empty())
-                return false;
+	if (conf["consumer_key"].empty())
+		return false;
 	user->consumer_key = conf["consumer_key"];
-        if(conf["consumer_secret"].empty())
-                return false;
+	if (conf["consumer_secret"].empty())
+		return false;
 	user->consumer_secret = conf["consumer_secret"];
-        if(conf["access_key"].empty())
-                return false;
+	if (conf["access_key"].empty())
+		return false;
 	user->access_token_key = conf["access_key"];
-        if(conf["access_secret"].empty())
-                return false;
+	if (conf["access_secret"].empty())
+		return false;
 	user->access_token_secret = conf["access_secret"];
 
-        return true;
+	return true;
 }
 
 /*
@@ -549,8 +550,8 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 	 * We shall append all the followed users to the followed db
 	 **/
 	gotExitSignal = false;
-	cout << "\tWe have followed " << followed.
-	    size() << "/" << to_follow.size() << endl;
+	cout << "\tWe have followed " << followed.size() << "/" << to_follow.
+	    size() << endl;
 	vector_to_file("cache/followed.txt", followed);
 }
 
