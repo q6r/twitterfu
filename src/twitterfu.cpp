@@ -697,9 +697,6 @@ vector < string > get_followers_of(twitCurl & twitterObj, string username)
 		    username << endl;
 	}
 
-	// view the ids vector
-	//for (vector<string>::iterator it = ids.begin(); it != ids.end(); ++it)
-	//        cout << *it << endl;
 	cout << "\tWe have " << ids.size() << " new to follow" << endl;
 	return ids;
 }
