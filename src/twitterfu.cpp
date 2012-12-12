@@ -46,8 +46,10 @@ bool config(string filename, User * user)
 {
 
 	vector < string > userinfo = file_to_vector(filename);
-	if (userinfo.size() != 6)
-		return false;
+
+        // Add better checking later
+        // (when we change the way configure work
+        // k=v for each)
 
 	user->username = userinfo.at(0);
 	user->password = userinfo.at(1);
