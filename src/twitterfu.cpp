@@ -310,8 +310,7 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
 void unfollow(twitCurl & twitterObj, string filename, string username)
 {
 	vector < string > followers(get_following_of(twitterObj, username));
-	string replyMsg;
-	string who;
+	string replyMsg, who;
 	bool isfollow = true;
 	long unfollowed = 0;
 	fstream fs(filename.c_str(), fstream::app | fstream::out);
@@ -328,6 +327,7 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 		cerr << "\t[-] Error : Unable to install signalHandler" << endl;
 		return;
 	}
+
 	// Don't do anything if there's no one to unfollow
 	if (followers.size() == 0) {
 		cout << "\t[-] Error : No one to unfollow" << endl;
