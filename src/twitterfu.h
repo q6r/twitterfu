@@ -33,7 +33,7 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
 int option_select();
 void option_parse(User * user, twitCurl & twitterObj, int opt);
 void option_show();
-template < class T > void
+template < class T > bool
 parse_lastweb_response(twitCurl & twitterObj, string node, T & v);
 void unfollow(twitCurl & twitterObj, string filename, string username);
 void follow(twitCurl & twitterObj, vector < string > to_follow);

@@ -121,11 +121,11 @@ bool
 status(twitCurl & twitterObj, string f_tofollow, string f_followed,
        string f_unfollowed)
 {
-	string replyMsg;
+	string replyMsg, followers, following;
 	vector < string > tofollow(file_to_vector(f_tofollow));
 	vector < string > followed(file_to_vector(f_followed));
 	vector < string > unfollowed(file_to_vector(f_unfollowed));
-
+        
 	cout << "\tApplication Status :" << endl;
 	cout << "\t\tFollowed   : " << followed.size() << endl;
 	cout << "\t\tTo follow  : " << tofollow.size() << endl;
@@ -133,11 +133,18 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
 
 	cout << "\tAccount Status     :" << endl;
 	if (twitterObj.accountVerifyCredGet() == true) {
-		string followers, following;
-		parse_lastweb_response(twitterObj, "user.followers_count",
-				       followers);
-		parse_lastweb_response(twitterObj, "user.friends_count",
-				       following);
+		if(parse_lastweb_response(twitterObj, "user.followers_count",
+				       followers) == false) {
+                        cout << "\t[-] Error : Unable to find the followers_count" << endl;
+                        return false;
+                }
+
+		if(parse_lastweb_response(twitterObj, "user.friends_count",
+				       following) == false) {
+                        cout << "\t[-] Error : Unable to find friends_count" << endl;
+                        return false;
+                }
+
 		cout << "\t\tFollowers  : " << followers << endl;
 		cout << "\t\tFollowing  : " << following << endl;
 	} else {
@@ -209,21 +216,20 @@ bool file_exists(string filename)
  * @input            : twitter object, the node to get, T v
  * @output           : None
  */
-template < class T > void
+template < class T > bool
 parse_lastweb_response(twitCurl & twitterObj, string node, T & v)
 {
 	string replyMsg = "";
-	twitterObj.getLastWebResponse(replyMsg);
-	ptree pt;
-	stringstream ss(replyMsg);
-	read_xml(ss, pt);
-	try {
+	try{
+                twitterObj.getLastWebResponse(replyMsg);
+	        ptree pt;
+	        stringstream ss(replyMsg);
+	        read_xml(ss, pt);
 		v = pt.get < T > (node.c_str());
 	} catch(exception const &e) {
-		cerr << "\t[-] Error : " << e.what() << endl;
-		//cout << replyMsg << endl;
-		return;
+		return false;
 	}
+        return true;
 }
 
 /*
@@ -300,7 +306,6 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
  * @input       : twitterobject, filename to output the users we unfollowed,
  * and our username
  * @output      : None
- *
  */
 void unfollow(twitCurl & twitterObj, string filename, string username)
 {
@@ -336,16 +341,23 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 	for (vector < string >::iterator it = followers.begin();
 	     it != followers.end() && gotExitSignal != true; it++) {
 		twitterObj.friendshipShow(*it, true);
-		parse_lastweb_response(twitterObj,
+		if(parse_lastweb_response(twitterObj,
 				       "relationship.source.followed_by",
-				       isfollow);
+				       isfollow) == false) {
+                        cout << "[-] Error : Unable to find relationship.source.followed_by" << endl;
+                        break;
+                }
+
 		if (isfollow == false) {
 			// always assume is follow is true in case
 			// shit happens we don't unfollow crazily
 			isfollow = true;
-			parse_lastweb_response(twitterObj,
+			if(parse_lastweb_response(twitterObj,
 					       "relationship.target.screen_name",
-					       who);
+					       who) == false) {
+                                cout << "[-] Error : Unable to find relationship.target.screen_name" << endl;
+                                break;
+                        }
 			cout << "\t@" << who << " is not following you; ";
 			if (twitterObj.friendshipDestroy(*it, true)) {
 				cout << "[Unfollowed]" << endl;
@@ -429,10 +441,17 @@ int main()
 
 	/* Verifying authentication */
 	if (twitterObj.accountVerifyCredGet() == true) {
-		parse_lastweb_response(twitterObj, "user.friends_count",
-				       user->following);
-		parse_lastweb_response(twitterObj, "user.followers_count",
-				       user->followers);
+		if(parse_lastweb_response(twitterObj, "user.friends_count",
+				       user->following) == false) {
+                        cout << "[-] Error : Unable to find user.friends_count" << endl;
+                        return -1;        
+                }
+
+		if(parse_lastweb_response(twitterObj, "user.followers_count",
+				       user->followers) == false) {
+                        cout << "[-] Error : Unable to find user.followers_count" << endl;
+                        return -1;
+                }
 	} else {
 		cout << "\t[-] Error : Unable to authenticate." << endl;
 		return -1;
@@ -488,6 +507,8 @@ void signalhandler(int n)
 void follow(twitCurl & twitterObj, vector < string > to_follow)
 {
 
+        string username, error;
+
 	if (to_follow.size() == 0) {
 		cerr << "\t[-] Error : Please add users to follow" << endl;
 		return;
@@ -508,44 +529,20 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 
 	for (vector < string >::iterator it = to_follow.begin();
 	     it != to_follow.end() && gotExitSignal != true; it++) {
-		// TODO: support already following msg;
 		if (twitterObj.friendshipCreate(*it, true) == true) {
 			followed.push_back(*it);
-			twitterObj.getLastWebResponse(replyMsg);
-			ptree pt;
-			stringstream ss(replyMsg);
-			read_xml(ss, pt);
-			try {
-				cout << "\tFollowing " << pt.get < string >
-				    ("user.name") << endl;
-			}
-			catch(exception const &e) {
-				//cout << "[-] " << e.what() << endl;
-				// Break out if reason is we reached limit
-				try {
-                                        if (pt.get < string >
-				        ("hash.error").find
-				        ("You are unable to follow more people at this time")
-				        != string::npos) {
-					        cout <<
-					        "\t[-] You have reached the limit."
-					        << endl;
-					        // If we reached the limit then we remove the last
-					        // followed and break outta l00p
-					        followed.erase(followed.end());
-					        break;
-				        } else {
-					        cout << "\t[-] Reason : " << pt.get <
-					        string > ("hash.error") << endl;
-				        }
-                                } catch(exception const &e) {
-                                        cout << "Unhandled correctly" << endl
-                                        << e.what() << endl << replyMsg << endl;
-                                        break;
-                                }
-			}
-
-			// sleep for 1-10 seconds
+                        if(parse_lastweb_response(twitterObj, "user.name", username) == false) {
+                                if(parse_lastweb_response(twitterObj, "hash.error", error) == true) {
+                                        cout << "\t[-] Error : " << error << endl;
+                                        followed.erase(followed.end());
+                                } else {
+                                        cout << "\t[-] Error : Unable to find user.name" << endl;
+                                }         
+                                break;
+                        } else {
+                                cout << "\tFollowed @" << username << endl;
+                        }
+                        // sleep for 1-10 seconds
 			sleep(randomize(5, 10));
 		}
 	}
