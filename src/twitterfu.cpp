@@ -351,7 +351,7 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 				cout << "[Unfollowed]" << endl;
 				unfollowed++;
 				fs << *it << endl;	// write to cache
-				sleep(randomize(1, 10));
+				sleep(randomize(5, 10));
 			} else {
 				cout << "[Err:Unable to unfollow]" << endl;
 			}
@@ -546,7 +546,7 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 			}
 
 			// sleep for 1-10 seconds
-			sleep(randomize(1, 10));
+			sleep(randomize(5, 10));
 		}
 	}
 
