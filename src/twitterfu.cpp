@@ -522,21 +522,27 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 			catch(exception const &e) {
 				//cout << "[-] " << e.what() << endl;
 				// Break out if reason is we reached limit
-				if (pt.get < string >
-				    ("hash.error").find
-				    ("You are unable to follow more people at this time")
-				    != string::npos) {
-					cout <<
-					    "\t[-] You have reached the limit."
-					    << endl;
-					// If we reached the limit then we remove the last
-					// followed and break outta l00p
-					followed.erase(followed.end());
-					break;
-				} else {
-					cout << "\t[-] Reason : " << pt.get <
-					    string > ("hash.error") << endl;
-				}
+				try {
+                                        if (pt.get < string >
+				        ("hash.error").find
+				        ("You are unable to follow more people at this time")
+				        != string::npos) {
+					        cout <<
+					        "\t[-] You have reached the limit."
+					        << endl;
+					        // If we reached the limit then we remove the last
+					        // followed and break outta l00p
+					        followed.erase(followed.end());
+					        break;
+				        } else {
+					        cout << "\t[-] Reason : " << pt.get <
+					        string > ("hash.error") << endl;
+				        }
+                                } catch(exception const &e) {
+                                        cout << "Unhandled correctly" << endl
+                                        << e.what() << endl << replyMsg << endl;
+                                        break;
+                                }
 			}
 
 			// sleep for 1-10 seconds
