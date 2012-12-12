@@ -668,6 +668,7 @@ bool vector_to_file(string filename, vector < string > v)
 		fs << *it << endl;
 	}
 
+        fs.close();
 	return true;
 }
 
