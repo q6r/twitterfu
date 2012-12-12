@@ -10,6 +10,7 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <sys/stat.h>
 #include "twitterfu.h"
 
 using namespace std;
@@ -121,6 +122,49 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
 	}
 
 	return true;
+}
+
+/*
+ * @method           : create cache files
+ * @description      : this is to be run at the beginning, to create
+ * the catch files.
+ * @input            : names of the files
+ * @output           : true if created the files, otherwise false.
+ */
+bool create_cache(string f_tofollow, string f_followed, string f_unfollowed)
+{
+	if (!file_exists(f_tofollow)) {
+		fstream fs(f_tofollow.c_str(), fstream::out);
+		if (fs.is_open() == false)
+			return false;
+
+	}
+
+	if (!file_exists(f_followed)) {
+		fstream fs(f_followed.c_str(), fstream::out);
+		if (fs.is_open() == false)
+			return false;
+	}
+
+	if (!file_exists(f_unfollowed)) {
+		fstream fs(f_unfollowed.c_str(), fstream::out);
+		if (fs.is_open() == false)
+			return false;
+	}
+
+	return true;
+}
+
+/*
+ * @method           : file exists
+ * @description      : check if file exists
+ * @input            : filename
+ * @output           : true if file exists, false otherwise
+ */
+bool file_exists(string filename)
+{
+	struct stat fi;
+	return stat(filename.c_str(), &fi) == 0;
 }
 
 /*
@@ -326,6 +370,9 @@ int main()
 
 	User *user = new User;
 
+	create_cache("cache/to_follow.txt", "cache/followed.txt",
+		     "cache/unfollowed.txt");
+
 	if (config("./twitter.conf", user) == false) {
 		cerr << "[-] Error : while reading configuration file" << endl;
 		return -1;
@@ -469,8 +516,8 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 	 * We shall append all the followed users to the followed db
 	 **/
 	gotExitSignal = false;
-	cout << "\tWe have followed " << followed.
-	    size() << "/" << to_follow.size() << endl;
+	cout << "\tWe have followed " << followed.size() << "/" << to_follow.
+	    size() << endl;
 	vector_to_file("cache/followed.txt", followed);
 }
 
