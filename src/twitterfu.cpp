@@ -325,10 +325,9 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 			if (twitterObj.friendshipDestroy(*it, true)) {
 				cout << "[Unfollowed]" << endl;
 				unfollowed++;
-				fs << *it << endl;	// write to file
-				sleep(3);	// sleep for a little between
-				// unfollows, be nice!
-			} else {
+				fs << *it << endl;	// write to cache
+                                sleep(randomize(1,10));
+                        } else {
 				cout << "[Err:Unable to unfollow]" << endl;
 			}
 		}
@@ -515,9 +514,8 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 				}
 			}
 
-			// sleep for two seconds
-			// this will be randomized in the future
-			sleep(3);
+			// sleep for 1-10 seconds
+                        sleep(randomize(1,10));
 		}
 	}
 
