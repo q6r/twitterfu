@@ -1,7 +1,7 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 LD_FLAGS := -ltwitcurl
-CC_FLAGS := -Wall
+CC_FLAGS := -Wall -ggdb
 
 twitterfu: $(OBJ_FILES)
 	g++ $(LD_FLAGS) $(CC_FLAGS) -o $@ $^
