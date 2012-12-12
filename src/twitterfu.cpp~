@@ -39,7 +39,7 @@ vector < string > get_following_of(twitCurl & twitterObj, string username);
 void concat_vectors(vector < string > &dest, vector < string > src);
 bool vector_to_file(string filename, vector < string > v);
 vector < string > file_to_vector(string filename);
-bool config(string filename, User * user);
+bool config(string filename, User *user);
 bool remove_duplicates(string, string, string);
 bool
 status(twitCurl & twitterObj, string f_tofollow, string f_followed,
@@ -78,22 +78,22 @@ int option_select()
  * @input       : configuration filename, user struct
  * @output      : true if read successfuly, oterwise false.
  */
-bool config(string filename, User * user)
-{
+bool config(string filename, User *user) {
+        
+        vector<string> userinfo = file_to_vector(filename);
+        if(userinfo.size() != 6)
+                return false;
 
-	vector < string > userinfo = file_to_vector(filename);
-	if (userinfo.size() != 6)
-		return false;
+        user->username = userinfo.at(0);
+        user->password = userinfo.at(1);
+        user->consumer_key = userinfo.at(2);
+        user->consumer_secret = userinfo.at(3);
+        user->access_token_key = userinfo.at(4);
+        user->access_token_secret = userinfo.at(5);
 
-	user->username = userinfo.at(0);
-	user->password = userinfo.at(1);
-	user->consumer_key = userinfo.at(2);
-	user->consumer_secret = userinfo.at(3);
-	user->access_token_key = userinfo.at(4);
-	user->access_token_secret = userinfo.at(5);
-
-	return true;
+        return true;
 }
+
 
 /*
  * @method      : file to vector
@@ -299,9 +299,9 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 				       "relationship.source.followed_by",
 				       isfollow);
 		if (isfollow == false) {
-			// always assume is follow is true in case
-			// shit happens we don't unfollow crazily
-			isfollow = true;
+                        // always assume is follow is true in case
+                        // shit happens we don't unfollow crazily
+                        isfollow = true;
 			parse_lastweb_response(twitterObj,
 					       "relationship.target.screen_name",
 					       who);
@@ -322,8 +322,8 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 	// and print result
 	gotExitSignal = false;
 	fs.close();
-	cout << "\tWe have unfollowed " << unfollowed << "/" << followers.size()
-	    << endl;
+	cout << "\tWe have unfollowed " << unfollowed << "/" << followers.
+	    size() << endl;
 
 	return;
 }
@@ -364,10 +364,11 @@ int main()
 
 	User *user = new User;
 
-	if (config("./twitter.conf", user) == false) {
-		cerr << "[-] Error : while reading configuration file" << endl;
-		return -1;
-	}
+        if(config("./twitter.conf", user) == false) {
+                cerr << "[-] Error : while reading configuration file" << endl;
+                return -1;
+        }
+
 
 	twitCurl twitterObj;
 	string replyMsg;
@@ -507,8 +508,8 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 	 * We shall append all the followed users to the followed db
 	 **/
 	gotExitSignal = false;
-	cout << "\tWe have followed " << followed.
-	    size() << "/" << to_follow.size() << endl;
+	cout << "\tWe have followed " << followed.size() << "/" << to_follow.
+	    size() << endl;
 	vector_to_file("cache/followed.txt", followed);
 }
 
