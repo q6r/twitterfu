@@ -8,6 +8,7 @@ twitter.conf
 twitterfu
 src/twitterfu
 src/*.swp
+*.swp
 
 # Compiled Object files
 *.slo
