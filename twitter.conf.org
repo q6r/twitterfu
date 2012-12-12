@@ -1,6 +1,6 @@
-user
-pass
-consumer key
-consumer secret
-access key
-access secret
+username=
+password=
+consumer_key=
+consumer_secret=
+access_key=
+access_secret=
