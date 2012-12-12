@@ -135,13 +135,13 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
 	if (twitterObj.accountVerifyCredGet() == true) {
 		if(parse_lastweb_response(twitterObj, "user.followers_count",
 				       followers) == false) {
-                        cout << "\t[-] Error : Unable to find the followers_count" << endl;
+                        cerr << "\t[-] Error : Unable to find the followers_count" << endl;
                         return false;
                 }
 
 		if(parse_lastweb_response(twitterObj, "user.friends_count",
 				       following) == false) {
-                        cout << "\t[-] Error : Unable to find friends_count" << endl;
+                        cerr << "\t[-] Error : Unable to find friends_count" << endl;
                         return false;
                 }
 
@@ -330,7 +330,7 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 
 	// Don't do anything if there's no one to unfollow
 	if (followers.size() == 0) {
-		cout << "\t[-] Error : No one to unfollow" << endl;
+		cerr << "\t[-] Error : No one to unfollow" << endl;
 		return;
 	}
 
@@ -344,7 +344,7 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 		if(parse_lastweb_response(twitterObj,
 				       "relationship.source.followed_by",
 				       isfollow) == false) {
-                        cout << "[-] Error : Unable to find relationship.source.followed_by" << endl;
+                        cerr << "[-] Error : Unable to find relationship.source.followed_by" << endl;
                         break;
                 }
 
@@ -355,7 +355,7 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 			if(parse_lastweb_response(twitterObj,
 					       "relationship.target.screen_name",
 					       who) == false) {
-                                cout << "[-] Error : Unable to find relationship.target.screen_name" << endl;
+                                cerr << "[-] Error : Unable to find relationship.target.screen_name" << endl;
                                 break;
                         }
 			cout << "\t@" << who << " is not following you; ";
@@ -443,17 +443,17 @@ int main()
 	if (twitterObj.accountVerifyCredGet() == true) {
 		if(parse_lastweb_response(twitterObj, "user.friends_count",
 				       user->following) == false) {
-                        cout << "[-] Error : Unable to find user.friends_count" << endl;
+                        cerr << "[-] Error : Unable to find user.friends_count" << endl;
                         return -1;        
                 }
 
 		if(parse_lastweb_response(twitterObj, "user.followers_count",
 				       user->followers) == false) {
-                        cout << "[-] Error : Unable to find user.followers_count" << endl;
+                        cerr << "[-] Error : Unable to find user.followers_count" << endl;
                         return -1;
                 }
 	} else {
-		cout << "\t[-] Error : Unable to authenticate." << endl;
+		cerr << "\t[-] Error : Unable to authenticate." << endl;
 		return -1;
 	}
 	cout << "=====================" << endl;
@@ -533,10 +533,10 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 			followed.push_back(*it);
                         if(parse_lastweb_response(twitterObj, "user.name", username) == false) {
                                 if(parse_lastweb_response(twitterObj, "hash.error", error) == true) {
-                                        cout << "\t[-] Error : " << error << endl;
+                                        cerr << "\t[-] Error : " << error << endl;
                                         followed.erase(followed.end());
                                 } else {
-                                        cout << "\t[-] Error : Unable to find user.name" << endl;
+                                        cerr << "\t[-] Error : Unable to find user.name" << endl;
                                 }         
                                 break;
                         } else {
