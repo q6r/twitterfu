@@ -8,6 +8,8 @@ twitter.conf
 twitterfu
 src/twitterfu
 src/*.swp
+src/*~
+*~
 *.swp
 
 # Compiled Object files
