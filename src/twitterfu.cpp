@@ -130,8 +130,9 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
  * @input            : from, to
  * @output           : from <= random <= to
  */
-int randomize(int from, int to) {
-        return rand() % to + from;
+int randomize(int from, int to)
+{
+	return rand() % to + from;
 }
 
 /*
@@ -326,8 +327,8 @@ void unfollow(twitCurl & twitterObj, string filename, string username)
 				cout << "[Unfollowed]" << endl;
 				unfollowed++;
 				fs << *it << endl;	// write to cache
-                                sleep(randomize(1,10));
-                        } else {
+				sleep(randomize(1, 10));
+			} else {
 				cout << "[Err:Unable to unfollow]" << endl;
 			}
 		}
@@ -376,11 +377,11 @@ void option_show()
  */
 int main()
 {
-        srand(time(NULL));      // random seed
+	srand(time(NULL));	// random seed
 
 	User *user = new User;
-	
-        create_cache("cache/to_follow.txt", "cache/followed.txt",
+
+	create_cache("cache/to_follow.txt", "cache/followed.txt",
 		     "cache/unfollowed.txt");
 
 	if (config("./twitter.conf", user) == false) {
@@ -515,7 +516,7 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 			}
 
 			// sleep for 1-10 seconds
-                        sleep(randomize(1,10));
+			sleep(randomize(1, 10));
 		}
 	}
 
@@ -525,8 +526,8 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 	 * We shall append all the followed users to the followed db
 	 **/
 	gotExitSignal = false;
-	cout << "\tWe have followed " << followed.size() << "/" << to_follow.
-	    size() << endl;
+	cout << "\tWe have followed " << followed.
+	    size() << "/" << to_follow.size() << endl;
 	vector_to_file("cache/followed.txt", followed);
 }
 
