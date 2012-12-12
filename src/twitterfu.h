@@ -40,3 +40,4 @@ void follow(twitCurl & twitterObj, vector < string > to_follow);
 void signalhandler(int n);
 bool create_cache(string f_tofollow, string f_followed, string f_unfollowed);
 bool file_exists(string filename);
+int randomize(int from, int to);

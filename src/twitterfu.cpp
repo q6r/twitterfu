@@ -11,6 +11,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <sys/stat.h>
+#include <ctime>
 #include "twitterfu.h"
 
 using namespace std;
@@ -122,6 +123,15 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
 	}
 
 	return true;
+}
+
+/* @method           : randomize from to
+ * @description      : will get a random number from to (int)
+ * @input            : from, to
+ * @output           : from <= random <= to
+ */
+int randomize(int from, int to) {
+        return rand() % to + from;
 }
 
 /*
@@ -367,10 +377,11 @@ void option_show()
  */
 int main()
 {
+        srand(time(NULL));      // random seed
 
 	User *user = new User;
-
-	create_cache("cache/to_follow.txt", "cache/followed.txt",
+	
+        create_cache("cache/to_follow.txt", "cache/followed.txt",
 		     "cache/unfollowed.txt");
 
 	if (config("./twitter.conf", user) == false) {
