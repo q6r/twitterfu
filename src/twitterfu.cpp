@@ -264,14 +264,14 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
 			cout << "Username : ";
 			cin >> username;
 			remove_duplicates( user );
-			vector_to_file("cache/to_follow.txt",
+			vector_to_file(user->cache.to_follow,
 				       get_followers_of(twitterObj, username));
 		}
 		break;
 	case 2:         // follow users
 		{
 			follow(twitterObj,
-			       file_to_vector("cache/to_follow.txt"));
+			       file_to_vector(user->cache.to_follow), user);
 		}
 		break;
 	case 3:         // our status
@@ -617,9 +617,9 @@ remove_duplicates(User * user)
 	}
 
 	// Now write the new to follow to a file
-	fstream fs(f_to_follow.c_str(), fstream::out);
+	fstream fs(user->cache.to_follow.c_str(), fstream::out);
 	if (fs.is_open() == false) {
-		cerr << "\t[-] Error : Unable to write a new " << f_to_follow <<
+		cerr << "\t[-] Error : Unable to write a new " << user->cache.to_follow <<
 		    endl;
 		return false;
 	}
