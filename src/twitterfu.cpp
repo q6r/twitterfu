@@ -450,6 +450,7 @@ int main()
         if( !user->proxy.address.empty() && !user->proxy.port.empty()) {
                 user->twitterObj.setProxyServerIp( user->proxy.address );
                 user->twitterObj.setProxyServerPort( user->proxy.port );
+                cout << "[+] Using proxy " << user->proxy.address << ":" << user->proxy.port << endl;
                 /* Set password if found */
                 if( !user->proxy.username.empty() && !user->proxy.password.empty() ) {
                         user->twitterObj.setProxyUserName( user->proxy.username );
