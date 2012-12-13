@@ -87,7 +87,6 @@ bool config(string filename, User * user)
 	if (conf["followed"].empty())
 		return false;
 	user->cache.followed = conf["followed"];
-
 	if (conf["unfollowed"].empty())
 		return false;
 	user->cache.unfollowed = conf["unfollowed"];
@@ -245,6 +244,7 @@ parse_lastweb_response(User * user, string node, T & v)
 		v = pt.get < T > (node.c_str());
 	}
 	catch(exception const &e) {
+                cout << replyMsg << endl;
 		return false;
 	}
 	return true;
