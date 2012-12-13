@@ -547,7 +547,7 @@ void follow( vector < string > to_follow, User * user)
         gotExitSignal = false;
 	if(followed.size() != 0 )
                 cout << "\tWe have followed " << followed.size() << "/" << to_follow.size() << endl;
-	vector_to_file("cache/followed.txt", followed);
+	vector_to_file(user->cache.followed, followed);
 }
 
 /*
