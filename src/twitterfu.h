@@ -32,7 +32,7 @@ void concat_vectors(vector < string > &dest, vector < string > src);
 bool vector_to_file(string filename, vector < string > v);
 vector < string > file_to_vector(string filename);
 bool config(string filename, User * user);
-bool remove_duplicates(string, string, string);
+bool remove_duplicates(User * user);
 bool
 status(twitCurl & twitterObj, string f_tofollow, string f_followed,
        string f_unfollowed);

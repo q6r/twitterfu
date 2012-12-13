@@ -592,11 +592,11 @@ void concat_vectors(vector < string > &dest, vector < string > src)
  * @output      : false if failed in many cases, true if successful
  */
 bool
-remove_duplicates(string f_to_follow, string f_followed, string f_unfollowed)
+remove_duplicates(User * user)
 {
-	vector < string > v_tofollow(file_to_vector(f_to_follow));
-	vector < string > v_followed(file_to_vector(f_followed));
-	vector < string > v_unfollowed(file_to_vector(f_unfollowed));
+	vector < string > v_tofollow(file_to_vector(user->cache.to_follow));
+	vector < string > v_followed(file_to_vector(user->cache.followed));
+	vector < string > v_unfollowed(file_to_vector(user->cache.unfollowed));
 
 	// Unique Sort and fix vector to follow
 	sort(v_tofollow.begin(), v_tofollow.end());
