@@ -130,18 +130,16 @@ vector < string > file_to_vector(string filename)
  * @output      : None
  */
 bool
-status(twitCurl & twitterObj, string f_tofollow, string f_followed,
-       string f_unfollowed)
+status(twitCurl & twitterObj, User * user)
 {
 	string replyMsg, followers, following;
 	
         // remove duplicates
-        remove_duplicates("cache/to_follow.txt", "cache/followed.txt",
-			  "cache/unfollowed.txt");
+        remove_duplicates(user);
 
-	vector < string > tofollow(file_to_vector(f_tofollow));
-	vector < string > followed(file_to_vector(f_followed));
-	vector < string > unfollowed(file_to_vector(f_unfollowed));
+	vector < string > tofollow(file_to_vector(user->cache.to_follow));
+	vector < string > followed(file_to_vector(user->cache.followed));
+	vector < string > unfollowed(file_to_vector(user->cache.unfollowed));
         
 	cout << "\tApplication Status :" << endl;
 	cout << "\t\tFollowed   : " << followed.size() << endl;
@@ -192,21 +190,21 @@ int randomize(int from, int to)
  */
 bool create_cache(User * user)
 {
-	if (!file_exists(f_tofollow)) {
-		fstream fs(f_tofollow.c_str(), fstream::out);
+	if (!file_exists(user->cache.to_follow)) {
+		fstream fs(user->cache.to_follow.c_str(), fstream::out);
 		if (fs.is_open() == false)
 			return false;
 
 	}
 
-	if (!file_exists(f_followed)) {
-		fstream fs(f_followed.c_str(), fstream::out);
+	if (!file_exists(user->cache.followed)) {
+		fstream fs(user->cache.followed.c_str(), fstream::out);
 		if (fs.is_open() == false)
 			return false;
 	}
 
-	if (!file_exists(f_unfollowed)) {
-		fstream fs(f_unfollowed.c_str(), fstream::out);
+	if (!file_exists(user->cache.unfollowed)) {
+		fstream fs(user->cache.unfollowed.c_str(), fstream::out);
 		if (fs.is_open() == false)
 			return false;
 	}
@@ -265,9 +263,7 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
 		{
 			cout << "Username : ";
 			cin >> username;
-			remove_duplicates("cache/to_follow.txt", // remove duplicates
-					  "cache/followed.txt",
-					  "cache/unfollowed.txt");
+			remove_duplicates( user );
 			vector_to_file("cache/to_follow.txt",
 				       get_followers_of(twitterObj, username));
 		}
@@ -280,14 +276,12 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
 		break;
 	case 3:         // our status
 		{
-			status(twitterObj, "cache/to_follow.txt",
-			       "cache/followed.txt", "cache/unfollowed.txt");
+			status(twitterObj, user);
 		}
 		break;
 	case 4:         // unfollow users
 		{
-		unfollow(twitterObj, "cache/unfollowed.txt",
-				 user->username);
+		unfollow(twitterObj, user);
 		}
 		break;
 	case 5:
@@ -309,19 +303,19 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
  * and our username
  * @output      : None
  */
-void unfollow(twitCurl & twitterObj, string filename, string username)
+void unfollow(twitCurl & twitterObj, User * user)
 {
-	vector < string > followers(get_following_of(twitterObj, username));
+	vector < string > followers(get_following_of(twitterObj, user->username));
 	string replyMsg, who;
 	bool isfollow = true;
 	long unfollowed = 0;
-	fstream fs(filename.c_str(), fstream::app | fstream::out);
+	fstream fs(user->cache.unfollowed.c_str(), fstream::app | fstream::out);
 
-        remove_duplicates("cache/to_follow.txt","cache/followed.txt", "cache/unfollowed.txt");
+        remove_duplicates( user );
  
 	// check if cache file is opened for appending
 	if (fs.is_open() == false) {
-		cerr << "[-] Error : Unable to open " << filename << endl;
+		cerr << "[-] Error : Unable to open " << user->cache.unfollowed << endl;
 		return;
 	}
 
@@ -466,8 +460,7 @@ int main()
 	cout << "=====================" << endl << endl;
 
 	// Before entering the main loop fix the databases
-	remove_duplicates("cache/to_follow.txt", "cache/followed.txt",
-			  "cache/unfollowed.txt");
+	remove_duplicates(user);
 
 	/*
 	 * Start the loop and do things in here 
@@ -507,7 +500,7 @@ void signalhandler(int n)
  *      2) Any user followed should be removed from the list,
  *      sort the list while at it ? slow process then :( think about it.
  */
-void follow(twitCurl & twitterObj, vector < string > to_follow)
+void follow(twitCurl & twitterObj, vector < string > to_follow, User * user)
 {
         string username, error;
 
@@ -517,9 +510,7 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 	}
 
 	// remove duplicates
-        remove_duplicates("cache/to_follow.txt", "cache/followed.txt",
-			  "cache/unfollowed.txt");
-
+        remove_duplicates( user );
 
 	cout << to_follow.size() << " to follow" << endl;
 

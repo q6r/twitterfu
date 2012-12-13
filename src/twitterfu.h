@@ -35,15 +35,14 @@ vector < string > file_to_vector(string filename);
 bool config(string filename, User * user);
 bool remove_duplicates(User * user);
 bool
-status(twitCurl & twitterObj, string f_tofollow, string f_followed,
-       string f_unfollowed);
+status(twitCurl & twitterObj, User *user);
 int option_select();
 void option_parse(User * user, twitCurl & twitterObj, int opt);
 void option_show();
 template < class T > bool
 parse_lastweb_response(twitCurl & twitterObj, string node, T & v);
-void unfollow(twitCurl & twitterObj, string filename, string username);
-void follow(twitCurl & twitterObj, vector < string > to_follow);
+void unfollow(twitCurl & twitterObj, User * user);
+void follow(twitCurl & twitterObj, vector < string > to_follow, User * user);
 void signalhandler(int n);
 bool create_cache(User * user);
 bool file_exists(string filename);
