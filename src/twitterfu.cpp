@@ -123,6 +123,7 @@ status(twitCurl & twitterObj, string f_tofollow, string f_followed,
 {
 	string replyMsg, followers, following;
 	
+        // remove duplicates
         remove_duplicates("cache/to_follow.txt", "cache/followed.txt",
 			  "cache/unfollowed.txt");
 
@@ -252,7 +253,7 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
 		{
 			cout << "Username : ";
 			cin >> username;
-			remove_duplicates("cache/to_follow.txt",
+			remove_duplicates("cache/to_follow.txt", // remove duplicates
 					  "cache/followed.txt",
 					  "cache/unfollowed.txt");
 			vector_to_file("cache/to_follow.txt",
@@ -586,11 +587,6 @@ remove_duplicates(string f_to_follow, string f_followed, string f_unfollowed)
 	vector < string > v_tofollow(file_to_vector(f_to_follow));
 	vector < string > v_followed(file_to_vector(f_followed));
 	vector < string > v_unfollowed(file_to_vector(f_unfollowed));
-
-	// if nothing in tofollow or followed then there's nothing
-	// to remove no duplicates
-	//if (v_tofollow.size() == 0 || v_followed.size() == 0)
-	//      return false;
 
 	// Unique Sort and fix vector to follow
 	sort(v_tofollow.begin(), v_tofollow.end());
