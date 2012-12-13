@@ -1,9 +1,9 @@
 using namespace std;
 
-struct Cache { 
-        string to_follow;
-        string followed;
-        string unfollowed;
+struct Cache {
+	string to_follow;
+	string followed;
+	string unfollowed;
 };
 
 struct User {
@@ -17,8 +17,8 @@ struct User {
 	 followers;
 	long
 	 following;
-        Cache cache;
-        twitCurl twitterObj;
+	Cache cache;
+	twitCurl twitterObj;
 };
 
 /* Globals
@@ -34,8 +34,7 @@ bool vector_to_file(string filename, vector < string > v);
 vector < string > file_to_vector(string filename);
 bool config(string filename, User * user);
 bool remove_duplicates(User * user);
-bool
-status(User *user);
+bool status(User * user);
 int option_select();
 void option_parse(User * user, int opt);
 void option_show();

@@ -80,19 +80,19 @@ bool config(string filename, User * user)
 		return false;
 	user->access_token_secret = conf["access_secret"];
 
-        if(conf["to_follow"].empty())
-                return false;
-        user->cache.to_follow = conf["to_follow"];
+	if (conf["to_follow"].empty())
+		return false;
+	user->cache.to_follow = conf["to_follow"];
 
-        if(conf["followed"].empty())
-                return false;
-        user->cache.followed = conf["followed"];
-        
-        if(conf["unfollowed"].empty())
-                return false;
-        user->cache.unfollowed = conf["unfollowed"];
+	if (conf["followed"].empty())
+		return false;
+	user->cache.followed = conf["followed"];
 
-        return true;
+	if (conf["unfollowed"].empty())
+		return false;
+	user->cache.unfollowed = conf["unfollowed"];
+
+	return true;
 }
 
 /*
@@ -129,18 +129,17 @@ vector < string > file_to_vector(string filename)
  * @input       : filename of tofollow cache and followed cache
  * @output      : None
  */
-bool
-status(User * user)
+bool status(User * user)
 {
 	string replyMsg, followers, following;
-	
-        // remove duplicates
-        remove_duplicates(user);
+
+	// remove duplicates
+	remove_duplicates(user);
 
 	vector < string > tofollow(file_to_vector(user->cache.to_follow));
 	vector < string > followed(file_to_vector(user->cache.followed));
 	vector < string > unfollowed(file_to_vector(user->cache.unfollowed));
-        
+
 	cout << "\tApplication Status :" << endl;
 	cout << "\t\tFollowed   : " << followed.size() << endl;
 	cout << "\t\tTo follow  : " << tofollow.size() << endl;
@@ -148,17 +147,20 @@ status(User * user)
 
 	cout << "\tAccount Status     :" << endl;
 	if (user->twitterObj.accountVerifyCredGet() == true) {
-		if(parse_lastweb_response(user, "user.followers_count",
-				       followers) == false) {
-                        cerr << "\t[-] Error : Unable to find the followers_count" << endl;
-                        return false;
-                }
+		if (parse_lastweb_response(user, "user.followers_count",
+					   followers) == false) {
+			cerr <<
+			    "\t[-] Error : Unable to find the followers_count"
+			    << endl;
+			return false;
+		}
 
-		if(parse_lastweb_response(user, "user.friends_count",
-				       following) == false) {
-                        cerr << "\t[-] Error : Unable to find friends_count" << endl;
-                        return false;
-                }
+		if (parse_lastweb_response(user, "user.friends_count",
+					   following) == false) {
+			cerr << "\t[-] Error : Unable to find friends_count" <<
+			    endl;
+			return false;
+		}
 
 		cout << "\t\tFollowers  : " << followers << endl;
 		cout << "\t\tFollowing  : " << following << endl;
@@ -235,16 +237,17 @@ template < class T > bool
 parse_lastweb_response(User * user, string node, T & v)
 {
 	string replyMsg = "";
-	try{
-                user->twitterObj.getLastWebResponse(replyMsg);
-	        ptree pt;
-	        stringstream ss(replyMsg);
-	        read_xml(ss, pt);
+	try {
+		user->twitterObj.getLastWebResponse(replyMsg);
+		ptree pt;
+		stringstream ss(replyMsg);
+		read_xml(ss, pt);
 		v = pt.get < T > (node.c_str());
-	} catch(exception const &e) {
+	}
+	catch(exception const &e) {
 		return false;
 	}
-        return true;
+	return true;
 }
 
 /*
@@ -259,28 +262,28 @@ void option_parse(User * user, int opt)
 	string username;
 
 	switch (opt) {
-	case 1:         // Get followers of a user
+	case 1:		// Get followers of a user
 		{
 			cout << "Username : ";
 			cin >> username;
-			remove_duplicates( user );
+			remove_duplicates(user);
 			vector_to_file(user->cache.to_follow,
 				       get_followers_of(user, username));
 		}
 		break;
-	case 2:         // follow users
+	case 2:		// follow users
 		{
 			follow(file_to_vector(user->cache.to_follow), user);
 		}
 		break;
-	case 3:         // our status
+	case 3:		// our status
 		{
 			status(user);
 		}
 		break;
-	case 4:         // unfollow users
+	case 4:		// unfollow users
 		{
-		unfollow(user);
+			unfollow(user);
 		}
 		break;
 	case 5:
@@ -310,11 +313,12 @@ void unfollow(User * user)
 	long unfollowed = 0;
 	fstream fs(user->cache.unfollowed.c_str(), fstream::app | fstream::out);
 
-        remove_duplicates( user );
- 
+	remove_duplicates(user);
+
 	// check if cache file is opened for appending
 	if (fs.is_open() == false) {
-		cerr << "[-] Error : Unable to open " << user->cache.unfollowed << endl;
+		cerr << "[-] Error : Unable to open " << user->cache.
+		    unfollowed << endl;
 		return;
 	}
 
@@ -324,7 +328,6 @@ void unfollow(User * user)
 		cerr << "\t[-] Error : Unable to install signalHandler" << endl;
 		return;
 	}
-
 	// Don't do anything if there's no one to unfollow
 	if (followers.size() == 0) {
 		cerr << "\t[-] Error : No one to unfollow" << endl;
@@ -338,23 +341,27 @@ void unfollow(User * user)
 	for (vector < string >::iterator it = followers.begin();
 	     it != followers.end() && gotExitSignal != true; it++) {
 		user->twitterObj.friendshipShow(*it, true);
-		if(parse_lastweb_response(user,
-				       "relationship.source.followed_by",
-				       isfollow) == false) {
-                        cerr << "[-] Error : Unable to find relationship.source.followed_by" << endl;
-                        break;
-                }
+		if (parse_lastweb_response(user,
+					   "relationship.source.followed_by",
+					   isfollow) == false) {
+			cerr <<
+			    "[-] Error : Unable to find relationship.source.followed_by"
+			    << endl;
+			break;
+		}
 
 		if (isfollow == false) {
 			// always assume is follow is true in case
 			// shit happens we don't unfollow crazily
 			isfollow = true;
-			if(parse_lastweb_response(user,
-					       "relationship.target.screen_name",
-					       who) == false) {
-                                cerr << "[-] Error : Unable to find relationship.target.screen_name" << endl;
-                                break;
-                        }
+			if (parse_lastweb_response(user,
+						   "relationship.target.screen_name",
+						   who) == false) {
+				cerr <<
+				    "[-] Error : Unable to find relationship.target.screen_name"
+				    << endl;
+				break;
+			}
 			cout << "\t@" << who << " is not following you; ";
 			if (user->twitterObj.friendshipDestroy(*it, true)) {
 				cout << "[Unfollowed]" << endl;
@@ -431,22 +438,26 @@ int main()
 	user->twitterObj.getOAuth().setConsumerKey(user->consumer_key);
 	user->twitterObj.getOAuth().setConsumerSecret(user->consumer_secret);
 	user->twitterObj.getOAuth().setOAuthTokenKey(user->access_token_key);
-	user->twitterObj.getOAuth().setOAuthTokenSecret(user->access_token_secret);
+	user->twitterObj.getOAuth().setOAuthTokenSecret(user->
+							access_token_secret);
 	user->twitterObj.getOAuth().setOAuthScreenName(user->username);
 
 	/* Verifying authentication */
 	if (user->twitterObj.accountVerifyCredGet() == true) {
-		if(parse_lastweb_response(user, "user.friends_count",
-				       user->following) == false) {
-                        cerr << "[-] Error : Unable to find user.friends_count" << endl;
-                        return -1;        
-                }
+		if (parse_lastweb_response(user, "user.friends_count",
+					   user->following) == false) {
+			cerr << "[-] Error : Unable to find user.friends_count"
+			    << endl;
+			return -1;
+		}
 
-		if(parse_lastweb_response(user, "user.followers_count",
-				       user->followers) == false) {
-                        cerr << "[-] Error : Unable to find user.followers_count" << endl;
-                        return -1;
-                }
+		if (parse_lastweb_response(user, "user.followers_count",
+					   user->followers) == false) {
+			cerr <<
+			    "[-] Error : Unable to find user.followers_count" <<
+			    endl;
+			return -1;
+		}
 	} else {
 		cerr << "\t[-] Error : Unable to authenticate." << endl;
 		return -1;
@@ -498,17 +509,16 @@ void signalhandler(int n)
  *      2) Any user followed should be removed from the list,
  *      sort the list while at it ? slow process then :( think about it.
  */
-void follow( vector < string > to_follow, User * user)
+void follow(vector < string > to_follow, User * user)
 {
-        string username, error;
+	string username, error;
 
 	if (to_follow.size() == 0) {
 		cerr << "\t[-] Error : Please add users to follow" << endl;
 		return;
 	}
-
 	// remove duplicates
-        remove_duplicates( user );
+	remove_duplicates(user);
 
 	cout << to_follow.size() << " to follow" << endl;
 
@@ -527,26 +537,32 @@ void follow( vector < string > to_follow, User * user)
 	     it != to_follow.end() && gotExitSignal != true; it++) {
 		if (user->twitterObj.friendshipCreate(*it, true) == true) {
 			followed.push_back(*it);
-                        if(parse_lastweb_response(user, "user.name", username) == false) {
-                                if(parse_lastweb_response(user, "hash.error", error) == true) {
-                                        cerr << "\t[-] Error : " << error << endl;
-                                        followed.erase(followed.end());
-                                } else {
-                                        cerr << "\t[-] Error : Unable to find user.name" << endl;
-                                }         
-                                break;
-                        } else {
-                                cout << "\tFollowed @" << username << endl;
-                        }
-                        // sleep for 1-10 seconds
+			if (parse_lastweb_response(user, "user.name", username)
+			    == false) {
+				if (parse_lastweb_response
+				    (user, "hash.error", error) == true) {
+					cerr << "\t[-] Error : " << error <<
+					    endl;
+					followed.erase(followed.end());
+				} else {
+					cerr <<
+					    "\t[-] Error : Unable to find user.name"
+					    << endl;
+				}
+				break;
+			} else {
+				cout << "\tFollowed @" << username << endl;
+			}
+			// sleep for 1-10 seconds
 			sleep(randomize(5, 10));
 		}
 	}
 
 	/* when signal is caught or when block is over */
-        gotExitSignal = false;
-	if(followed.size() != 0 )
-                cout << "\tWe have followed " << followed.size() << "/" << to_follow.size() << endl;
+	gotExitSignal = false;
+	if (followed.size() != 0)
+		cout << "\tWe have followed " << followed.
+		    size() << "/" << to_follow.size() << endl;
 	vector_to_file(user->cache.followed, followed);
 }
 
@@ -579,8 +595,7 @@ void concat_vectors(vector < string > &dest, vector < string > src)
  * @input       : cache of tofollow, followed, unfollowed
  * @output      : false if failed in many cases, true if successful
  */
-bool
-remove_duplicates(User * user)
+bool remove_duplicates(User * user)
 {
 	vector < string > v_tofollow(file_to_vector(user->cache.to_follow));
 	vector < string > v_followed(file_to_vector(user->cache.followed));
@@ -617,8 +632,8 @@ remove_duplicates(User * user)
 	// Now write the new to follow to a file
 	fstream fs(user->cache.to_follow.c_str(), fstream::out);
 	if (fs.is_open() == false) {
-		cerr << "\t[-] Error : Unable to write a new " << user->cache.to_follow <<
-		    endl;
+		cerr << "\t[-] Error : Unable to write a new " << user->cache.
+		    to_follow << endl;
 		return false;
 	}
 	for (vector < string >::iterator x = v_tofollow.begin();
@@ -651,7 +666,7 @@ bool vector_to_file(string filename, vector < string > v)
 		fs << *it << endl;
 	}
 
-        fs.close();
+	fs.close();
 	return true;
 }
 
