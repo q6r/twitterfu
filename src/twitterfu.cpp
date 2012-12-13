@@ -79,23 +79,19 @@ bool config(string filename, User * user)
 	if (conf["access_secret"].empty())
 		return false;
 	user->access_token_secret = conf["access_secret"];
-
 	if (conf["to_follow"].empty())
 		return false;
 	user->cache.to_follow = conf["to_follow"];
-
 	if (conf["followed"].empty())
 		return false;
 	user->cache.followed = conf["followed"];
 	if (conf["unfollowed"].empty())
 		return false;
 	user->cache.unfollowed = conf["unfollowed"];
-        if(conf["proxy_username"].empty())
-                return false;
-        user->proxy.username = conf["proxy_username"];
-        if(conf["proxy_password"].empty())
-                return false;
-        user->proxy.password = conf["proxy_password"];
+        if(!conf["proxy_username"].empty())
+                user->proxy.username = conf["proxy_username"];
+        if(!conf["proxy_password"].empty())
+                user->proxy.password = conf["proxy_password"];
         if(conf["proxy_address"].empty())
                 return false;
         user->proxy.address = conf["proxy_address"];
