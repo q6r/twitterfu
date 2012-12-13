@@ -90,6 +90,18 @@ bool config(string filename, User * user)
 	if (conf["unfollowed"].empty())
 		return false;
 	user->cache.unfollowed = conf["unfollowed"];
+        if(conf["proxy_username"].empty())
+                return false;
+        user->proxy.username = conf["proxy_username"];
+        if(conf["proxy_password"].empty())
+                return false;
+        user->proxy.password = conf["proxy_password"];
+        if(conf["proxy_address"].empty())
+                return false;
+        user->proxy.address = conf["proxy_address"];
+        if(conf["proxy_port"].empty())
+                return false;
+        user->proxy.port = conf["proxy_port"]; 
 
 	return true;
 }
