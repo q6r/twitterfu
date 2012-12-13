@@ -92,12 +92,10 @@ bool config(string filename, User * user)
                 user->proxy.username = conf["proxy_username"];
         if(!conf["proxy_password"].empty())
                 user->proxy.password = conf["proxy_password"];
-        if(conf["proxy_address"].empty())
-                return false;
-        user->proxy.address = conf["proxy_address"];
-        if(conf["proxy_port"].empty())
-                return false;
-        user->proxy.port = conf["proxy_port"]; 
+        if(!conf["proxy_address"].empty())
+                user->proxy.address = conf["proxy_address"];
+        if(!conf["proxy_port"].empty())
+                user->proxy.port = conf["proxy_port"]; 
 
 	return true;
 }
