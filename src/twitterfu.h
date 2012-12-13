@@ -6,6 +6,13 @@ struct Cache {
 	string unfollowed;
 };
 
+struct Proxy {
+        string address;
+        string port;
+        string username;
+        string password;
+};
+
 struct User {
 	string username;
 	string password;
@@ -18,6 +25,7 @@ struct User {
 	long
 	 following;
 	Cache cache;
+        Proxy proxy;
 	twitCurl twitterObj;
 };
 
