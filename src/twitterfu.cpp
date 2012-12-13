@@ -130,7 +130,7 @@ vector < string > file_to_vector(string filename)
  * @output      : None
  */
 bool
-status(twitCurl & twitterObj, User * user)
+status(User * user)
 {
 	string replyMsg, followers, following;
 	
@@ -148,13 +148,13 @@ status(twitCurl & twitterObj, User * user)
 
 	cout << "\tAccount Status     :" << endl;
 	if (user->twitterObj.accountVerifyCredGet() == true) {
-		if(parse_lastweb_response(user->twitterObj, "user.followers_count",
+		if(parse_lastweb_response(user, "user.followers_count",
 				       followers) == false) {
                         cerr << "\t[-] Error : Unable to find the followers_count" << endl;
                         return false;
                 }
 
-		if(parse_lastweb_response(user->twitterObj, "user.friends_count",
+		if(parse_lastweb_response(user, "user.friends_count",
 				       following) == false) {
                         cerr << "\t[-] Error : Unable to find friends_count" << endl;
                         return false;
@@ -232,11 +232,11 @@ bool file_exists(string filename)
  * @output           : None
  */
 template < class T > bool
-parse_lastweb_response(twitCurl & twitterObj, string node, T & v)
+parse_lastweb_response(User * user, string node, T & v)
 {
 	string replyMsg = "";
 	try{
-                twitterObj.getLastWebResponse(replyMsg);
+                user->twitterObj.getLastWebResponse(replyMsg);
 	        ptree pt;
 	        stringstream ss(replyMsg);
 	        read_xml(ss, pt);
@@ -253,7 +253,7 @@ parse_lastweb_response(twitCurl & twitterObj, string node, T & v)
  * @input       : User object, user->twitterObj, and option number
  * @output      : None
  */
-void option_parse(User * user, twitCurl & twitterObj, int opt)
+void option_parse(User * user, int opt)
 {
 
 	string username;
@@ -265,23 +265,22 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
 			cin >> username;
 			remove_duplicates( user );
 			vector_to_file(user->cache.to_follow,
-				       get_followers_of(user->twitterObj, username));
+				       get_followers_of(user, username));
 		}
 		break;
 	case 2:         // follow users
 		{
-			follow(user->twitterObj,
-			       file_to_vector(user->cache.to_follow), user);
+			follow(file_to_vector(user->cache.to_follow), user);
 		}
 		break;
 	case 3:         // our status
 		{
-			status(user->twitterObj, user);
+			status(user);
 		}
 		break;
 	case 4:         // unfollow users
 		{
-		unfollow(user->twitterObj, user);
+		unfollow(user);
 		}
 		break;
 	case 5:
@@ -303,9 +302,9 @@ void option_parse(User * user, twitCurl & twitterObj, int opt)
  * and our username
  * @output      : None
  */
-void unfollow(twitCurl & twitterObj, User * user)
+void unfollow(User * user)
 {
-	vector < string > followers(get_following_of(user->twitterObj, user->username));
+	vector < string > followers(get_following_of(user, user->username));
 	string replyMsg, who;
 	bool isfollow = true;
 	long unfollowed = 0;
@@ -339,7 +338,7 @@ void unfollow(twitCurl & twitterObj, User * user)
 	for (vector < string >::iterator it = followers.begin();
 	     it != followers.end() && gotExitSignal != true; it++) {
 		user->twitterObj.friendshipShow(*it, true);
-		if(parse_lastweb_response(user->twitterObj,
+		if(parse_lastweb_response(user,
 				       "relationship.source.followed_by",
 				       isfollow) == false) {
                         cerr << "[-] Error : Unable to find relationship.source.followed_by" << endl;
@@ -350,7 +349,7 @@ void unfollow(twitCurl & twitterObj, User * user)
 			// always assume is follow is true in case
 			// shit happens we don't unfollow crazily
 			isfollow = true;
-			if(parse_lastweb_response(user->twitterObj,
+			if(parse_lastweb_response(user,
 					       "relationship.target.screen_name",
 					       who) == false) {
                                 cerr << "[-] Error : Unable to find relationship.target.screen_name" << endl;
@@ -437,13 +436,13 @@ int main()
 
 	/* Verifying authentication */
 	if (user->twitterObj.accountVerifyCredGet() == true) {
-		if(parse_lastweb_response(user->twitterObj, "user.friends_count",
+		if(parse_lastweb_response(user, "user.friends_count",
 				       user->following) == false) {
                         cerr << "[-] Error : Unable to find user.friends_count" << endl;
                         return -1;        
                 }
 
-		if(parse_lastweb_response(user->twitterObj, "user.followers_count",
+		if(parse_lastweb_response(user, "user.followers_count",
 				       user->followers) == false) {
                         cerr << "[-] Error : Unable to find user.followers_count" << endl;
                         return -1;
@@ -469,7 +468,7 @@ int main()
 	while (opt != 5) {
 		option_show();
 		opt = option_select();
-		option_parse(user, user->twitterObj, opt);
+		option_parse(user, opt);
 	}
 
 	return 0;
@@ -499,7 +498,7 @@ void signalhandler(int n)
  *      2) Any user followed should be removed from the list,
  *      sort the list while at it ? slow process then :( think about it.
  */
-void follow(twitCurl & , vector < string > to_follow, User * user)
+void follow( vector < string > to_follow, User * user)
 {
         string username, error;
 
@@ -528,8 +527,8 @@ void follow(twitCurl & , vector < string > to_follow, User * user)
 	     it != to_follow.end() && gotExitSignal != true; it++) {
 		if (user->twitterObj.friendshipCreate(*it, true) == true) {
 			followed.push_back(*it);
-                        if(parse_lastweb_response(user->twitterObj, "user.name", username) == false) {
-                                if(parse_lastweb_response(user->twitterObj, "hash.error", error) == true) {
+                        if(parse_lastweb_response(user, "user.name", username) == false) {
+                                if(parse_lastweb_response(user, "hash.error", error) == true) {
                                         cerr << "\t[-] Error : " << error << endl;
                                         followed.erase(followed.end());
                                 } else {
@@ -665,14 +664,14 @@ bool vector_to_file(string filename, vector < string > v)
  *
  * Doesn't support next_cursor
  */
-vector < string > get_following_of(twitCurl & twitterObj, string username)
+vector < string > get_following_of(User * user, string username)
 {
 	string replyMsg;
 	vector < string > ids;
 	cout << "\tGetting following of @" << username << endl;
 
-	if (twitterObj.friendsIdsGet(username, false) == true) {
-		twitterObj.getLastWebResponse(replyMsg);
+	if (user->twitterObj.friendsIdsGet(username, false) == true) {
+		user->twitterObj.getLastWebResponse(replyMsg);
 		ptree pt;
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);
@@ -703,15 +702,15 @@ vector < string > get_following_of(twitCurl & twitterObj, string username)
  *
  * Doesn't support next_cursor 
  */
-vector < string > get_followers_of(twitCurl &twitterObj, string username)
+vector < string > get_followers_of(User * user, string username)
 {
 	string replyMsg;
 	vector < string > ids;
 	cout << "\tGetting followers of @" << username << endl;
 
 	// Get the first 100 ids of username and push_back to ids
-	if (twitterObj.followersIdsGet(username, false) == true) {
-		twitterObj.getLastWebResponse(replyMsg);
+	if (user->twitterObj.followersIdsGet(username, false) == true) {
+		user->twitterObj.getLastWebResponse(replyMsg);
 		ptree pt;
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);

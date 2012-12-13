@@ -27,22 +27,22 @@ bool gotExitSignal = false;
 
 /* ProtoTypes
  */
-vector < string > get_followers_of(twitCurl & twitterObj, string username);
-vector < string > get_following_of(twitCurl & twitterObj, string username);
+vector < string > get_followers_of(User * user, string username);
+vector < string > get_following_of(User * user, string username);
 void concat_vectors(vector < string > &dest, vector < string > src);
 bool vector_to_file(string filename, vector < string > v);
 vector < string > file_to_vector(string filename);
 bool config(string filename, User * user);
 bool remove_duplicates(User * user);
 bool
-status(twitCurl & twitterObj, User *user);
+status(User *user);
 int option_select();
-void option_parse(User * user, twitCurl & twitterObj, int opt);
+void option_parse(User * user, int opt);
 void option_show();
 template < class T > bool
-parse_lastweb_response(twitCurl & twitterObj, string node, T & v);
-void unfollow(twitCurl & twitterObj, User * user);
-void follow(twitCurl & twitterObj, vector < string > to_follow, User * user);
+parse_lastweb_response(User * user, string node, T & v);
+void unfollow(User * user);
+void follow(vector < string > to_follow, User * user);
 void signalhandler(int n);
 bool create_cache(User * user);
 bool file_exists(string filename);
