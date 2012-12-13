@@ -64,9 +64,8 @@ bool config(string filename, User * user)
 	if (conf["username"].empty())
 		return false;
 	user->username = conf["username"];
-	if (conf["password"].empty())
-		return false;
-	user->password = conf["password"];
+	if (!conf["password"].empty())
+	        user->password = conf["password"];
 	if (conf["consumer_key"].empty())
 		return false;
 	user->consumer_key = conf["consumer_key"];
@@ -438,7 +437,8 @@ int main()
 
 	/* Set twitter username and password */
 	user->twitterObj.setTwitterUsername(user->username);
-	user->twitterObj.setTwitterPassword(user->password);
+	if(!user->password.empty())
+                user->twitterObj.setTwitterPassword(user->password);
 
         /* Set up proxy if found */
         if( !user->proxy.address.empty() && !user->proxy.port.empty()) {
