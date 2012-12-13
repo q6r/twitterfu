@@ -446,6 +446,17 @@ int main()
 	user->twitterObj.setTwitterUsername(user->username);
 	user->twitterObj.setTwitterPassword(user->password);
 
+        /* Set up proxy if found */
+        if( !user->proxy.address.empty() && !user->proxy.port.empty()) {
+                user->twitterObj.setProxyServerIp( user->proxy.address );
+                user->twitterObj.setProxyServerPort( user->proxy.port );
+                /* Set password if found */
+                if( !user->proxy.username.empty() && !user->proxy.password.empty() ) {
+                        user->twitterObj.setProxyUserName( user->proxy.username );
+                        user->twitterObj.setTwitterPassword( user->proxy.password );
+                }
+        }
+
 	/* Now authenticating */
 	user->twitterObj.getOAuth().setConsumerKey(user->consumer_key);
 	user->twitterObj.getOAuth().setConsumerSecret(user->consumer_secret);
