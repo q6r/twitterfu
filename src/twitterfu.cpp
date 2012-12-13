@@ -80,7 +80,19 @@ bool config(string filename, User * user)
 		return false;
 	user->access_token_secret = conf["access_secret"];
 
-	return true;
+        if(conf["to_follow"].empty())
+                return false;
+        user->cache.to_follow = conf["to_follow"];
+
+        if(conf["followed"].empty())
+                return false;
+        user->cache.followed = conf["followed"];
+        
+        if(conf["unfollowed"].empty())
+                return false;
+        user->cache.unfollowed = conf["unfollowed"];
+
+        return true;
 }
 
 /*
@@ -498,9 +510,7 @@ void signalhandler(int n)
  */
 void follow(twitCurl & twitterObj, vector < string > to_follow)
 {
-
         string username, error;
-
 
 	if (to_follow.size() == 0) {
 		cerr << "\t[-] Error : Please add users to follow" << endl;
