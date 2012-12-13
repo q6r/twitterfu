@@ -174,6 +174,19 @@ bool status(User * user)
 		return false;
 	}
 
+        // API status
+        int remaining_hits=0, hourly_limit=0;
+        string reset_time;
+        if(user->twitterObj.accountRateLimitGet() == true) {        
+                cout << "\tAPI Status : " << endl;
+                parse_lastweb_response(user, "hash.remaining-hits", remaining_hits);
+                parse_lastweb_response(user, "hash.hourly-limit", hourly_limit);
+                parse_lastweb_response(user, "hash.reset-time", reset_time);
+                cout << "\t\tRemaining hits : " << remaining_hits << endl;
+                cout << "\t\tHourly limit   : " << hourly_limit << endl;
+                cout << "\t\tReset  at      : " << reset_time << endl;
+        }
+
 	return true;
 }
 
