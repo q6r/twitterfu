@@ -18,6 +18,7 @@ struct User {
 	long
 	 following;
         Cache cache;
+        twitCurl twitterObj;
 };
 
 /* Globals
