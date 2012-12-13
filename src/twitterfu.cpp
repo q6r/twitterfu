@@ -506,7 +506,8 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 		return;
 	}
 
-	remove_duplicates("cache/to_follow.txt", "cache/followed.txt",
+	// remove duplicates
+        remove_duplicates("cache/to_follow.txt", "cache/followed.txt",
 			  "cache/unfollowed.txt");
 
 
@@ -543,14 +544,10 @@ void follow(twitCurl & twitterObj, vector < string > to_follow)
 		}
 	}
 
-	/*
-	 * This block and down will be reached at all the needed cases
-	 * when user exists CTRL-C or when the process has finished running
-	 * We shall append all the followed users to the followed db
-	 **/
-	gotExitSignal = false;
-	cout << "\tWe have followed " << followed.size() << "/" << to_follow.
-	    size() << endl;
+	/* when signal is caught or when block is over */
+        gotExitSignal = false;
+	if(followed.size() != 0 )
+                cout << "\tWe have followed " << followed.size() << "/" << to_follow.size() << endl;
 	vector_to_file("cache/followed.txt", followed);
 }
 
