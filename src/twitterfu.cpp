@@ -135,7 +135,8 @@ vector < string > file_to_vector(string filename)
  */
 bool status(User * user)
 {
-	string replyMsg, followers, following;
+	string replyMsg, followers, following, reset_time;
+        int remaining_hits=0, hourly_limit=0;
 
 	// remove duplicates
 	remove_duplicates(user);
@@ -147,10 +148,10 @@ bool status(User * user)
 	cout << "\tApplication Status :" << endl;
 	cout << "\t\tFollowed   : " << followed.size() << endl;
 	cout << "\t\tTo follow  : " << tofollow.size() << endl;
-	cout << "\t\tUnfollowed : " << unfollowed.size() << endl << endl;
+	cout << "\t\tUnfollowed : " << unfollowed.size() << endl;
 
-	cout << "\tAccount Status     :" << endl;
 	if (user->twitterObj.accountVerifyCredGet() == true) {
+                cout << "\tAccount Status     :" << endl;
 		if (parse_lastweb_response(user, "user.followers_count",
 					   followers) == false) {
 			cerr <<
@@ -158,7 +159,6 @@ bool status(User * user)
 			    << endl;
 			return false;
 		}
-
 		if (parse_lastweb_response(user, "user.friends_count",
 					   following) == false) {
 			cerr << "\t[-] Error : Unable to find friends_count" <<
@@ -169,15 +169,13 @@ bool status(User * user)
 		cout << "\t\tFollowers  : " << followers << endl;
 		cout << "\t\tFollowing  : " << following << endl;
 	} else {
-		cerr << "\t[-] Error : Unable to get last web response." <<
+		cerr << "\t[-] Error : Unable to get account status." <<
 		    endl;
 		return false;
 	}
 
         // API status
-        int remaining_hits=0, hourly_limit=0;
-        string reset_time;
-        if(user->twitterObj.accountRateLimitGet() == true) {        
+                if(user->twitterObj.accountRateLimitGet() == true) {        
                 cout << "\tAPI Status : " << endl;
                 parse_lastweb_response(user, "hash.remaining-hits", remaining_hits);
                 parse_lastweb_response(user, "hash.hourly-limit", hourly_limit);
@@ -185,8 +183,10 @@ bool status(User * user)
                 cout << "\t\tRemaining hits : " << remaining_hits << endl;
                 cout << "\t\tHourly limit   : " << hourly_limit << endl;
                 cout << "\t\tReset  at      : " << reset_time << endl;
+        } else {
+                cerr << "\t[-] Error : Unable to get API status" << endl;
+                return false;
         }
-
 	return true;
 }
 
