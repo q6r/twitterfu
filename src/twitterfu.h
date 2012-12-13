@@ -45,6 +45,6 @@ parse_lastweb_response(twitCurl & twitterObj, string node, T & v);
 void unfollow(twitCurl & twitterObj, string filename, string username);
 void follow(twitCurl & twitterObj, vector < string > to_follow);
 void signalhandler(int n);
-bool create_cache(string f_tofollow, string f_followed, string f_unfollowed);
+bool create_cache(User * user);
 bool file_exists(string filename);
 int randomize(int from, int to);

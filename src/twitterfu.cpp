@@ -190,7 +190,7 @@ int randomize(int from, int to)
  * @input            : names of the files
  * @output           : true if created the files, otherwise false.
  */
-bool create_cache(string f_tofollow, string f_followed, string f_unfollowed)
+bool create_cache(User * user)
 {
 	if (!file_exists(f_tofollow)) {
 		fstream fs(f_tofollow.c_str(), fstream::out);
@@ -421,8 +421,7 @@ int main()
 
 	User *user = new User;
 
-	create_cache("cache/to_follow.txt", "cache/followed.txt",
-		     "cache/unfollowed.txt");
+	create_cache(user);
 
 	if (config("./twitter.conf", user) == false) {
 		cerr << "[-] Error : while reading configuration file" << endl;
