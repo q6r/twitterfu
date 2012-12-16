@@ -4,13 +4,15 @@ struct Cache {
 	string to_follow;
 	string followed;
 	string unfollowed;
+	string oauth_key;
+	string oauth_secret;
 };
 
 struct Proxy {
-        string address;
-        string port;
-        string username;
-        string password;
+	string address;
+	string port;
+	string username;
+	string password;
 };
 
 struct User {
@@ -25,7 +27,7 @@ struct User {
 	long
 	 following;
 	Cache cache;
-        Proxy proxy;
+	Proxy proxy;
 	twitCurl twitterObj;
 };
 
@@ -37,8 +39,8 @@ bool gotExitSignal = false;
  */
 vector < string > get_followers_of(User * user, string username);
 vector < string > get_following_of(User * user, string username);
-template <class T> void concat_vectors(vector < T > &dest, vector < T > src);
-template <class T> bool vector_to_file(string filename, vector < T > v);
+template < class T > void concat_vectors(vector < T > &dest, vector < T > src);
+template < class T > bool vector_to_file(string filename, vector < T > v);
 
 vector < string > file_to_vector(string filename);
 bool config(string filename, User * user);
@@ -55,3 +57,4 @@ void signalhandler(int n);
 bool create_cache(User * user);
 bool file_exists(string filename);
 int randomize(int from, int to);
+bool authenticate(User * user);
