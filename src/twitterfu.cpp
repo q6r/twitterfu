@@ -438,15 +438,16 @@ int main()
 	srand(time(NULL));	// random seed
 
 	User *user = new User;
-
-	create_cache(user);
-
+        
 	if (config("./twitter.conf", user) == false) {
 		cerr << "[-] Error : while reading configuration file" << endl;
 		return -1;
 	}
 
 	string replyMsg;
+
+        /* Create cache files */
+	create_cache(user);
 
 	/* Set twitter username and password */
 	user->twitterObj.setTwitterUsername(user->username);
