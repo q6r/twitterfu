@@ -11,6 +11,7 @@ src/*.swp
 src/*~
 *~
 *.swp
+obj/*.o
 
 # Compiled Object files
 *.slo
