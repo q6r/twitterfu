@@ -367,8 +367,8 @@ void unfollow(User * user)
 	}
 	// check if cache file is opened for appending
 	if (fs.is_open() == false) {
-		cerr << "[-] Error : Unable to open " << user->cache.
-		    unfollowed << endl;
+		cerr << "[-] Error : Unable to open " << user->
+		    cache.unfollowed << endl;
 		return;
 	}
 
@@ -469,10 +469,10 @@ bool authenticate(User * user)
 
 	// if we already have oauth keys
 	if (user->access_token_key.size() && user->access_token_secret.size()) {
-		user->twitterObj.getOAuth().setOAuthTokenKey(user->
-							     access_token_key);
-		user->twitterObj.getOAuth().setOAuthTokenSecret(user->
-								access_token_secret);
+		user->twitterObj.getOAuth().
+		    setOAuthTokenKey(user->access_token_key);
+		user->twitterObj.getOAuth().
+		    setOAuthTokenSecret(user->access_token_secret);
 		return true;
 	} else {		// if we don't
 
@@ -488,17 +488,17 @@ bool authenticate(User * user)
 		user->twitterObj.oAuthAccessToken();
 
 		// save the keys to twitter.conf
-		user->twitterObj.getOAuth().getOAuthTokenKey(user->
-							     access_token_key);
-		user->twitterObj.getOAuth().getOAuthTokenSecret(user->
-								access_token_secret);
+		user->twitterObj.getOAuth().
+		    getOAuthTokenKey(user->access_token_key);
+		user->twitterObj.getOAuth().
+		    getOAuthTokenSecret(user->access_token_secret);
 		fstream fs("twitter.conf", fstream::app | fstream::out);
 		if (fs.is_open() == false) {
 			return false;
 		}
 		fs << "access_token_key=" << user->access_token_key << endl;
-		fs << "access_token_secret=" << user->
-		    access_token_secret << endl;
+		fs << "access_token_secret=" << user->access_token_secret <<
+		    endl;
 		fs.close();
 		return true;
 	}
@@ -535,14 +535,14 @@ int main()
 	if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
 		user->twitterObj.setProxyServerIp(user->proxy.address);
 		user->twitterObj.setProxyServerPort(user->proxy.port);
-		cout << "[+] Using proxy " << user->
-		    proxy.address << ":" << user->proxy.port << endl;
+		cout << "[+] Using proxy " << user->proxy.
+		    address << ":" << user->proxy.port << endl;
 		/* Set password if found */
 		if (!user->proxy.username.empty()
 		    && !user->proxy.password.empty()) {
 			user->twitterObj.setProxyUserName(user->proxy.username);
-			user->twitterObj.setTwitterPassword(user->
-							    proxy.password);
+			user->twitterObj.setTwitterPassword(user->proxy.
+							    password);
 		}
 	}
 
