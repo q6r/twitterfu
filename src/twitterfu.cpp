@@ -18,7 +18,7 @@ using namespace std;
 using boost::property_tree::ptree;
 
 /*
- * @method      : option select
+ * @method      : option_select
  * @output      : the options selected
  */
 int option_select()
@@ -26,7 +26,6 @@ int option_select()
 	int opt = -1;
 	cout << "> ";
 	cin >> opt;
-	// Avoid infinite loop
 	if (cin.fail() == true) {
 		cin.clear();
 		cin.ignore(numeric_limits < streamsize >::max(), 0x0a);
@@ -100,7 +99,7 @@ bool config(string filename, User * user)
 }
 
 /*
- * @method      : file to vector
+ * @method      : file_to_vector
  * @description : Takes a filename opens it get's the content convert it to a vector and
  * returns the vector.
  * @input       : filename
@@ -110,14 +109,14 @@ bool config(string filename, User * user)
 vector < string > file_to_vector(string filename)
 {
 	vector < string > v;
+        string temp;
 	fstream fs(filename.c_str(), fstream::in);
 	if (fs.is_open() == false) {
 		cerr << "\t[-] Error : Unable to open " << filename << endl;
 		return v;
 	}
-
-	string temp;
-	while (fs.eof() == false) {
+	
+        while (fs.eof() == false) {
 		getline(fs, temp);
 		if (temp.length() != 0)
 			v.push_back(temp);
@@ -127,10 +126,10 @@ vector < string > file_to_vector(string filename)
 	return v;
 }
 
-/* @method      : Our status
+/* @method      : status
  * @description : Show how many did we follow, to follow, our followers,
  * and our following.
- * @input       : filename of tofollow cache and followed cache
+ * @input       : user
  * @output      : None
  */
 bool status(User * user)
@@ -139,7 +138,9 @@ bool status(User * user)
         int remaining_hits=0, hourly_limit=0;
 
 	// remove duplicates
-	remove_duplicates(user);
+	if(remove_duplicates(user) == false) {
+                return false;
+        }
 
 	vector < string > tofollow(file_to_vector(user->cache.to_follow));
 	vector < string > followed(file_to_vector(user->cache.followed));
@@ -175,11 +176,24 @@ bool status(User * user)
 	}
 
         // API status
-                if(user->twitterObj.accountRateLimitGet() == true) {        
+        if(user->twitterObj.accountRateLimitGet() == true) {        
+                
                 cout << "\tAPI Status : " << endl;
-                parse_lastweb_response(user, "hash.remaining-hits", remaining_hits);
-                parse_lastweb_response(user, "hash.hourly-limit", hourly_limit);
-                parse_lastweb_response(user, "hash.reset-time", reset_time);
+                if(parse_lastweb_response(user, "hash.remaining-hits", remaining_hits) == false) {
+                        cerr << "[-] Error : Unable to get hash.remaining-hits" << endl;
+                        return false;
+                }
+
+                if(parse_lastweb_response(user, "hash.hourly-limit", hourly_limit) == false) {
+                        cerr << "[-] Error : Unable to get hash.hourly-limit" << endl;
+                        return false;
+                }
+
+                if(parse_lastweb_response(user, "hash.reset-time", reset_time) == false) {
+                        cerr << "[-] Error : Unable to get hash.hourly-limit" << endl;
+                        return false;
+                }
+
                 cout << "\t\tRemaining hits : " << remaining_hits << endl;
                 cout << "\t\tHourly limit   : " << hourly_limit << endl;
                 cout << "\t\tReset  at      : " << reset_time << endl;
@@ -187,11 +201,11 @@ bool status(User * user)
                 cerr << "\t[-] Error : Unable to get API status" << endl;
                 return false;
         }
+
 	return true;
 }
 
-/* @method           : randomize from to
- * @description      : will get a random number from to (int)
+/* @method           : randomize
  * @input            : from, to
  * @output           : from <= random <= to
  */
@@ -201,10 +215,10 @@ int randomize(int from, int to)
 }
 
 /*
- * @method           : create cache files
+ * @method           : create_cache
  * @description      : this is to be run at the beginning, to create
  * the catch files.
- * @input            : names of the files
+ * @input            : user
  * @output           : true if created the files, otherwise false.
  */
 bool create_cache(User * user)
@@ -232,7 +246,7 @@ bool create_cache(User * user)
 }
 
 /*
- * @method           : file exists
+ * @method           : file_exists
  * @description      : check if file exists
  * @input            : filename
  * @output           : true if file exists, false otherwise
@@ -244,19 +258,19 @@ bool file_exists(string filename)
 }
 
 /*
- * @method           : parse last web response
+ * @method           : parse_lastweb_response
  * @description      : parse the last web response and get a
  * value of a node, save the value in T v
- * @input            : twitter object, the node to get, T v
- * @output           : None
+ * @input            : user, the node to get, T v
+ * @output           : true if got the result false otherwise
  */
 template < class T > bool
 parse_lastweb_response(User * user, string node, T & v)
 {
 	string replyMsg = "";
-	try {
+	ptree pt;
+        try {
 		user->twitterObj.getLastWebResponse(replyMsg);
-		ptree pt;
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);
 		v = pt.get < T > (node.c_str());
@@ -269,9 +283,9 @@ parse_lastweb_response(User * user, string node, T & v)
 }
 
 /*
- * @method      : parse options
+ * @method      : option_parse
  * @description : Do a specific job depending on the opt
- * @input       : User object, user->twitterObj, and option number
+ * @input       : User object, option number
  * @output      : None
  */
 void option_parse(User * user, int opt)
@@ -284,9 +298,16 @@ void option_parse(User * user, int opt)
 		{
 			cout << "Username : ";
 			cin >> username;
-			remove_duplicates(user);
-			vector_to_file(user->cache.to_follow,
-				       get_followers_of(user, username));
+			if(remove_duplicates(user) == false) {
+                                cerr << "[-] Error : Unable to remove duplicates" << endl;
+                                return;
+                        }
+
+			if(vector_to_file(user->cache.to_follow,
+				       get_followers_of(user, username)) == false) {
+                                cerr << "[-] Error : Unable to append vector" << endl;
+                                return;
+                        }
 		}
 		break;
 	case 2:		// follow users
@@ -304,7 +325,7 @@ void option_parse(User * user, int opt)
 			unfollow(user);
 		}
 		break;
-	case 5:
+	case 5:         // quit
 		{
 			cout << "\tHave a nice day!" << endl;
 			exit(1);
@@ -317,10 +338,9 @@ void option_parse(User * user, int opt)
 }
 
 /*
- * @method      : Unfollow users
+ * @method      : Unfollow
  * @description : Unfollow users who haven't followed me back
- * @input       : twitterobject, filename to output the users we unfollowed,
- * and our username
+ * @input       : user 
  * @output      : None
  */
 void unfollow(User * user)
@@ -329,9 +349,13 @@ void unfollow(User * user)
 	string replyMsg, who;
 	bool isfollow = true;
 	long unfollowed = 0;
-	fstream fs(user->cache.unfollowed.c_str(), fstream::app | fstream::out);
+	gotExitSignal = false;
+        fstream fs(user->cache.unfollowed.c_str(), fstream::app | fstream::out);
 
-	remove_duplicates(user);
+	if(remove_duplicates(user) == false) {
+                cerr << "[-] Error : Unable to remove duplicates" << endl;
+                return;
+        }
 
 	// check if cache file is opened for appending
 	if (fs.is_open() == false) {
@@ -341,11 +365,11 @@ void unfollow(User * user)
 	}
 
 	/* Install the signal handler */
-	gotExitSignal = false;
 	if (signal((int)SIGINT, signalhandler) == SIG_ERR) {
 		cerr << "\t[-] Error : Unable to install signalHandler" << endl;
 		return;
 	}
+
 	// Don't do anything if there's no one to unfollow
 	if (followers.size() == 0) {
 		cerr << "\t[-] Error : No one to unfollow" << endl;
@@ -354,7 +378,7 @@ void unfollow(User * user)
 
 	/*
 	 * Now decide the followers who haven't followed me back
-	 * and unfollow him
+	 * and unfollow them
 	 * */
 	for (vector < string >::iterator it = followers.begin();
 	     it != followers.end() && gotExitSignal != true; it++) {
@@ -369,9 +393,6 @@ void unfollow(User * user)
 		}
 
 		if (isfollow == false) {
-			// always assume is follow is true in case
-			// shit happens we don't unfollow crazily
-			isfollow = true;
 			if (parse_lastweb_response(user,
 						   "relationship.target.screen_name",
 						   who) == false) {
@@ -390,21 +411,19 @@ void unfollow(User * user)
 				cout << "[Err:Unable to unfollow]" << endl;
 			}
 		}
+                isfollow=true;
 	}
 
 	// restart the exit signal flag
-	// and print result
 	gotExitSignal = false;
 	fs.close();
 	cout << "\tWe have unfollowed " << unfollowed << "/" << followers.size()
 	    << endl;
 
-	return;
 }
 
-/* @method      : twitcurl destructor
- * @description : This is here because the destructor is not defined
- * in twitCurl library which when called can cause a segmentation fault.
+/* @method      : twitCurl::~twitCurl
+ * @description : Fixes bugs. 
  * @input       : None
  * @output      : None
  */
@@ -413,7 +432,7 @@ twitCurl::~twitCurl()
 	// Do nothing
 }
 
-/* @method      : show options
+/* @method      : option_show
  * @description : Show available option to the user
  * @input       : None
  * @output      : None
@@ -425,7 +444,6 @@ void option_show()
 	cout << "3) Status" << endl;
 	cout << "4) Unfollow users who haven't followed" << endl;
 	cout << "5) Quit" << endl;
-	return;
 }
 
 /* @method      : main
@@ -438,16 +456,18 @@ int main()
 	srand(time(NULL));	// random seed
 
 	User *user = new User;
+        string replyMsg;
         
 	if (config("./twitter.conf", user) == false) {
 		cerr << "[-] Error : while reading configuration file" << endl;
 		return -1;
 	}
 
-	string replyMsg;
-
         /* Create cache files */
-	create_cache(user);
+	if(create_cache(user) == false) {
+                cerr << "[-] Error : Unable to create cache files" << endl;
+                return -1;
+        }
 
 	/* Set twitter username and password */
 	user->twitterObj.setTwitterUsername(user->username);
@@ -501,7 +521,10 @@ int main()
 	cout << "=====================" << endl << endl;
 
 	// Before entering the main loop fix the databases
-	remove_duplicates(user);
+	if(remove_duplicates(user) == false) {
+                cerr << "[-] Error : Unable to remove duplicates" << endl;
+                return -1;
+        }
 
 	/*
 	 * Start the loop and do things in here 
@@ -518,53 +541,47 @@ int main()
 }
 
 /*
- * @method      : signal handler
+ * @method      : signalhandler
  * @description : Handler for follow/unfollow to set a exitFlag
- * @input       : n which is the catched signal number
+ * @input       : n the catched signal number
  * @outpu       : None
  */
 void signalhandler(int n)
 {
-	//cout << "\tGot Exception : " << n << endl;
 	gotExitSignal = true;
 }
 
-/* @method      : follow()
- * @description : It will follow a vector of user_ids
- * @input       : already authenticated user->twitterObj, and a vector of user ids to follow
+/* @method      : follow
+ * @description : It will follow a vector of user ids
+ * @input       : user ids string vector, and user
  * @output      : None
- *
- * @todo :
- *      1) Follow only the users we haven't followed, we can do that by
- *      fetching the user's info and check if user.followed ? true:false
- *      if true we follow, if false we pass
- *      2) Any user followed should be removed from the list,
- *      sort the list while at it ? slow process then :( think about it.
  */
 void follow(vector < string > to_follow, User * user)
 {
 	string username, error;
+        gotExitSignal = false;
+        vector < string > followed;
+        string replyMsg;
 
 	if (to_follow.size() == 0) {
 		cerr << "\t[-] Error : Please add users to follow" << endl;
 		return;
 	}
 	// remove duplicates
-	remove_duplicates(user);
+	if(remove_duplicates(user) == false) {
+                cerr << "[-] Error : Unable to remove duplicates" << endl;
+                return;
+        }
 
 	cout << to_follow.size() << " to follow" << endl;
 
 	/* Install the signal handler */
-	gotExitSignal = false;
 	if (signal((int)SIGINT, signalhandler) == SIG_ERR) {
 		cerr << "\t[-] Error : Unable to install signalHandler" << endl;
 		return;
 	}
 
 	/* Start following things */
-	vector < string > followed;
-	string replyMsg;
-
 	for (vector < string >::iterator it = to_follow.begin();
 	     it != to_follow.end() && gotExitSignal != true; it++) {
 		if (user->twitterObj.friendshipCreate(*it, true) == true) {
@@ -595,37 +612,34 @@ void follow(vector < string > to_follow, User * user)
 	if (followed.size() != 0)
 		cout << "\tWe have followed " << followed.
 		    size() << "/" << to_follow.size() << endl;
-	vector_to_file(user->cache.followed, followed);
+	if(vector_to_file(user->cache.followed, followed) == false) {
+                cerr << "[-] Error : Unable to append vector" << endl;
+                return;
+        }
+
 }
 
 /*
- * @method      : concat vector
+ * @method      : concat_vectors
  * @description : This will take src and add it to dest
  * @input       : destination vector, source vector
  * @output      : None
- *
- * @TODO        : use templates to support all types of vectors
  */
-void concat_vectors(vector < string > &dest, vector < string > src)
+template <class T>
+void concat_vectors(vector < T > &dest, vector < T > src)
 {
 	dest.insert(dest.end(), src.begin(), src.end());
 }
 
 /*
- * @method      : remove duplicates
- * @descrption  : This will take a file (mostly the to-follow list)
- * This will remove duplicates from the file
- * 1) it will read the file content to a vector
+ * @method      : remove_duplicates
+ * @descrption  :
+ * This will remove duplicates from the caches
+ * 1) it will read the cache content to a vector
  * 2) it will sort and remove uniques from the vector
- * 3) it will delete filename, rewrite the new vector to it.
- *
- * Simply it will fix the tofollow list by removing who ever
- * we have unfollowed before, or followed.. so we don't follow
- * someone who we have followed before, or follow someone who
- * we have unfollowed already. :>
- *
- * @input       : cache of tofollow, followed, unfollowed
- * @output      : false if failed in many cases, true if successful
+ * 3) it will delete cache, rewrite the new vector to it.
+ * @input       : user 
+ * @output      : true if duplicates are removed, otherwise false
  */
 bool remove_duplicates(User * user)
 {
@@ -664,8 +678,6 @@ bool remove_duplicates(User * user)
 	// Now write the new to follow to a file
 	fstream fs(user->cache.to_follow.c_str(), fstream::out);
 	if (fs.is_open() == false) {
-		cerr << "\t[-] Error : Unable to write a new " << user->cache.
-		    to_follow << endl;
 		return false;
 	}
 	for (vector < string >::iterator x = v_tofollow.begin();
@@ -677,20 +689,18 @@ bool remove_duplicates(User * user)
 }
 
 /*
- * @method      : vector to file
+ * @method      : vector_to_file
  * @description : takes a vector of string and append it ot a file
  * @input       : filename to append to, vector
- * @TODO        :
- *      use templates to support all vectors types
+ * @output      : false if failed to append
  */
-bool vector_to_file(string filename, vector < string > v)
+template <class T>
+bool vector_to_file(string filename, vector < T > v)
 {
 	fstream fs;
 	fs.open(filename.c_str(), fstream::app | fstream::out | fstream::in);
 
 	if (fs.is_open() == false) {
-		cerr << "\t[-] Error : unable to append vector to " << filename
-		    << endl;
 		return false;
 	}
 
@@ -703,11 +713,11 @@ bool vector_to_file(string filename, vector < string > v)
 }
 
 /*
- * @method      : Get following of a user (who is he following)
- * @description : Will use a twitter Object to fetch the following of a user
+ * @method      : get_following_of
+ * @description : Fetch the following of a user
  * and create a vector of their userids and return that vector
- * @input       : twitter object, username
- * @output      : vector of userIDs of the username following.
+ * @input       : user, username
+ * @output      : vector of userIDs of the username's following.
  *
  * Doesn't support next_cursor
  */
@@ -741,11 +751,11 @@ vector < string > get_following_of(User * user, string username)
 }
 
 /*
- * @method      : Get the followers of a user (who are following him)
- * @description : Will use a twitter Object to fetch the followers of a user
+ * @method      : get_followers_of
+ * @description : Get the followers of a user
  * and create a vector of their userIDs and return that vector
- * @input       : twitter object, username
- * @output      : vector of userIDs of the username followers'
+ * @input       : user, username
+ * @output      : vector of userIDs of the username's followers
  *
  * Doesn't support next_cursor 
  */
@@ -753,12 +763,13 @@ vector < string > get_followers_of(User * user, string username)
 {
 	string replyMsg;
 	vector < string > ids;
+        ptree pt;
+
 	cout << "\tGetting followers of @" << username << endl;
 
 	// Get the first 100 ids of username and push_back to ids
 	if (user->twitterObj.followersIdsGet(username, false) == true) {
 		user->twitterObj.getLastWebResponse(replyMsg);
-		ptree pt;
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);
 

@@ -37,8 +37,9 @@ bool gotExitSignal = false;
  */
 vector < string > get_followers_of(User * user, string username);
 vector < string > get_following_of(User * user, string username);
-void concat_vectors(vector < string > &dest, vector < string > src);
-bool vector_to_file(string filename, vector < string > v);
+template <class T> void concat_vectors(vector < T > &dest, vector < T > src);
+template <class T> bool vector_to_file(string filename, vector < T > v);
+
 vector < string > file_to_vector(string filename);
 bool config(string filename, User * user);
 bool remove_duplicates(User * user);
