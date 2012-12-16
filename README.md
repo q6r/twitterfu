@@ -18,6 +18,13 @@ cp twitter.conf.org twitter.conf and edit the file include these
 - Consumer secret
 - Access key
 - Access secret
+- Proxy address
+- Proxy port
+- Proxy Username
+- Proxy Password
+- To Follow cache file
+- Followed cache file
+- Unfollowed cache file
 
 These can be obtained by creating an app for more info check dev.twitter.com
 
