@@ -270,7 +270,7 @@ parse_lastweb_response(User * user, string node, T & v)
 		v = pt.get < T > (node.c_str());
 	}
 	catch(exception const &e) {
-		cout << replyMsg << endl;
+		//cout << replyMsg << endl;
 		return false;
 	}
 	return true;
@@ -655,7 +655,7 @@ void follow(vector < string > to_follow, User * user)
 						    "\t[-] Error : Unable to find user.name"
 						    << endl;
 					}
-					break;
+					//break;
 				} else {
 					cout << "\tFollowed @" << username <<
 					    endl;
