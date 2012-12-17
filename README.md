@@ -13,23 +13,15 @@ Configure
 cp twitter.conf.org twitter.conf and edit the file include these
 
 - Username
-- Password (not needed, we use Oauth; this is for later)
-- Consumer key
-- Consumer secret
-- Access key
-- Access secret
-- Proxy address
-- Proxy port
-- Proxy Username
-- Proxy Password
-- To Follow cache file
-- Followed cache file
-- Unfollowed cache file
+- Password
+- (optional) Proxy address
+- (optional) Proxy port
+- (optional) Proxy Username
+- (optional) Proxy Password
 
-These can be obtained by creating an app for more info check dev.twitter.com
+when you run the application for the first time you will be asked to visit
+a twitter link and authorize the application by entering the PIN.
 
 Compile
 =======
 - make && ./twitterfu
-        
-
