@@ -1,18 +1,8 @@
-#include <iostream>
-#include <curl/curl.h>
-#include <twitcurl.h>
-#include <string>
-#include <fstream>
-#include <assert.h>
-#include <signal.h>
-#include <errno.h>
-#include <limits>
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <sys/stat.h>
-#include <ctime>
 #include "twitterfu.h"
+
+/* Globals
+ */
+bool gotExitSignal = false;
 
 using namespace std;
 using boost::property_tree::ptree;
@@ -390,6 +380,7 @@ void unfollow(User * user)
 	for (vector < string >::iterator it = followers.begin();
 	     it != followers.end() && gotExitSignal != true; it++) {
 		user->twitterObj.friendshipShow(*it, true);
+
 		if (parse_lastweb_response(user,
 					   "relationship.source.followed_by",
 					   isfollow) == false) {
@@ -642,26 +633,38 @@ void follow(vector < string > to_follow, User * user)
 	/* Start following things */
 	for (vector < string >::iterator it = to_follow.begin();
 	     it != to_follow.end() && gotExitSignal != true; it++) {
-		if (user->twitterObj.friendshipCreate(*it, true) == true) {
-			followed.push_back(*it);
-			if (parse_lastweb_response(user, "user.name", username)
-			    == false) {
+
+		// follow only those that applies to the
+		// by_ratio filter
+		if (filter::by_ratio(user, *it) == true) {
+			if (user->twitterObj.friendshipCreate(*it, true) ==
+			    true) {
+				followed.push_back(*it);
 				if (parse_lastweb_response
-				    (user, "hash.error", error) == true) {
-					cerr << "\t[-] Error : " << error <<
-					    endl;
-					followed.erase(followed.end());
+				    (user, "user.name", username)
+				    == false) {
+					if (parse_lastweb_response
+					    (user, "hash.error",
+					     error) == true) {
+						cerr << "\t[-] Error : " <<
+						    error << endl;
+						followed.erase(followed.end());
+					} else {
+						cerr <<
+						    "\t[-] Error : Unable to find user.name"
+						    << endl;
+					}
+					break;
 				} else {
-					cerr <<
-					    "\t[-] Error : Unable to find user.name"
-					    << endl;
+					cout << "\tFollowed @" << username <<
+					    endl;
 				}
-				break;
-			} else {
-				cout << "\tFollowed @" << username << endl;
+				// sleep for 1-10 seconds
+				sleep(randomize(5, 10));
 			}
-			// sleep for 1-10 seconds
-			sleep(randomize(5, 10));
+
+		} else {
+			cout << "This user is ignored" << endl;
 		}
 	}
 
