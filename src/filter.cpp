@@ -40,7 +40,7 @@ bool filter::by_ratio(User * user, string userid)
 		return true;
 	} else {
 		long double result = (following / followers) * 100;
-		if (result >= 65)
+		if (result >= 50)
 			return true;
 		else
 			return false;

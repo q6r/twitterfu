@@ -611,6 +611,7 @@ void follow(vector < string > to_follow, User * user)
 	gotExitSignal = false;
 	vector < string > followed;
 	string replyMsg;
+        int ignored=0;
 
 	if (to_follow.size() == 0) {
 		cerr << "\t[-] Error : Please add users to follow" << endl;
@@ -664,8 +665,8 @@ void follow(vector < string > to_follow, User * user)
 			}
 
 		} else {
-			cout << "This user is ignored" << endl;
-		}
+		        ignored++;
+                }
 	}
 
 	/* when signal is caught or when block is over */
@@ -677,7 +678,8 @@ void follow(vector < string > to_follow, User * user)
 		cerr << "[-] Error : Unable to append vector" << endl;
 		return;
 	}
-
+        if(ignored > 0)
+                cout << "\tWe have Ignored : " << ignored << endl;
 }
 
 /*
