@@ -1,6 +1,6 @@
 Author : qnix <qnix@0x80.org>
 
-twitterfu: A twitter follow/unfollow
+twitterfu: Automated twitter follow/unfollow
 
 Deps
 ====
