@@ -37,10 +37,8 @@ struct User {
 	string consumer_secret;
 	string access_token_key;
 	string access_token_secret;
-	long
-	 followers;
-	long
-	 following;
+	long followers;
+	long following;
 	Cache cache;
 	Proxy proxy;
 	twitCurl twitterObj;
@@ -48,26 +46,26 @@ struct User {
 
 /* ProtoTypes
  */
-vector < string > get_followers_of(User * user, string username);
-vector < string > get_following_of(User * user, string username);
-template < class T > void concat_vectors(vector < T > &dest, vector < T > src);
-template < class T > bool vector_to_file(string filename, vector < T > v);
-vector < string > file_to_vector(string filename);
+vector < string > getFollowersOf(User * user, string username);
+vector < string > getFollowingOf(User * user, string username);
+template < class T > void concatVectors(vector < T > &dest, vector < T > src);
+template < class T > bool vectorToFile(string filename, vector < T > v);
+vector < string > fileToVector(string filename);
 bool config(string filename, User * user);
-bool remove_duplicates(User * user);
+bool removeDuplicates(User * user);
 bool status(User * user);
-int option_select();
-void option_parse(User * user, int opt);
-void option_show();
-template < class T >
-    bool parse_lastweb_response(User * user, string node, T & v);
+int optionSelect();
+void optionParse(User * user, int opt);
+void optionShow();
+template < class T > bool parseLastResponse(User * user, string node, T & v);
 void unfollow(User * user);
 void follow(vector < string > to_follow, User * user);
-void signalhandler(int n);
-bool create_cache(User * user);
-bool file_exists(string filename);
+void signalHandler(int n);
+bool createCache(User * user);
+bool fileExists(string filename);
 int randomize(int from, int to);
 bool authenticate(User * user);
+void cleanLine(int n);
 
 /* filters */
 namespace filter {

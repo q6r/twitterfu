@@ -20,16 +20,20 @@ bool filter::by_ratio(User * user, string userid)
 	string temp_following, temp_followers;
 	long double following, followers;
 
-	if (user->twitterObj.userGet(userid, true) == false)
+	if (user->twitterObj.userGet(userid, true) == false) {
 		return false;
+	}
+
 	user->twitterObj.getLastWebResponse(replyMsg);
 
-	if (parse_lastweb_response(user, "user.followers_count", temp_followers)
-	    == false)
+	if (parseLastResponse(user, "user.followers_count", temp_followers)
+	    == false) {
 		return false;
-	if (parse_lastweb_response(user, "user.friends_count", temp_following)
-	    == false)
+	}
+	if (parseLastResponse(user, "user.friends_count", temp_following) ==
+	    false) {
 		return false;
+	}
 
 	stringstream sa(temp_following);
 	stringstream sb(temp_followers);
@@ -44,7 +48,6 @@ bool filter::by_ratio(User * user, string userid)
 			return true;
 		else
 			return false;
-
 	}
 
 	return false;
