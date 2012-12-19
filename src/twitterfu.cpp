@@ -700,11 +700,8 @@ void follow(vector < string > to_follow, User * user)
 						{
 							cerr << "(Err:" << error
 							    << ")";
-
 							cleanLine(120);
-							followed.
-							    erase(followed.end
-								  ());
+                                                        followed.push_back(*it); // We have followed the user
 						}
 					}
 				} else {	// user followed
@@ -736,14 +733,16 @@ void follow(vector < string > to_follow, User * user)
 				cleanLine(120);
 			}
 			ignored++;
+                        // We shall also erase the ignored ones
+                        followed.push_back(*it);
 		}
 	}			// } users to follow
 
 	/* when signal is caught or when block is over */
 	gotExitSignal = false;
 	if (followed.size() != 0)
-		cout << "\tWe have followed " << followed.size() << "/" <<
-		    to_follow.size() << endl;
+		cout << endl << "We have followed " << followed.size() << "/" <<
+		    to_follow.size()-ignored << endl;
 	if (vectorToFile(user->cache.followed, followed) == false) {
 		cerr << "[-] Error : Unable to append vector" << endl;
 		return;
