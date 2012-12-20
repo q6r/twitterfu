@@ -9,6 +9,7 @@
 #include <limits>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <sys/stat.h>
 #include <ctime>
@@ -66,6 +67,7 @@ bool fileExists(string filename);
 int randomize(int from, int to);
 bool authenticate(User * user);
 void cleanLine(int n);
+vector < string > search(User * user, string what);
 
 /* filters */
 namespace filter {

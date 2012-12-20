@@ -7,6 +7,48 @@ bool gotExitSignal = false;
 using namespace std;
 using boost::property_tree::ptree;
 
+/* @method      : search
+ * @description : Will take a query and return a vector of
+ * user ids to be added to the to follow list. This function
+ * is limited to 15 results since pages are not supported
+ * by twitCurl.
+ * @input       : User, query
+ * @output      : vector of user ids
+ */
+vector < string > search(User * user, string query)
+{
+	string jsonResult;
+	ptree pt;
+	vector < string > ids;
+
+	// replace all spaces with %20
+	for (size_t pos = query.find(' '); pos != string::npos;
+	     pos = query.find(' ', pos))
+		query.replace(pos, 1, "%20");
+
+	// send the search query
+	if (user->twitterObj.search(query) == false)
+		return ids;
+
+	// Get results, parse then and push to ids vector
+	user->twitterObj.getLastWebResponse(jsonResult);
+	stringstream ss(jsonResult);
+
+	try {
+		read_json(ss, pt);
+		BOOST_FOREACH(const ptree::value_type & child,
+			      pt.get_child("results")) {
+			ids.push_back(child.second.get < string >
+				      ("from_user_id"));
+		}
+	} catch(exception const &e) {
+		cerr << "(Err:Unable to parse json)" << endl;
+		return ids;
+	}
+
+	return ids;
+}
+
 /*
  * @method      : optionSelect
  * @output      : the options selected
@@ -262,14 +304,14 @@ template < class T > bool parseLastResponse(User * user, string node, T & v)
 {
 	string replyMsg = "";
 	ptree pt;
+	user->twitterObj.getLastWebResponse(replyMsg);
+	stringstream ss(replyMsg);
+
 	try {
-		user->twitterObj.getLastWebResponse(replyMsg);
-		stringstream ss(replyMsg);
 		read_xml(ss, pt);
 		v = pt.get < T > (node.c_str());
 	}
 	catch(exception const &e) {
-		//cout << replyMsg << endl;
 		return false;
 	}
 	return true;
@@ -308,8 +350,8 @@ void optionParse(User * user, int opt)
 				return;
 			}
 
-			cout << "We have added " << ids.
-			    size() << " new to follow" << endl;
+			cout << "We have added " << ids.size() <<
+			    " new to follow" << endl;
 		}
 		break;
 	case 2:		// Get following of a user
@@ -331,27 +373,51 @@ void optionParse(User * user, int opt)
 				return;
 			}
 
-			cout << "We have added " << ids.
-			    size() << " new to follow" << endl;
+			cout << "We have added " << ids.size() <<
+			    " new to follow" << endl;
 
 			break;
 		}
-	case 3:		// follow users
+	case 3:		// Search
+		{
+			string query;
+			cout << "Enter a phrase : ";
+			cin.ignore();
+			getline(cin, query);
+
+			if (removeDuplicates(user) == false) {
+				cerr << "(Err:Unable to remove duplicates" <<
+				    endl;
+				return;
+			}
+
+			ids = search(user, query);
+
+			if (vectorToFile(user->cache.to_follow, ids) == false) {
+				cerr << "(Err:Unable to append vector" << endl;
+				return;
+			}
+
+			cout << "We have added " << ids.
+			    size() << " new to follow" << endl;
+		}
+		break;
+	case 4:		// follow users
 		{
 			follow(fileToVector(user->cache.to_follow), user);
 		}
 		break;
-	case 4:		// our status
+	case 5:		// our status
 		{
 			status(user);
 		}
 		break;
-	case 5:		// unfollow users
+	case 6:		// unfollow users
 		{
 			unfollow(user);
 		}
 		break;
-	case 6:		// quit
+	case 7:		// quit
 		{
 			cout << "\tHave a nice day!" << endl;
 			exit(1);
@@ -384,8 +450,8 @@ void unfollow(User * user)
 	}
 	// check if cache file is opened for appending
 	if (fs.is_open() == false) {
-		cerr << "(Err:Unable to open)" << user->
-		    cache.unfollowed << endl;
+		cerr << "(Err:Unable to open)" << user->cache.
+		    unfollowed << endl;
 		return;
 	}
 
@@ -467,10 +533,11 @@ void optionShow()
 {
 	cout << "1) Get followers of a user" << endl;
 	cout << "2) Get following of a user" << endl;
-	cout << "3) Start following" << endl;
-	cout << "4) Status" << endl;
-	cout << "5) Unfollow users who haven't followed" << endl;
-	cout << "6) Quit" << endl;
+	cout << "3) Search by " << endl;
+	cout << "4) Start following" << endl;
+	cout << "5) Status" << endl;
+	cout << "6) Unfollow users who haven't followed" << endl;
+	cout << "7) Quit" << endl;
 }
 
 /*
@@ -489,10 +556,10 @@ bool authenticate(User * user)
 
 	// if we already have oauth keys
 	if (user->access_token_key.size() && user->access_token_secret.size()) {
+		user->twitterObj.getOAuth().setOAuthTokenKey(user->
+							     access_token_key);
 		user->twitterObj.getOAuth().
-		    setOAuthTokenKey(user->access_token_key);
-		user->twitterObj.getOAuth().setOAuthTokenSecret(user->
-								access_token_secret);
+		    setOAuthTokenSecret(user->access_token_secret);
 		return true;
 	} else {		// if we don't
 
@@ -508,10 +575,10 @@ bool authenticate(User * user)
 		user->twitterObj.oAuthAccessToken();
 
 		// save the keys to twitter.conf
+		user->twitterObj.getOAuth().getOAuthTokenKey(user->
+							     access_token_key);
 		user->twitterObj.getOAuth().
-		    getOAuthTokenKey(user->access_token_key);
-		user->twitterObj.getOAuth().getOAuthTokenSecret(user->
-								access_token_secret);
+		    getOAuthTokenSecret(user->access_token_secret);
 		fstream fs("twitter.conf", fstream::app | fstream::out);
 		if (fs.is_open() == false) {
 			return false;
@@ -555,14 +622,14 @@ int main()
 	if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
 		user->twitterObj.setProxyServerIp(user->proxy.address);
 		user->twitterObj.setProxyServerPort(user->proxy.port);
-		cout << "[+] Using proxy " << user->
-		    proxy.address << ":" << user->proxy.port << endl;
+		cout << "[+] Using proxy " << user->proxy.
+		    address << ":" << user->proxy.port << endl;
 		/* Set password if found */
 		if (!user->proxy.username.empty()
 		    && !user->proxy.password.empty()) {
 			user->twitterObj.setProxyUserName(user->proxy.username);
-			user->twitterObj.setTwitterPassword(user->
-							    proxy.password);
+			user->twitterObj.setTwitterPassword(user->proxy.
+							    password);
 		}
 	}
 
@@ -609,7 +676,7 @@ int main()
 	 * signals will be used to avoid some shitty cases
 	 **/
 	int opt = 0;
-	while (opt != 6) {
+	while (opt != 7) {
 		optionShow();
 		opt = optionSelect();
 		optionParse(user, opt);
@@ -692,16 +759,15 @@ void follow(vector < string > to_follow, User * user)
 							cout <<
 							    "We have reached the follow limit for today."
 							    << endl;
-							followed.
-							    erase(followed.end
-								  ());
+							followed.erase(followed.
+								       end());
 							break;
 						} else	// unhandled error (must handle if need to break)
 						{
 							cerr << "(Err:" << error
 							    << ")";
 							cleanLine(120);
-                                                        followed.push_back(*it); // We have followed the user
+							followed.push_back(*it);	// We have followed the user
 						}
 					}
 				} else {	// user followed
@@ -709,7 +775,7 @@ void follow(vector < string > to_follow, User * user)
 					cleanLine(120);
 				}
 				// sleep for 1-3 seconds
-				sleep(randomize(5, 10));
+				//sleep(randomize(1, 2));
 			} else {	// unable to create friendship
 				cerr << "(Err:Unable to follow)";
 				cleanLine(120);
@@ -733,8 +799,8 @@ void follow(vector < string > to_follow, User * user)
 				cleanLine(120);
 			}
 			ignored++;
-                        // We shall also erase the ignored ones
-                        followed.push_back(*it);
+			// We shall also erase the ignored ones
+			followed.push_back(*it);
 		}
 	}			// } users to follow
 
@@ -742,7 +808,7 @@ void follow(vector < string > to_follow, User * user)
 	gotExitSignal = false;
 	if (followed.size() != 0)
 		cout << endl << "We have followed " << followed.size() << "/" <<
-		    to_follow.size()-ignored << endl;
+		    to_follow.size() - ignored << endl;
 	if (vectorToFile(user->cache.followed, followed) == false) {
 		cerr << "[-] Error : Unable to append vector" << endl;
 		return;
