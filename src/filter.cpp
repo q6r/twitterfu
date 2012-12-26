@@ -40,11 +40,12 @@ bool filter::by_ratio(User * user, string userid)
 	sa >> following;
 	sb >> followers;
 
-	if (following >= followers) {
+	if (following >= followers) {	// TODO: calculate if he can or can't
+		// -follow more
 		return true;
 	} else {
 		long double result = (following / followers) * 100;
-		if (result >= 50)
+		if (result >= 75)
 			return true;
 		else
 			return false;

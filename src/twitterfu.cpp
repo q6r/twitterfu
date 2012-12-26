@@ -5,6 +5,8 @@
 bool gotExitSignal = false;
 
 using namespace std;
+using namespace sqlite3pp;
+
 using boost::property_tree::ptree;
 
 /* @method      : search
@@ -66,67 +68,125 @@ int optionSelect()
 	return opt;
 }
 
-/*
- * @method      : config
- * @description : will read the configure file and set up the
- * variables accordingly in the user struct
- * @input       : configuration filename, user struct
- * @output      : true if read successfuly, oterwise false.
+/* @method      : createUser
+ * @description : Will cin some information
+ * and add them to the database
+ * @input       : User struct
+ * @output      : true if successfuly inserted user to database
+ * otherwise false;
  */
-bool config(string filename, User * user)
+bool createUser(User * user)
 {
+	string q;
+	cout << "Creating a user" << endl;
 
-	vector < string > vconf = fileToVector(filename);
-	map < string, string > conf;
+	cout << "username : ";
+	cin >> user->username;
+	cout << "password : ";
+	cin >> user->password;
 
-	for (vector < string >::iterator it = vconf.begin();
-	     it != vconf.end(); it++) {
-		string token;
-		istringstream tokens(*it);
-		while (tokens >> token) {
-			unsigned pos = token.find('=');
-			if (pos != string::npos) {
-				conf[token.substr(0, pos)] =
-				    token.substr(pos + 1);
-			}
+	// Do we want to use proxies ?
+	cout << "Do you want to use a proxy [y/n] ? ";
+	cin >> q;
+	if (q == "y" || q == "Y") {
+		cout << "Proxy address  : ";
+		cin >> user->proxy.address;
+		cout << "Proxy port     : ";
+		cin >> user->proxy.port;
+		cout <<
+		    "Do you want to use a proxy username, password [y/n] ? ";
+		cin >> q;
+		if (q == "y" || q == "Y") {
+			cout << "Proxy username : ";
+			cin >> user->proxy.username;
+			cout << "Proxy password : ";
+			cin >> user->proxy.password;
 		}
 	}
+	// Create inital user row
+	if (user->db.execute
+	    ("INSERT INTO Config VALUES(1, \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\");")
+	    != 0)
+		return false;
 
-	if (conf["username"].empty())
+	// update values in Config table
+	q = "UPDATE Config SET username = \"" + user->username +
+	    "\" WHERE Id=1;";
+	if (user->db.execute(q.c_str()) != 0)
 		return false;
-	user->username = conf["username"];
-	if (conf["password"].empty())
+	q = "UPDATE Config SET password = \"" + user->password +
+	    "\" WHERE Id=1;";
+	if (user->db.execute(q.c_str()) != 0)
 		return false;
-	user->password = conf["password"];
-	if (conf["consumer_key"].empty())
-		return false;
-	user->consumer_key = conf["consumer_key"];
-	if (conf["consumer_secret"].empty())
-		return false;
-	user->consumer_secret = conf["consumer_secret"];
-	if (conf["to_follow"].empty())
-		return false;
-	user->cache.to_follow = conf["to_follow"];
-	if (conf["followed"].empty())
-		return false;
-	user->cache.followed = conf["followed"];
-	if (conf["unfollowed"].empty())
-		return false;
-	user->cache.unfollowed = conf["unfollowed"];
-	if (!conf["access_token_key"].empty())
-		user->access_token_key = conf["access_token_key"];
-	if (!conf["access_token_secret"].empty())
-		user->access_token_secret = conf["access_token_secret"];
-	if (!conf["proxy_username"].empty())
-		user->proxy.username = conf["proxy_username"];
-	if (!conf["proxy_password"].empty())
-		user->proxy.password = conf["proxy_password"];
-	if (!conf["proxy_address"].empty())
-		user->proxy.address = conf["proxy_address"];
-	if (!conf["proxy_port"].empty())
-		user->proxy.port = conf["proxy_port"];
+	if (user->proxy.address != "") {
+		q = "UPDATE Config SET proxy_address = \"" +
+		    user->proxy.address + "\" WHERE Id=1;";
+		if (user->db.execute(q.c_str()) != 0)
+			return false;
+	}
+	if (user->proxy.port != "") {
+		q = "UPDATE Config SET proxy_port = \"" + user->proxy.port +
+		    "\" WHERE Id=1;";
+		if (user->db.execute(q.c_str()) != 0)
+			return false;
+	}
+	if (user->proxy.password != "") {
+		q = "UPDATE Config SET proxy_password = \"" +
+		    user->proxy.password + "\" WHERE Id=1;";
+		if (user->db.execute(q.c_str()) != 0)
+			return false;
+	}
+	if (user->proxy.username != "") {
+		q = "UPDATE Config SET proxy_username = \"" +
+		    user->proxy.username + "\" WHERE Id=1;";
+		if (user->db.execute(q.c_str()) != 0)
+			return false;
+	}
 
 	return true;
+}
+
+/* @method      : userExistInDB
+ * @description : Check if there's a user in the DB.
+ * @inpt        : User
+ * @output      : true if exists otherwise false
+ */
+bool userExistInDB(User * user)
+{
+
+	user->db.connect(user->db_name.c_str());
+	query qry(user->db, "SELECT * from Config;");
+
+	if (qry.begin() == qry.end())
+		return false;
+
+	user->db.disconnect();
+	return true;
+}
+
+/* @method      : dbToVector
+ * @description : Reads a specific table and return the results in the value
+ * as a vector of strings
+ * @input       : user, table, value
+ * @output      : vector<string> of select value from table;
+ */
+vector < string > dbToVector(User * user, string table, string value)
+{
+	vector < string > results;
+	string userid;
+	string q = "SELECT " + value + " FROM " + table + ";";
+
+	user->db.connect(user->db_name.c_str());
+	query qry(user->db, q.c_str());
+
+	for (query::iterator it = qry.begin(); it != qry.end(); ++it) {
+		(*it).getter() >> userid;
+		results.push_back(userid);
+	}
+
+	user->db.disconnect();
+
+	return results;
 }
 
 /*
@@ -168,14 +228,12 @@ bool status(User * user)
 	string replyMsg, followers, following, reset_time;
 	int remaining_hits = 0, hourly_limit = 0;
 
-	// remove duplicates
-	if (removeDuplicates(user) == false) {
+	if (removeDuplicates(user) == false)
 		return false;
-	}
 
-	vector < string > tofollow(fileToVector(user->cache.to_follow));
-	vector < string > followed(fileToVector(user->cache.followed));
-	vector < string > unfollowed(fileToVector(user->cache.unfollowed));
+	vector < string > tofollow(dbToVector(user, "ToFollow", "userid"));
+	vector < string > followed(dbToVector(user, "Followed", "userid"));
+	vector < string > unfollowed(dbToVector(user, "UnFollowed", "userid"));
 
 	cout << "\tApplication Status :" << endl;
 	cout << "\t\tFollowed   : " << followed.size() << endl;
@@ -251,37 +309,6 @@ int randomize(int from, int to)
 }
 
 /*
- * @method           : createCache
- * @description      : this is to be run at the beginning, to create
- * the catch files.
- * @input            : user
- * @output           : true if created the files, otherwise false.
- */
-bool createCache(User * user)
-{
-	if (!fileExists(user->cache.to_follow)) {
-		fstream fs(user->cache.to_follow.c_str(), fstream::out);
-		if (fs.is_open() == false)
-			return false;
-
-	}
-
-	if (!fileExists(user->cache.followed)) {
-		fstream fs(user->cache.followed.c_str(), fstream::out);
-		if (fs.is_open() == false)
-			return false;
-	}
-
-	if (!fileExists(user->cache.unfollowed)) {
-		fstream fs(user->cache.unfollowed.c_str(), fstream::out);
-		if (fs.is_open() == false)
-			return false;
-	}
-
-	return true;
-}
-
-/*
  * @method           : fileExists
  * @description      : check if file exists
  * @input            : filename
@@ -344,9 +371,9 @@ void optionParse(User * user, int opt)
 
 			ids = getFollowersOf(user, username);
 
-			if (vectorToFile(user->cache.to_follow, ids) == false) {
-				cerr << "[-] Error : Unable to append vector" <<
-				    endl;
+			if (vectorToDB(user, ids, "ToFollow", "userid") ==
+			    false) {
+				cerr << "[-] Error : vectorToDB" << endl;
 				return;
 			}
 
@@ -367,9 +394,9 @@ void optionParse(User * user, int opt)
 
 			ids = getFollowingOf(user, username);
 
-			if (vectorToFile(user->cache.to_follow, ids) == false) {
-				cerr << "[-] Error : Unable to append vector" <<
-				    endl;
+			if (vectorToDB(user, ids, "ToFollow", "userid") ==
+			    false) {
+				cerr << "[-] Error : vectorToDB" << endl;
 				return;
 			}
 
@@ -393,18 +420,18 @@ void optionParse(User * user, int opt)
 
 			ids = search(user, query);
 
-			if (vectorToFile(user->cache.to_follow, ids) == false) {
-				cerr << "(Err:Unable to append vector" << endl;
+			if (vectorToDB(user, ids, "ToFollow", "userid") ==
+			    false) {
+				cerr << "[-] Error : vectorToDB" << endl;
 				return;
 			}
-
-			cout << "We have added " << ids.
-			    size() << " new to follow" << endl;
+			cout << "We have added " << ids.size() <<
+			    " new to follow" << endl;
 		}
 		break;
 	case 4:		// follow users
 		{
-			follow(fileToVector(user->cache.to_follow), user);
+			follow(dbToVector(user, "ToFollow", "userid"), user);
 		}
 		break;
 	case 5:		// our status
@@ -438,20 +465,14 @@ void optionParse(User * user, int opt)
 void unfollow(User * user)
 {
 	vector < string > followers(getFollowingOf(user, user->username));
+	vector < string > result;
 	string replyMsg, who;
 	bool isfollow = true;
 	long unfollowed = 0;
 	gotExitSignal = false;
-	fstream fs(user->cache.unfollowed.c_str(), fstream::app | fstream::out);
 
 	if (removeDuplicates(user) == false) {
 		cerr << "(Err:Unable to remove duplicates)" << endl;
-		return;
-	}
-	// check if cache file is opened for appending
-	if (fs.is_open() == false) {
-		cerr << "(Err:Unable to open)" << user->cache.
-		    unfollowed << endl;
 		return;
 	}
 
@@ -495,7 +516,7 @@ void unfollow(User * user)
 			if (user->twitterObj.friendshipDestroy(*it, true)) {
 				cout << "Unfollowed " << who;
 				unfollowed++;
-				fs << *it << endl;	// write to cache
+				result.push_back(*it);
 				cleanLine(120);
 				sleep(randomize(1, 1));
 			} else {
@@ -508,10 +529,13 @@ void unfollow(User * user)
 
 	// restart the exit signal flag
 	gotExitSignal = false;
-	fs.close();
 	cout << "We have unfollowed " << unfollowed << "/" << followers.size()
 	    << endl;
+	// write results to db
+	if (vectorToDB(user, result, "UnFollowed", "userid") == false)
+		cerr << "[-] Error : Unable to write to db" << endl;
 
+	return;
 }
 
 /* @method      : twitCurl::~twitCurl
@@ -541,6 +565,29 @@ void optionShow()
 }
 
 /*
+ * @method      : getValFromDB
+ * @description : Get a value col from a table return vector.
+ * @input       : user, table, col
+ * @output      : vector of string
+ */
+vector < string > getValFromDB(User * user, string table, string col)
+{
+	string val;
+	vector < string > vals;
+	string q = "SELECT " + col + " FROM " + table + ";";
+	user->db.connect(user->db_name.c_str());
+	query qry(user->db, q.c_str());
+
+	for (query::iterator it = qry.begin(); it != qry.end(); it++) {
+		(*it).getter() >> val;
+		vals.push_back(val);
+	}
+
+	user->db.disconnect();
+	return vals;
+}
+
+/*
  * @method      : authenticate
  * @description : authenticate the user
  * @input       : user
@@ -548,6 +595,8 @@ void optionShow()
  */
 bool authenticate(User * user)
 {
+	string q;
+
 	// set twitter user, pass, and consumer {key,secret}
 	user->twitterObj.setTwitterUsername(user->username);
 	user->twitterObj.setTwitterPassword(user->password);
@@ -562,7 +611,6 @@ bool authenticate(User * user)
 		    setOAuthTokenSecret(user->access_token_secret);
 		return true;
 	} else {		// if we don't
-
 		// get pin
 		string authurl, pin;
 		user->twitterObj.oAuthRequestToken(authurl);
@@ -574,19 +622,20 @@ bool authenticate(User * user)
 		user->twitterObj.getOAuth().setOAuthPin(pin);
 		user->twitterObj.oAuthAccessToken();
 
-		// save the keys to twitter.conf
+		// update database with access keys
 		user->twitterObj.getOAuth().getOAuthTokenKey(user->
 							     access_token_key);
 		user->twitterObj.getOAuth().
 		    getOAuthTokenSecret(user->access_token_secret);
-		fstream fs("twitter.conf", fstream::app | fstream::out);
-		if (fs.is_open() == false) {
+
+		q = "UPDATE Config SET access_key = \"" +
+		    user->access_token_key + "\" WHERE Id=1;";
+		if (user->db.execute(q.c_str()) != 0)
 			return false;
-		}
-		fs << "access_token_key=" << user->access_token_key << endl;
-		fs << "access_token_secret=" << user->access_token_secret <<
-		    endl;
-		fs.close();
+		q = "UPDATE Config SET access_secret = \"" +
+		    user->access_token_secret + "\" WHERE Id=1;";
+		if (user->db.execute(q.c_str()) != 0)
+			return false;
 		return true;
 	}
 	/* OAuth flow ends */
@@ -607,15 +656,36 @@ int main()
 	string replyMsg;
 	string temp;
 
-	if (config("./twitter.conf", user) == false) {
-		cerr << "[-] Error : while reading configuration file" << endl;
+	user->db_name = "cache/db.sql";
+	user->consumer_key = "nYFCp8lj4LHqmLTnVHFc0Q";
+	user->consumer_secret = "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4";
+
+	/* Initalize database */
+	if (initalizeDatabase(user) == false) {
+		cerr << "[-] Error : Unable to initalize database" << endl;
 		return -1;
 	}
-
-	/* Create cache files */
-	if (createCache(user) == false) {
-		cerr << "[-] Error : Unable to create cache files" << endl;
-		return -1;
+	// we should see if the Config table has someone or not
+	if (userExistInDB(user) == false) {
+		// create the username, password
+		if (createUser(user) == false) {
+			cerr << "Unable to create user" << endl;
+			return -1;
+		}
+	} else {		// Get all needed values from DB
+		user->username = getValFromDB(user, "Config", "username").at(0);
+		user->access_token_key =
+		    getValFromDB(user, "Config", "access_key").at(0);
+		user->access_token_secret =
+		    getValFromDB(user, "Config", "access_secret").at(0);
+		user->proxy.address =
+		    getValFromDB(user, "Config", "proxy_address").at(0);
+		user->proxy.port =
+		    getValFromDB(user, "Config", "proxy_port").at(0);
+		user->proxy.username =
+		    getValFromDB(user, "Config", "proxy_username").at(0);
+		user->proxy.password =
+		    getValFromDB(user, "Config", "proxy_password").at(0);
 	}
 
 	/* Set up proxy if found */
@@ -659,6 +729,7 @@ int main()
 		cerr << "\t[-] Error : Unable to authenticate." << endl;
 		return -1;
 	}
+
 	cout << "=====================" << endl;
 	cout << "Hello @" << user->username << endl;
 	cout << "Following : " << user->following << endl;
@@ -683,6 +754,71 @@ int main()
 	}
 
 	return 0;
+}
+
+/*
+ * @method      : Initalize database
+ * @description : It creates necessary tables if they don't exists
+ * @input       : User
+ * @output      : false if unable to connect to db, true otherwise..
+ */
+bool initalizeDatabase(User * user)
+{
+
+	string query;
+
+	// Connect to database
+	if (user->db.connect(user->db_name.c_str()) != 0) {
+		return false;
+	}
+	// Create necessary tables
+	user->db.execute
+	    ("CREATE TABLE MyFollowers(Id integer PRIMARY KEY,userid text UNIQUE);");
+	user->db.execute
+	    ("CREATE TABLE ToFollow(Id integer PRIMARY KEY,userid text UNIQUE);");
+	user->db.execute
+	    ("CREATE TABLE Followed(Id integer PRIMARY KEY,userid text UNIQUE);");
+	user->db.execute
+	    ("CREATE TABLE UnFollowed(Id integer PRIMARY KEY,userid text UNIQUE);");
+	user->db.execute
+	    ("CREATE TABLE Config(Id integer PRIMARY KEY, username text, password text, access_key text, access_secret text, proxy_username text, proxy_password text, proxy_address text, proxy_port text);");
+	user->db.disconnect();
+
+	return true;
+}
+
+/* @method      : vectorToDB
+ * @description : will insert or replace UNIQUE a vector<string>.
+ * @input       : User, vector, table, values
+ * @output      : true if successful false if unable to connect to db
+ * or unable to insert to table.
+ */
+bool vectorToDB(User * user, vector < string > v, string table, string values)
+{
+	string query;
+
+	// chose database
+	if (user->db.connect(user->db_name.c_str()) == 1)
+		return false;
+
+	// Inserting into the database
+	if (user->db.execute("BEGIN") == 1)
+		return false;
+	for (vector < string >::iterator it = v.begin(); it != v.end(); it++) {
+		query =
+		    "INSERT OR REPLACE INTO " + table + " (" + values +
+		    ") VALUES ('" + *it + "');";
+		if (user->db.execute(query.c_str()) == 1) {
+			cerr << "[-] Error : vectorToDB " << query << endl;
+			return false;
+		}
+	}
+	if (user->db.execute("COMMIT") == 1)
+		return false;
+
+	user->db.disconnect();
+
+	return true;
 }
 
 /*
@@ -799,8 +935,6 @@ void follow(vector < string > to_follow, User * user)
 				cleanLine(120);
 			}
 			ignored++;
-			// We shall also erase the ignored ones
-			followed.push_back(*it);
 		}
 	}			// } users to follow
 
@@ -809,8 +943,9 @@ void follow(vector < string > to_follow, User * user)
 	if (followed.size() != 0)
 		cout << endl << "We have followed " << followed.size() << "/" <<
 		    to_follow.size() - ignored << endl;
-	if (vectorToFile(user->cache.followed, followed) == false) {
-		cerr << "[-] Error : Unable to append vector" << endl;
+
+	if (vectorToDB(user, followed, "Followed", "userid") == false) {
+		cerr << "[-] Error : vectorToDB" << endl;
 		return;
 	}
 	if (ignored > 0)
@@ -840,22 +975,10 @@ template < class T > void concatVectors(vector < T > &dest, vector < T > src)
  */
 bool removeDuplicates(User * user)
 {
-	vector < string > v_tofollow(fileToVector(user->cache.to_follow));
-	vector < string > v_followed(fileToVector(user->cache.followed));
-	vector < string > v_unfollowed(fileToVector(user->cache.unfollowed));
-
-	// Unique Sort and fix vector to follow
-	sort(v_tofollow.begin(), v_tofollow.end());
-	v_tofollow.erase(unique(v_tofollow.begin(), v_tofollow.end()),
-			 v_tofollow.end());
-	// Unique Sort and fix vector followed 
-	sort(v_followed.begin(), v_followed.end());
-	v_followed.erase(unique(v_followed.begin(), v_followed.end()),
-			 v_followed.end());
-	// Unique sort and fix vector of unfollowed
-	sort(v_unfollowed.begin(), v_unfollowed.end());
-	v_unfollowed.erase(unique(v_unfollowed.begin(), v_unfollowed.end()),
-			   v_unfollowed.end());
+	vector < string > v_tofollow(dbToVector(user, "ToFollow", "userid"));
+	vector < string > v_followed(dbToVector(user, "Followed", "userid"));
+	vector < string >
+	    v_unfollowed(dbToVector(user, "UnFollowed", "userid"));
 
 	// remove anything in followed from tofollow list
 	for (vector < string >::iterator x = v_followed.begin();
@@ -864,6 +987,7 @@ bool removeDuplicates(User * user)
 				 (v_tofollow.begin(), v_tofollow.end(), *x),
 				 v_tofollow.end());
 	}
+
 	// remove anything in unfollowed from tofollow list
 	for (vector < string >::iterator x = v_unfollowed.begin();
 	     x != v_unfollowed.end(); x++) {
@@ -872,39 +996,14 @@ bool removeDuplicates(User * user)
 				 v_tofollow.end());
 	}
 
-	// Now write the new to follow to a file
-	fstream fs(user->cache.to_follow.c_str(), fstream::out);
-	if (fs.is_open() == false) {
+	// Write the new tofollow to ToFollow table
+	if (user->db.connect(user->db_name.c_str()) == 1)
 		return false;
-	}
-	for (vector < string >::iterator x = v_tofollow.begin();
-	     x != v_tofollow.end(); x++) {
-		fs << *x << endl;
-	}
-
-	return true;
-}
-
-/*
- * @method      : vectorToFile
- * @description : takes a vector of string and append it ot a file
- * @input       : filename to append to, vector
- * @output      : false if failed to append
- */
-template < class T > bool vectorToFile(string filename, vector < T > v)
-{
-	fstream fs;
-	fs.open(filename.c_str(), fstream::app | fstream::out | fstream::in);
-
-	if (fs.is_open() == false) {
+	if (user->db.execute("DELETE FROM ToFollow;") == 1)
 		return false;
-	}
-
-	for (vector < string >::iterator it = v.begin(); it != v.end(); it++) {
-		fs << *it << endl;
-	}
-
-	fs.close();
+	if (vectorToDB(user, v_tofollow, "ToFollow", "userid") == false)
+		return false;
+	user->db.disconnect();
 	return true;
 }
 
@@ -920,6 +1019,7 @@ template < class T > bool vectorToFile(string filename, vector < T > v)
 vector < string > getFollowingOf(User * user, string username)
 {
 	string replyMsg;
+	string err;
 	vector < string > ids;
 	cout << "Getting following of @" << username << endl;
 
@@ -928,13 +1028,21 @@ vector < string > getFollowingOf(User * user, string username)
 		ptree pt;
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);
+
+		/* Catched and error ? */
+		if (parseLastResponse(user, "hash.error", err) == true) {
+			cerr << "\t" << err << endl;
+			return ids;
+		}
+
 		try {
 			BOOST_FOREACH(ptree::value_type & v,
 				      pt.get_child("id_list.ids"))
 			    ids.push_back(v.second.data());
 		}
 		catch(exception const &e) {
-			cerr << "\t[-] Error : Invalid user" << endl;
+			cerr << "\t[-] Error : GetFollowingOf Exception" <<
+			    endl;
 			return ids;
 		}
 	} else {
@@ -958,6 +1066,7 @@ vector < string > getFollowingOf(User * user, string username)
 vector < string > getFollowersOf(User * user, string username)
 {
 	string replyMsg;
+	string err;
 	vector < string > ids;
 	ptree pt;
 
@@ -969,13 +1078,20 @@ vector < string > getFollowersOf(User * user, string username)
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);
 
+		/* Catched error ? */
+		if (parseLastResponse(user, "hash.error", err) == true) {
+			cerr << "\t" << err << endl;
+			return ids;
+		}
+
 		try {
 			BOOST_FOREACH(ptree::value_type & v,
 				      pt.get_child("id_list.ids"))
 			    ids.push_back(v.second.data());
 		}
 		catch(exception const &e) {
-			cerr << "\t[-] Error : Invalid user" << endl;
+			cerr << "\t[-] Error : getFollowersOf Exception"
+			    << endl;
 			return ids;
 		}
 	} else {

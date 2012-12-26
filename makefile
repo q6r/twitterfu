@@ -1,6 +1,6 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := -ltwitcurl
+LD_FLAGS := -ltwitcurl -lsqlite3
 CC_FLAGS := -Wall -ggdb
 
 twitterfu: $(OBJ_FILES)

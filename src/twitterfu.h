@@ -13,16 +13,10 @@
 #include <boost/property_tree/ptree.hpp>
 #include <sys/stat.h>
 #include <ctime>
+#include "sqlite3pp.h"
 
 using namespace std;
-
-struct Cache {
-	string to_follow;
-	string followed;
-	string unfollowed;
-	string oauth_key;
-	string oauth_secret;
-};
+using namespace sqlite3pp;
 
 struct Proxy {
 	string address;
@@ -38,31 +32,35 @@ struct User {
 	string consumer_secret;
 	string access_token_key;
 	string access_token_secret;
+	string db_name;
+	database db;		// sqlite3pp db
 	long followers;
 	long following;
-	Cache cache;
 	Proxy proxy;
 	twitCurl twitterObj;
 };
 
 /* ProtoTypes
  */
+vector < string > getValFromDB(User * user, string table, string col);
+bool initalizeDatabase(User * user);
+bool vectorToDB(User * user, vector < string > v, string table, string values);
+vector < string > dbToVector(User * user, string table, string value);
 vector < string > getFollowersOf(User * user, string username);
 vector < string > getFollowingOf(User * user, string username);
 template < class T > void concatVectors(vector < T > &dest, vector < T > src);
-template < class T > bool vectorToFile(string filename, vector < T > v);
 vector < string > fileToVector(string filename);
-bool config(string filename, User * user);
 bool removeDuplicates(User * user);
 bool status(User * user);
 int optionSelect();
 void optionParse(User * user, int opt);
 void optionShow();
+bool userExistInDB(User * user);
+bool createUser(User * user);
 template < class T > bool parseLastResponse(User * user, string node, T & v);
 void unfollow(User * user);
 void follow(vector < string > to_follow, User * user);
 void signalHandler(int n);
-bool createCache(User * user);
 bool fileExists(string filename);
 int randomize(int from, int to);
 bool authenticate(User * user);
