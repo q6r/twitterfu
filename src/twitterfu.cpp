@@ -1112,11 +1112,13 @@ bool removeDuplicates(User * user)
 vector < string > getFollowingOf(User * user, string username)
 {
 	string replyMsg;
+        string next_cursor = "-1";
 	string err;
 	vector < string > ids;
 	cout << "Getting following of @" << username << endl;
 
-	if (user->twitterObj.friendsIdsGet(username, false) == true) {
+        do {
+	if (user->twitterObj.friendsIdsGet(next_cursor, username, false) == true) {
 		user->twitterObj.getLastWebResponse(replyMsg);
 		ptree pt;
 		stringstream ss(replyMsg);
@@ -1127,6 +1129,9 @@ vector < string > getFollowingOf(User * user, string username)
 			cerr << "\t" << err << endl;
 			return ids;
 		}
+
+                /* Get next cursor */
+                parseLastResponse(user, "id_list.next_cursor", next_cursor);
 
 		try {
 			BOOST_FOREACH(ptree::value_type & v,
@@ -1143,6 +1148,7 @@ vector < string > getFollowingOf(User * user, string username)
 		    << endl;
 		return ids;
 	}
+        } while(next_cursor != "0");
 
 	return ids;
 }
@@ -1153,20 +1159,19 @@ vector < string > getFollowingOf(User * user, string username)
  * and create a vector of their userIDs and return that vector
  * @input       : user, username
  * @output      : vector of userIDs of the username's followers
- *
- * Doesn't support next_cursor 
  */
 vector < string > getFollowersOf(User * user, string username)
 {
 	string replyMsg;
-	string err;
+	string next_cursor = "-1";
+        string err;
 	vector < string > ids;
 	ptree pt;
 
 	cout << "\tGetting followers of @" << username << endl;
 
-	// Get the first 100 ids of username and push_back to ids
-	if (user->twitterObj.followersIdsGet(username, false) == true) {
+        do {
+	if (user->twitterObj.followersIdsGet(next_cursor, username, false) == true) {
 		user->twitterObj.getLastWebResponse(replyMsg);
 		stringstream ss(replyMsg);
 		read_xml(ss, pt);
@@ -1176,6 +1181,9 @@ vector < string > getFollowersOf(User * user, string username)
 			cerr << "\t" << err << endl;
 			return ids;
 		}
+
+                /* Get next cursor */
+                parseLastResponse(user, "id_list.next_cursor", next_cursor);
 
 		try {
 			BOOST_FOREACH(ptree::value_type & v,
@@ -1191,6 +1199,7 @@ vector < string > getFollowersOf(User * user, string username)
 		cerr << "\t[-] Error : Failed to get friendsIdsGet from @" <<
 		    username << endl;
 	}
+        } while(next_cursor != "0");
 
 	return ids;
 }
