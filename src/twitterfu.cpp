@@ -787,6 +787,8 @@ bool authenticate(User * user)
  */
 int main()
 {
+        vector<string> myFollowers;
+
 	srand(time(NULL));	// random seed
 
 	User *user = new User;
@@ -885,6 +887,15 @@ int main()
 	cout << "Following : " << user->following << endl;
 	cout << "Followers : " << user->followers << endl;
 	cout << "=====================" << endl << endl;
+
+        /* We shall get our followers */
+        myFollowers = getFollowersOf(user, user->username);
+        if(myFollowers.size() != 0) {
+                cout << "Adding a result of " << myFollowers.size() << " to MyFollowers;" << endl;
+                if(vectorToDB(user, myFollowers, "MyFollowers", "userid") == false) {
+                        cerr << "[-] Error : Unable to vectorToDB" << endl;
+                }
+        }
 
 	// Before entering the main loop fix the databases
 	if (removeDuplicates(user) == false) {
