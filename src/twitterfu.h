@@ -42,6 +42,9 @@ struct User {
 
 /* ProtoTypes
  */
+bool change_proxy(User * user, string address, string port, string username,
+		  string password);
+bool configure(User * user);
 vector < string > getValFromDB(User * user, string table, string col);
 bool initalizeDatabase(User * user);
 bool vectorToDB(User * user, vector < string > v, string table, string values);

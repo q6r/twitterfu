@@ -118,29 +118,14 @@ bool createUser(User * user)
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
-	if (user->proxy.address != "") {
-		q = "UPDATE Config SET proxy_address = \"" +
-		    user->proxy.address + "\" WHERE Id=1;";
-		if (user->db.execute(q.c_str()) != 0)
+	if (user->proxy.address != "" && user->proxy.port != "") {
+		if (change_proxy
+		    (user, user->proxy.address, user->proxy.port,
+		     user->proxy.username, user->proxy.password) == false) {
+			cerr << "[-] Error : Unable to set proxy" << endl;
 			return false;
-	}
-	if (user->proxy.port != "") {
-		q = "UPDATE Config SET proxy_port = \"" + user->proxy.port +
-		    "\" WHERE Id=1;";
-		if (user->db.execute(q.c_str()) != 0)
-			return false;
-	}
-	if (user->proxy.password != "") {
-		q = "UPDATE Config SET proxy_password = \"" +
-		    user->proxy.password + "\" WHERE Id=1;";
-		if (user->db.execute(q.c_str()) != 0)
-			return false;
-	}
-	if (user->proxy.username != "") {
-		q = "UPDATE Config SET proxy_username = \"" +
-		    user->proxy.username + "\" WHERE Id=1;";
-		if (user->db.execute(q.c_str()) != 0)
-			return false;
+		}
+
 	}
 
 	return true;
@@ -444,7 +429,13 @@ void optionParse(User * user, int opt)
 			unfollow(user);
 		}
 		break;
-	case 7:		// quit
+	case 7:		// Configure
+		{
+			configure(user);
+			cout << "Rerun application to apply changes." << endl;
+		}
+		break;
+	case 8:		// quit
 		{
 			cout << "\tHave a nice day!" << endl;
 			exit(1);
@@ -561,7 +552,96 @@ void optionShow()
 	cout << "4) Start following" << endl;
 	cout << "5) Status" << endl;
 	cout << "6) Unfollow users who haven't followed" << endl;
-	cout << "7) Quit" << endl;
+	cout << "7) Configure" << endl;
+	cout << "8) Quit" << endl;
+}
+
+/* @method      : For user configuration
+ * @description : Configure various options for user
+ * @input       : user
+ * @output      : false if failed otherwise true
+ */
+bool configure(User * user)
+{
+	string address, port, username, password;
+	string q;
+	int opt = -1;
+	cout << "1) Set proxy" << endl;
+	cout << "2) Return" << endl;
+	opt = optionSelect();
+
+	switch (opt) {
+	case 1:		// configure proxy
+		{
+			cin.ignore();
+			cout << "address  : ";
+			getline(cin, address);
+			cout << "port     : ";
+			getline(cin, port);
+			cout <<
+			    "Does this proxy use a username:password [y/n] ? ";
+			getline(cin, q);
+			if (q == "y" || q == "Y") {
+				cout << "username : ";
+				getline(cin, username);
+				cout << "password : ";
+				getline(cin, password);
+			}
+			if (change_proxy
+			    (user, address, port, username, password) == false)
+				cerr << "[-] Error Unable to change proxy" <<
+				    endl;
+		}
+		break;
+	case 2:		// return
+		break;
+	default:
+		break;
+	}
+
+	return true;
+}
+
+/*
+ * @method      : change_proxy
+ * @description : change proxy and set it in database
+ * @input       : address,port,username,password
+ * @output      : false if failed
+ */
+bool change_proxy(User * user, string address, string port, string username,
+		  string password)
+{
+
+	string q;
+
+	user->proxy.address = address;
+	user->proxy.port = port;
+	user->proxy.username = username;
+	user->proxy.password = password;
+
+	user->db.connect(user->db_name.c_str());
+
+	// update DB with new proxy
+	q = "UPDATE Config SET proxy_address = \"" + user->proxy.address +
+	    "\" WHERE Id=1;";
+	if (user->db.execute(q.c_str()) != 0)
+		return false;
+	q = "UPDATE Config SET proxy_port = \"" + user->proxy.port +
+	    "\" WHERE Id=1;";
+	if (user->db.execute(q.c_str()) != 0)
+		return false;
+	q = "UPDATE Config SET proxy_username = \"" + user->proxy.username +
+	    "\" WHERE Id=1;";
+	if (user->db.execute(q.c_str()) != 0)
+		return false;
+	q = "UPDATE Config SET proxy_password = \"" + user->proxy.password +
+	    "\" WHERE Id=1;";
+	if (user->db.execute(q.c_str()) != 0)
+		return false;
+
+	user->db.disconnect();
+
+	return true;
 }
 
 /*
@@ -726,7 +806,20 @@ int main()
 			return -1;
 		}
 	} else {
-		cerr << "\t[-] Error : Unable to authenticate." << endl;
+		cerr << "[-] Error : Unable to authenticate." << endl;
+		if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
+			cout <<
+			    "If this is due to misconfiguration you can change it"
+			    << endl;
+			if (configure(user) == false) {
+				cerr << "[-] Error : Unable to configure" <<
+				    endl;
+				return -1;
+			}
+			cout << "Rerun the application to apply changes." <<
+			    endl;
+		}
+
 		return -1;
 	}
 
@@ -747,7 +840,7 @@ int main()
 	 * signals will be used to avoid some shitty cases
 	 **/
 	int opt = 0;
-	while (opt != 7) {
+	while (opt != 8) {
 		optionShow();
 		opt = optionSelect();
 		optionParse(user, opt);
