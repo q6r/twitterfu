@@ -567,11 +567,11 @@ bool configure(User * user)
 	string q;
 	int opt = -1;
 	cout << "1) Set proxy" << endl;
-        cout << "2) Purge To Follow" << endl;
-        cout << "3) Purge Followed" << endl;
-        cout << "4) Purge Unfollowed" << endl;
-        cout << "5) Purge MyFollowers" << endl;
-        cout << "6) Pruge all" << endl;
+	cout << "2) Purge To Follow" << endl;
+	cout << "3) Purge Followed" << endl;
+	cout << "4) Purge Unfollowed" << endl;
+	cout << "5) Purge MyFollowers" << endl;
+	cout << "6) Pruge all" << endl;
 	cout << "7) Return" << endl;
 	opt = optionSelect();
 
@@ -598,42 +598,51 @@ bool configure(User * user)
 				    endl;
 		}
 		break;
-        case 2: // purge to follow
-                {
-                        if(purgeTableDB(user, "ToFollow") == false)
-                                cerr << "[-] Error : Unable toi purge ToFollow" << endl;
-                }
-                break;
-        case 3: // purge followed
-                {
-                        if(purgeTableDB(user, "Followed") == false)
-                                cerr << "[-] Error : Unable to purge Followed" << endl;
-                }
-                break;
-        case 4: // purge unfollowed
-                {
-                        if(purgeTableDB(user, "UnFollowed") == false)
-                                cerr << "[-] Error : Unable to purge UnFollowed" << endl;
-                }
-                break;
-        case 5:
-                {
-                        if(purgeTableDB(user, "MyFollowers") == false)
-                                cerr << "[-] Error : Unable to purge MyFollowers" << endl;
-                }
-                break;
-        case 6: // purge all
-                {
-                        if(purgeTableDB(user, "ToFollow") == false)
-                                cerr << "[-] Error : Unable to purge ToFollow" << endl;
-                        if(purgeTableDB(user, "Followed") == false)
-                                cerr << "[-] Error : Unable to purge Followed" << endl;
-                        if(purgeTableDB(user, "UnFollowed") == false)
-                                cerr << "[-] Error : Unable to purge " << endl;
-                        if(purgeTableDB(user, "MyFollowers") == false)
-                                cerr << "[-] Error : Unable to purge MyFollowers" << endl;
-                }
-                break;
+	case 2:		// purge to follow
+		{
+			if (purgeTableDB(user, "ToFollow") == false)
+				cerr << "[-] Error : Unable toi purge ToFollow"
+				    << endl;
+		}
+		break;
+	case 3:		// purge followed
+		{
+			if (purgeTableDB(user, "Followed") == false)
+				cerr << "[-] Error : Unable to purge Followed"
+				    << endl;
+		}
+		break;
+	case 4:		// purge unfollowed
+		{
+			if (purgeTableDB(user, "UnFollowed") == false)
+				cerr << "[-] Error : Unable to purge UnFollowed"
+				    << endl;
+		}
+		break;
+	case 5:
+		{
+			if (purgeTableDB(user, "MyFollowers") == false)
+				cerr <<
+				    "[-] Error : Unable to purge MyFollowers" <<
+				    endl;
+		}
+		break;
+	case 6:		// purge all
+		{
+			if (purgeTableDB(user, "ToFollow") == false)
+				cerr << "[-] Error : Unable to purge ToFollow"
+				    << endl;
+			if (purgeTableDB(user, "Followed") == false)
+				cerr << "[-] Error : Unable to purge Followed"
+				    << endl;
+			if (purgeTableDB(user, "UnFollowed") == false)
+				cerr << "[-] Error : Unable to purge " << endl;
+			if (purgeTableDB(user, "MyFollowers") == false)
+				cerr <<
+				    "[-] Error : Unable to purge MyFollowers" <<
+				    endl;
+		}
+		break;
 	case 7:		// return
 		break;
 	default:
@@ -649,14 +658,15 @@ bool configure(User * user)
  * @input       : user, table
  * @outpt       : false if failed, otherwise true.
  */
-bool purgeTableDB(User * user, string table) {
-        string q;
-        user->db.connect( user->db_name.c_str() );
-        q = "DELETE FROM " + table + ";";
-        if(user->db.execute( q.c_str() ) != 0)
-                return false;
-        user->db.disconnect();
-        return true;
+bool purgeTableDB(User * user, string table)
+{
+	string q;
+	user->db.connect(user->db_name.c_str());
+	q = "DELETE FROM " + table + ";";
+	if (user->db.execute(q.c_str()) != 0)
+		return false;
+	user->db.disconnect();
+	return true;
 }
 
 /*
@@ -787,7 +797,7 @@ bool authenticate(User * user)
  */
 int main()
 {
-        vector<string> myFollowers;
+	vector < string > myFollowers;
 
 	srand(time(NULL));	// random seed
 
@@ -888,15 +898,16 @@ int main()
 	cout << "Followers : " << user->followers << endl;
 	cout << "=====================" << endl << endl;
 
-        /* We shall get our followers */
-        myFollowers = getFollowersOf(user, user->username);
-        if(myFollowers.size() != 0) {
-                cout << "Adding a result of " << myFollowers.size() << " to MyFollowers;" << endl;
-                if(vectorToDB(user, myFollowers, "MyFollowers", "userid") == false) {
-                        cerr << "[-] Error : Unable to vectorToDB" << endl;
-                }
-        }
-
+	/* We shall get our followers */
+	myFollowers = getFollowersOf(user, user->username);
+	if (myFollowers.size() != 0) {
+		cout << "Adding a result of " << myFollowers.size() <<
+		    " to MyFollowers;" << endl;
+		if (vectorToDB(user, myFollowers, "MyFollowers", "userid") ==
+		    false) {
+			cerr << "[-] Error : Unable to vectorToDB" << endl;
+		}
+	}
 	// Before entering the main loop fix the databases
 	if (removeDuplicates(user) == false) {
 		cerr << "[-] Error : Unable to remove duplicates" << endl;
@@ -1140,6 +1151,16 @@ bool removeDuplicates(User * user)
 	vector < string > v_followed(dbToVector(user, "Followed", "userid"));
 	vector < string >
 	    v_unfollowed(dbToVector(user, "UnFollowed", "userid"));
+	vector < string >
+	    v_myfollowers(dbToVector(user, "MyFollowers", "userid"));
+
+	// remove anything in myfollowers from tofollow list
+	for (vector < string >::iterator x = v_myfollowers.begin();
+	     x != v_myfollowers.end(); x++) {
+		v_tofollow.erase(remove
+				 (v_tofollow.begin(), v_tofollow.end(), *x),
+				 v_tofollow.end());
+	}
 
 	// remove anything in followed from tofollow list
 	for (vector < string >::iterator x = v_followed.begin();
@@ -1164,6 +1185,7 @@ bool removeDuplicates(User * user)
 		return false;
 	if (vectorToDB(user, v_tofollow, "ToFollow", "userid") == false)
 		return false;
+
 	user->db.disconnect();
 	return true;
 }
@@ -1180,43 +1202,46 @@ bool removeDuplicates(User * user)
 vector < string > getFollowingOf(User * user, string username)
 {
 	string replyMsg;
-        string next_cursor = "-1";
+	string next_cursor = "-1";
 	string err;
 	vector < string > ids;
 	cout << "Getting following of @" << username << endl;
 
-        do {
-	if (user->twitterObj.friendsIdsGet(next_cursor, username, false) == true) {
-		user->twitterObj.getLastWebResponse(replyMsg);
-		ptree pt;
-		stringstream ss(replyMsg);
-		read_xml(ss, pt);
+	do {
+		if (user->
+		    twitterObj.friendsIdsGet(next_cursor, username,
+					     false) == true) {
+			user->twitterObj.getLastWebResponse(replyMsg);
+			ptree pt;
+			stringstream ss(replyMsg);
+			read_xml(ss, pt);
 
-		/* Catched and error ? */
-		if (parseLastResponse(user, "hash.error", err) == true) {
-			cerr << "\t" << err << endl;
+			/* Catched and error ? */
+			if (parseLastResponse(user, "hash.error", err) == true) {
+				cerr << "\t" << err << endl;
+				return ids;
+			}
+
+			/* Get next cursor */
+			parseLastResponse(user, "id_list.next_cursor",
+					  next_cursor);
+
+			try {
+				BOOST_FOREACH(ptree::value_type & v,
+					      pt.get_child("id_list.ids"))
+				    ids.push_back(v.second.data());
+			}
+			catch(exception const &e) {
+				cerr << "\t[-] Error : GetFollowingOf Exception"
+				    << endl;
+				return ids;
+			}
+		} else {
+			cerr << "\t[-] Error : Failed to get following of @" <<
+			    username << endl;
 			return ids;
 		}
-
-                /* Get next cursor */
-                parseLastResponse(user, "id_list.next_cursor", next_cursor);
-
-		try {
-			BOOST_FOREACH(ptree::value_type & v,
-				      pt.get_child("id_list.ids"))
-			    ids.push_back(v.second.data());
-		}
-		catch(exception const &e) {
-			cerr << "\t[-] Error : GetFollowingOf Exception" <<
-			    endl;
-			return ids;
-		}
-	} else {
-		cerr << "\t[-] Error : Failed to get following of @" << username
-		    << endl;
-		return ids;
-	}
-        } while(next_cursor != "0");
+	} while (next_cursor != "0");
 
 	return ids;
 }
@@ -1232,42 +1257,46 @@ vector < string > getFollowersOf(User * user, string username)
 {
 	string replyMsg;
 	string next_cursor = "-1";
-        string err;
+	string err;
 	vector < string > ids;
 	ptree pt;
 
 	cout << "\tGetting followers of @" << username << endl;
 
-        do {
-	if (user->twitterObj.followersIdsGet(next_cursor, username, false) == true) {
-		user->twitterObj.getLastWebResponse(replyMsg);
-		stringstream ss(replyMsg);
-		read_xml(ss, pt);
+	do {
+		if (user->
+		    twitterObj.followersIdsGet(next_cursor, username,
+					       false) == true) {
+			user->twitterObj.getLastWebResponse(replyMsg);
+			stringstream ss(replyMsg);
+			read_xml(ss, pt);
 
-		/* Catched error ? */
-		if (parseLastResponse(user, "hash.error", err) == true) {
-			cerr << "\t" << err << endl;
-			return ids;
-		}
+			/* Catched error ? */
+			if (parseLastResponse(user, "hash.error", err) == true) {
+				cerr << "\t" << err << endl;
+				return ids;
+			}
 
-                /* Get next cursor */
-                parseLastResponse(user, "id_list.next_cursor", next_cursor);
+			/* Get next cursor */
+			parseLastResponse(user, "id_list.next_cursor",
+					  next_cursor);
 
-		try {
-			BOOST_FOREACH(ptree::value_type & v,
-				      pt.get_child("id_list.ids"))
-			    ids.push_back(v.second.data());
+			try {
+				BOOST_FOREACH(ptree::value_type & v,
+					      pt.get_child("id_list.ids"))
+				    ids.push_back(v.second.data());
+			}
+			catch(exception const &e) {
+				cerr << "\t[-] Error : getFollowersOf Exception"
+				    << endl;
+				return ids;
+			}
+		} else {
+			cerr <<
+			    "\t[-] Error : Failed to get friendsIdsGet from @"
+			    << username << endl;
 		}
-		catch(exception const &e) {
-			cerr << "\t[-] Error : getFollowersOf Exception"
-			    << endl;
-			return ids;
-		}
-	} else {
-		cerr << "\t[-] Error : Failed to get friendsIdsGet from @" <<
-		    username << endl;
-	}
-        } while(next_cursor != "0");
+	} while (next_cursor != "0");
 
 	return ids;
 }
