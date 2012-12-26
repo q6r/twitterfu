@@ -42,6 +42,7 @@ struct User {
 
 /* ProtoTypes
  */
+bool purgeTableDB(User * user, string table);
 bool change_proxy(User * user, string address, string port, string username,
 		  string password);
 bool configure(User * user);

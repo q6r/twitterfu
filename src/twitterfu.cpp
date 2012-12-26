@@ -567,7 +567,12 @@ bool configure(User * user)
 	string q;
 	int opt = -1;
 	cout << "1) Set proxy" << endl;
-	cout << "2) Return" << endl;
+        cout << "2) Purge To Follow" << endl;
+        cout << "3) Purge Followed" << endl;
+        cout << "4) Purge Unfollowed" << endl;
+        cout << "5) Purge MyFollowers" << endl;
+        cout << "6) Pruge all" << endl;
+	cout << "7) Return" << endl;
 	opt = optionSelect();
 
 	switch (opt) {
@@ -593,13 +598,65 @@ bool configure(User * user)
 				    endl;
 		}
 		break;
-	case 2:		// return
+        case 2: // purge to follow
+                {
+                        if(purgeTableDB(user, "ToFollow") == false)
+                                cerr << "[-] Error : Unable toi purge ToFollow" << endl;
+                }
+                break;
+        case 3: // purge followed
+                {
+                        if(purgeTableDB(user, "Followed") == false)
+                                cerr << "[-] Error : Unable to purge Followed" << endl;
+                }
+                break;
+        case 4: // purge unfollowed
+                {
+                        if(purgeTableDB(user, "UnFollowed") == false)
+                                cerr << "[-] Error : Unable to purge UnFollowed" << endl;
+                }
+                break;
+        case 5:
+                {
+                        if(purgeTableDB(user, "MyFollowers") == false)
+                                cerr << "[-] Error : Unable to purge MyFollowers" << endl;
+                }
+                break;
+        case 6: // purge all
+                {
+                        if(purgeTableDB(user, "ToFollow") == false)
+                                cerr << "[-] Error : Unable to purge ToFollow" << endl;
+                        if(purgeTableDB(user, "Followed") == false)
+                                cerr << "[-] Error : Unable to purge Followed" << endl;
+                        if(purgeTableDB(user, "UnFollowed") == false)
+                                cerr << "[-] Error : Unable to purge " << endl;
+                        if(purgeTableDB(user, "MyFollowers") == false)
+                                cerr << "[-] Error : Unable to purge MyFollowers" << endl;
+                }
+                break;
+	case 7:		// return
 		break;
 	default:
 		break;
 	}
 
 	return true;
+}
+
+/*
+ * @method      : purgeTableDB
+ * @description : delete everything in a database
+ * @input       : user, table
+ * @outpt       : false if failed, otherwise true.
+ */
+bool purgeTableDB(User * user, string table) {
+        string q;
+        user->db.connect( user->db_name.c_str() );
+        q = "DELETE FROM " + table + ";";
+        if(user->db.execute( q.c_str() ) != 0)
+                return false;
+        user->db.disconnect();
+        return true;
 }
 
 /*
