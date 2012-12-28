@@ -13,6 +13,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <sys/stat.h>
 #include <ctime>
+#include <algorithm>
+#include <vector>
 #include "sqlite3pp.h"
 
 using namespace std;
@@ -25,6 +27,14 @@ struct Proxy {
 	string password;
 };
 
+struct Filters {
+	bool profilePicture;
+	bool description;
+	bool protectedProfile;
+	bool followRatio;
+	bool nearTimezone;
+};
+
 struct User {
 	string username;
 	string password;
@@ -33,10 +43,12 @@ struct User {
 	string access_token_key;
 	string access_token_secret;
 	string db_name;
+	string timezone;
 	database db;		// sqlite3pp db
 	long followers;
 	long following;
 	Proxy proxy;
+	Filters filters;
 	twitCurl twitterObj;
 };
 
@@ -73,5 +85,7 @@ vector < string > search(User * user, string what);
 
 /* filters */
 namespace filter {
-	bool by_ratio(User * user, string userid);
-};
+	bool main(User * user, string userid);
+	bool predict_timezone(User * user, string timezones);
+	void filter_list(User * user);
+}

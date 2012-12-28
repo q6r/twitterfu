@@ -6,7 +6,6 @@ bool gotExitSignal = false;
 
 using namespace std;
 using namespace sqlite3pp;
-
 using boost::property_tree::ptree;
 
 /* @method      : search
@@ -105,7 +104,7 @@ bool createUser(User * user)
 	}
 	// Create inital user row
 	if (user->db.execute
-	    ("INSERT INTO Config VALUES(1, \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\");")
+	    ("INSERT INTO Config VALUES(1, \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\");")
 	    != 0)
 		return false;
 
@@ -212,9 +211,6 @@ bool status(User * user)
 {
 	string replyMsg, followers, following, reset_time;
 	int remaining_hits = 0, hourly_limit = 0;
-
-	if (removeDuplicates(user) == false)
-		return false;
 
 	vector < string > tofollow(dbToVector(user, "ToFollow", "userid"));
 	vector < string > followed(dbToVector(user, "Followed", "userid"));
@@ -462,19 +458,19 @@ void unfollow(User * user)
 	long unfollowed = 0;
 	gotExitSignal = false;
 
+	// Don't do anything if there's no one to unfollow
+	if (followers.size() == 0) {
+		cerr << "(Err:No one to unfollow)" << endl;
+		return;
+	}
+
 	if (removeDuplicates(user) == false) {
 		cerr << "(Err:Unable to remove duplicates)" << endl;
 		return;
 	}
-
-	/* Install the signal handler */
+	// Install the signal handler
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
 		cerr << "(Err:Unable to install signalHandler)" << endl;
-		return;
-	}
-	// Don't do anything if there's no one to unfollow
-	if (followers.size() == 0) {
-		cerr << "(Err:No one to unfollow)" << endl;
 		return;
 	}
 
@@ -567,12 +563,13 @@ bool configure(User * user)
 	string q;
 	int opt = -1;
 	cout << "1) Set proxy" << endl;
-	cout << "2) Purge To Follow" << endl;
-	cout << "3) Purge Followed" << endl;
-	cout << "4) Purge Unfollowed" << endl;
-	cout << "5) Purge MyFollowers" << endl;
-	cout << "6) Pruge all" << endl;
-	cout << "7) Return" << endl;
+	cout << "2) Filters" << endl;
+	cout << "3) Purge To Follow" << endl;
+	cout << "4) Purge Followed" << endl;
+	cout << "5) Purge Unfollowed" << endl;
+	cout << "6) Purge MyFollowers" << endl;
+	cout << "7) Pruge all" << endl;
+	cout << "8) Return" << endl;
 	opt = optionSelect();
 
 	switch (opt) {
@@ -598,28 +595,33 @@ bool configure(User * user)
 				    endl;
 		}
 		break;
-	case 2:		// purge to follow
+	case 2:		// filters
+		{
+			filter::filter_list(user);
+		}
+		break;
+	case 3:		// purge to follow
 		{
 			if (purgeTableDB(user, "ToFollow") == false)
 				cerr << "[-] Error : Unable toi purge ToFollow"
 				    << endl;
 		}
 		break;
-	case 3:		// purge followed
+	case 4:		// purge followed
 		{
 			if (purgeTableDB(user, "Followed") == false)
 				cerr << "[-] Error : Unable to purge Followed"
 				    << endl;
 		}
 		break;
-	case 4:		// purge unfollowed
+	case 5:		// purge unfollowed
 		{
 			if (purgeTableDB(user, "UnFollowed") == false)
 				cerr << "[-] Error : Unable to purge UnFollowed"
 				    << endl;
 		}
 		break;
-	case 5:
+	case 6:
 		{
 			if (purgeTableDB(user, "MyFollowers") == false)
 				cerr <<
@@ -627,7 +629,7 @@ bool configure(User * user)
 				    endl;
 		}
 		break;
-	case 6:		// purge all
+	case 7:		// purge all
 		{
 			if (purgeTableDB(user, "ToFollow") == false)
 				cerr << "[-] Error : Unable to purge ToFollow"
@@ -643,7 +645,7 @@ bool configure(User * user)
 				    endl;
 		}
 		break;
-	case 7:		// return
+	case 8:		// return
 		break;
 	default:
 		break;
@@ -804,6 +806,7 @@ int main()
 	User *user = new User;
 	string replyMsg;
 	string temp;
+	string query;
 
 	user->db_name = "cache/db.sql";
 	user->consumer_key = "nYFCp8lj4LHqmLTnVHFc0Q";
@@ -835,6 +838,7 @@ int main()
 		    getValFromDB(user, "Config", "proxy_username").at(0);
 		user->proxy.password =
 		    getValFromDB(user, "Config", "proxy_password").at(0);
+		user->timezone = getValFromDB(user, "Config", "timezone").at(0);
 	}
 
 	/* Set up proxy if found */
@@ -860,19 +864,41 @@ int main()
 
 	/* Verifying authentication */
 	if (user->twitterObj.accountVerifyCredGet() == true) {
+		// get following
 		if (parseLastResponse(user, "user.friends_count",
 				      user->following) == false) {
 			cerr << "[-] Error : Unable to find user.friends_count"
 			    << endl;
 			return -1;
 		}
-
+		// get followers
 		if (parseLastResponse(user, "user.followers_count",
 				      user->followers) == false) {
 			cerr <<
 			    "[-] Error : Unable to find user.followers_count" <<
 			    endl;
 			return -1;
+		}
+		// set timezone if not set
+		if (user->timezone.empty()) {
+			if (parseLastResponse
+			    (user, "user.time_zone", user->timezone) == false) {
+				cerr << "[-] Error : Unable to find timezone" <<
+				    endl;
+				return -1;
+			} else {
+				user->db.connect(user->db_name.c_str());
+				query =
+				    "UPDATE Config SET timezone = \"" +
+				    user->timezone + "\";";
+				if (user->db.execute(query.c_str()) != 0) {
+					cerr << "Unable to update timezone" <<
+					    endl;
+				}
+				user->db.disconnect();
+				cout << "We have set the timezone to " <<
+				    user->timezone << endl;
+			}
 		}
 	} else {
 		cerr << "[-] Error : Unable to authenticate." << endl;
@@ -953,7 +979,7 @@ bool initalizeDatabase(User * user)
 	user->db.execute
 	    ("CREATE TABLE UnFollowed(Id integer PRIMARY KEY,userid text UNIQUE);");
 	user->db.execute
-	    ("CREATE TABLE Config(Id integer PRIMARY KEY, username text, password text, access_key text, access_secret text, proxy_username text, proxy_password text, proxy_address text, proxy_port text);");
+	    ("CREATE TABLE Config(Id integer PRIMARY KEY, username text, password text, access_key text, access_secret text, proxy_username text, proxy_password text, proxy_address text, proxy_port text, timezone text);");
 	user->db.disconnect();
 
 	return true;
@@ -1053,7 +1079,7 @@ void follow(vector < string > to_follow, User * user)
 
 		// follow only those that applies to the
 		// by_ratio filter
-		if (filter::by_ratio(user, *it) == true) {	// if filter passed
+		if (filter::main(user, *it) == true) {	// if filter passed
 			if (user->twitterObj.friendshipCreate(*it, true) == true) {	// if followed the user
 				followed.push_back(*it);
 				if (parseLastResponse(user, "user.name", username) == false) {	// if can't get username
@@ -1205,12 +1231,11 @@ vector < string > getFollowingOf(User * user, string username)
 	string next_cursor = "-1";
 	string err;
 	vector < string > ids;
-	cout << "Getting following of @" << username << endl;
+	cout << "[+] Getting following of @" << username << endl;
 
 	do {
-		if (user->
-		    twitterObj.friendsIdsGet(next_cursor, username,
-					     false) == true) {
+		if (user->twitterObj.friendsIdsGet(next_cursor, username,
+						   false) == true) {
 			user->twitterObj.getLastWebResponse(replyMsg);
 			ptree pt;
 			stringstream ss(replyMsg);
@@ -1218,7 +1243,7 @@ vector < string > getFollowingOf(User * user, string username)
 
 			/* Catched and error ? */
 			if (parseLastResponse(user, "hash.error", err) == true) {
-				cerr << "\t" << err << endl;
+				cerr << "[-] " << err << endl;
 				return ids;
 			}
 
@@ -1232,12 +1257,11 @@ vector < string > getFollowingOf(User * user, string username)
 				    ids.push_back(v.second.data());
 			}
 			catch(exception const &e) {
-				cerr << "\t[-] Error : GetFollowingOf Exception"
-				    << endl;
+				cerr << "[-] GetFollowingOf Exception" << endl;
 				return ids;
 			}
 		} else {
-			cerr << "\t[-] Error : Failed to get following of @" <<
+			cerr << "[-] Failed to get following of @" <<
 			    username << endl;
 			return ids;
 		}
@@ -1261,19 +1285,18 @@ vector < string > getFollowersOf(User * user, string username)
 	vector < string > ids;
 	ptree pt;
 
-	cout << "\tGetting followers of @" << username << endl;
+	cout << "[+] Getting followers of @" << username << endl;
 
 	do {
-		if (user->
-		    twitterObj.followersIdsGet(next_cursor, username,
-					       false) == true) {
+		if (user->twitterObj.followersIdsGet(next_cursor, username,
+						     false) == true) {
 			user->twitterObj.getLastWebResponse(replyMsg);
 			stringstream ss(replyMsg);
 			read_xml(ss, pt);
 
 			/* Catched error ? */
 			if (parseLastResponse(user, "hash.error", err) == true) {
-				cerr << "\t" << err << endl;
+				cerr << "[-] " << err << endl;
 				return ids;
 			}
 
@@ -1287,13 +1310,12 @@ vector < string > getFollowersOf(User * user, string username)
 				    ids.push_back(v.second.data());
 			}
 			catch(exception const &e) {
-				cerr << "\t[-] Error : getFollowersOf Exception"
-				    << endl;
+				cerr << "[-] getFollowersOf Exception" << endl;
 				return ids;
 			}
 		} else {
 			cerr <<
-			    "\t[-] Error : Failed to get friendsIdsGet from @"
+			    "[-] Failed to get friendsIdsGet from @"
 			    << username << endl;
 		}
 	} while (next_cursor != "0");
