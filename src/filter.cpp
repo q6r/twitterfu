@@ -66,7 +66,7 @@ bool filter::main(User * user, string userid)
 {
 	string replyMsg, temp_following, temp_followers, timezone;
 	long double following, followers, result;
-	double prediction = 0.0;
+	int prediction = 0;
 	int total = 0;
 
 	if (user->twitterObj.userGet(userid, true) == false)
@@ -152,7 +152,6 @@ bool filter::main(User * user, string userid)
 	// if prediction is not 100% then ignore user
 	if (total != 0) {
 		if (prediction / total != 1) {
-			cout << "Prediction is not 100%" << endl;
 			return false;
 		}
 	}
