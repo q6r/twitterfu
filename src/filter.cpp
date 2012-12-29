@@ -64,14 +64,14 @@ void filter::filter_list(User * user)
  */
 bool filter::main(User * user, string userid)
 {
-	string replyMsg, temp_following, temp_followers, timezone;
+	string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
 	int prediction = 0;
 	int total = 0;
 
 	if (user->twitterObj.userGet(userid, true) == false)
 		return false;
-	user->twitterObj.getLastWebResponse(replyMsg);
+	user->twitterObj.getLastWebResponse(resultXML);
 
 	// get user following, and followers
 	if (parseLastResponse(user, "user.followers_count", temp_followers)
