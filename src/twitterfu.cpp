@@ -412,6 +412,12 @@ void optionParse(User * user, int opt)
 		break;
 	case 4:		// follow users
 		{
+			if (removeDuplicates(user) == false) {
+				cerr <<
+				    "[-] Error : Unable to remove duplicates" <<
+				    endl;
+				return;
+			}
 			follow(dbToVector(user, "ToFollow", "userid"), user);
 		}
 		break;
