@@ -72,10 +72,10 @@ bool filter::main(User * user, std::string userid)
 	user->twitterObj.getLastWebResponse(resultXML);
 
 	// get user following, and followers
-	if (parseLastResponse(user, "user.followers_count", temp_followers)
+	if (action::lastResponse(user, "user.followers_count", temp_followers)
 	    == false)
 		return false;
-	if (parseLastResponse(user, "user.friends_count", temp_following) ==
+	if (action::lastResponse(user, "user.friends_count", temp_following) ==
 	    false)
 		return false;
 	std::stringstream sa(temp_following);
@@ -99,7 +99,7 @@ bool filter::main(User * user, std::string userid)
 	/* rule #2      : User not protected */
 	if (user->filters.protectedProfile == true) {
 		std::string protect;
-		if (parseLastResponse(user, "user.protected", protect) == false)
+		if (action::lastResponse(user, "user.protected", protect) == false)
 			return false;
 		if (protect == "false") {
 			prediction++;
@@ -110,7 +110,7 @@ bool filter::main(User * user, std::string userid)
 	/* rule #3      : Has profile image */
 	if (user->filters.profilePicture == true) {
 		std::string profile_image;
-		if (parseLastResponse
+		if (action::lastResponse
 		    (user, "user.profile_image_url", profile_image) == false)
 			return false;
 		if (!profile_image.empty()) {
@@ -122,7 +122,7 @@ bool filter::main(User * user, std::string userid)
 	/* rule #4      : Has description */
 	if (user->filters.description == true) {
 		std::string description;
-		if (parseLastResponse(user, "user.description", description) ==
+		if (action::lastResponse(user, "user.description", description) ==
 		    false)
 			return false;
 		if (!description.empty()) {
@@ -135,7 +135,7 @@ bool filter::main(User * user, std::string userid)
 	 * ignore anyone who doesn't have a timezone
 	 */
 	if (user->filters.nearTimezone == true) {
-		if (parseLastResponse(user, "user.time_zone", timezone) ==
+		if (action::lastResponse(user, "user.time_zone", timezone) ==
 		    false) {
 			return false;
 		}

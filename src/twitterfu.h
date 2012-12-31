@@ -42,35 +42,24 @@ struct User {
 	std::string db_name;
 	std::string timezone;
 	sqlite3pp::database db;		// sqlite3pp db
-	long followers;
-	long following;
+	std::string followers, following;
 	Proxy proxy;
 	Filters filters;
 	twitCurl twitterObj;
 };
 
-/* ProtoTypes
- */
-bool change_proxy(User * user, std::string address, std::string port, std::string username,
-		  std::string password);
-bool configure(User * user);
-std::vector < std::string > getFollowersOf(User * user, std::string username);
-std::vector < std::string > getFollowingOf(User * user, std::string username);
-template < class T > void concatVectors(std::vector < T > &dest, std::vector < T > src);
-std::vector < std::string > fileToVector(std::string filename);
-bool status(User * user);
-int optionSelect();
-void optionParse(User * user, int opt);
-void optionShow();
-template < class T > bool parseLastResponse(User * user, std::string node, T & v);
-void unfollow(User * user);
-void follow(std::vector < std::string > to_follow, User * user);
-void signalHandler(int n);
-bool fileExists(std::string filename);
-int randomize(int from, int to);
-bool authenticate(User * user);
-void cleanLine(int n);
-std::vector < std::string > search(User * user, std::string what);
+/* action */
+namespace action {        
+        bool lastResponse(User * user, std::string node, std::string & v);
+        void signalHandler(int n);
+        void follow(std::vector < std::string > to_follow, User * user);
+        void unfollow(User * user);
+        std::vector < std::string > getFollowers(User * user, std::string username);
+        std::vector < std::string > getFollowing(User * user, std::string username);
+        std::vector < std::string > search(User * user, std::string what);
+        bool status(User * user);
+}
+
 
 /* database */
 namespace database {
@@ -91,3 +80,18 @@ namespace filter {
 	bool predict_timezone(User * user, std::string timezones);
 	void filter_list(User * user);
 }
+
+/* ProtoTypes
+ */
+bool change_proxy(User * user, std::string address, std::string port, std::string username,
+		  std::string password);
+bool configure(User * user);
+template < class T > void concatVectors(std::vector < T > &dest, std::vector < T > src);
+std::vector < std::string > fileToVector(std::string filename);
+int optionSelect();
+void optionParse(User * user, int opt);
+void optionShow();
+bool fileExists(std::string filename);
+int randomize(int from, int to);
+bool authenticate(User * user);
+void cleanLine(int n);
