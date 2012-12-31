@@ -478,10 +478,6 @@ void unfollow(User * user)
 		return;
 	}
 
-	if (removeDuplicates(user) == false) {
-		std::cerr << "(Err:Unable to remove duplicates)" << std::endl;
-		return;
-	}
 	// Install the signal handler
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
 		std::cerr << "(Err:Unable to install signalHandler)" << std::endl;
