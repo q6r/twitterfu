@@ -3,6 +3,7 @@
 /* Globals
  */
 bool gotExitSignal = false;
+//using boost::property_tree:: boost::property_tree::ptree;
 
 /* @method      : search
  * @description : Will take a query and return a std::vector of
@@ -203,7 +204,7 @@ std::vector < std::string > fileToVector(std::string filename)
 }
 
 /* @method      : status
- * @description : Show application, account and API status.
+ * @description : Show database, account and API status.
  * @input       : user
  * @output      : true if successful otherwise false
  */
@@ -215,11 +216,13 @@ bool status(User * user)
 	std::vector < std::string > tofollow(dbToVector(user, "ToFollow", "userid"));
 	std::vector < std::string > followed(dbToVector(user, "Followed", "userid"));
 	std::vector < std::string > unfollowed(dbToVector(user, "UnFollowed", "userid"));
+        std::vector < std::string > myfollowers(dbToVector(user, "MyFollowers", "userid"));
 
-	std::cout << "\tApplication Status :" << std::endl;
-	std::cout << "\t\tFollowed   : " << followed.size() << std::endl;
-	std::cout << "\t\tTo follow  : " << tofollow.size() << std::endl;
-	std::cout << "\t\tUnfollowed : " << unfollowed.size() << std::endl;
+	std::cout << "\tDatabase Status :" << std::endl;
+	std::cout << "\t\tFollowed     : " << followed.size() << std::endl;
+	std::cout << "\t\tTo follow    : " << tofollow.size() << std::endl;
+	std::cout << "\t\tUnfollowed   : " << unfollowed.size() << std::endl;
+        std::cout << "\t\tMy followers : " << myfollowers.size() << std::endl;
 
 	if (user->twitterObj.accountVerifyCredGet() == true) {
 		std::cout << "\tAccount Status     :" << std::endl;
