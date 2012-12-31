@@ -51,25 +51,17 @@ struct User {
 
 /* ProtoTypes
  */
-bool purgeTableDB(User * user, std::string table);
 bool change_proxy(User * user, std::string address, std::string port, std::string username,
 		  std::string password);
 bool configure(User * user);
-std::vector < std::string > getValFromDB(User * user, std::string table, std::string col);
-bool initalizeDatabase(User * user);
-bool vectorToDB(User * user, std::vector < std::string > v, std::string table, std::string values);
-std::vector < std::string > dbToVector(User * user, std::string table, std::string value);
 std::vector < std::string > getFollowersOf(User * user, std::string username);
 std::vector < std::string > getFollowingOf(User * user, std::string username);
 template < class T > void concatVectors(std::vector < T > &dest, std::vector < T > src);
 std::vector < std::string > fileToVector(std::string filename);
-bool removeDuplicates(User * user);
 bool status(User * user);
 int optionSelect();
 void optionParse(User * user, int opt);
 void optionShow();
-bool userExistInDB(User * user);
-bool createUser(User * user);
 template < class T > bool parseLastResponse(User * user, std::string node, T & v);
 void unfollow(User * user);
 void follow(std::vector < std::string > to_follow, User * user);
@@ -79,6 +71,19 @@ int randomize(int from, int to);
 bool authenticate(User * user);
 void cleanLine(int n);
 std::vector < std::string > search(User * user, std::string what);
+
+/* database */
+namespace database {
+        bool removeDuplicatesInToFollow(User * user);
+        bool purgeTable(User * user, std::string table);
+        std::vector < std::string > toVector(User * user, std::string table, std::string value);
+        bool createUser(User * user);
+        std::vector < std::string > getVal(User * user, std::string table, std::string col);
+        bool initalize(User * user);
+        bool toDB(User * user, std::vector < std::string > v, std::string table, std::string values);
+        bool userExist(User * user);
+}
+
 
 /* filters */
 namespace filter {
