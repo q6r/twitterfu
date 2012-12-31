@@ -4,26 +4,22 @@
  */
 bool gotExitSignal = false;
 
-using namespace std;
-using namespace sqlite3pp;
-using boost::property_tree::ptree;
-
 /* @method      : search
- * @description : Will take a query and return a vector of
+ * @description : Will take a query and return a std::vector of
  * user ids to be added to the to follow list. This function
  * is limited to 15 results since pages are not supported
  * by twitCurl.
  * @input       : User, query
- * @output      : vector of user ids
+ * @output      : std::vector of user ids
  */
-vector < string > search(User * user, string query)
+std::vector < std::string > search(User * user, std::string query)
 {
-	string jsonResult;
-	ptree pt;
-	vector < string > ids;
+	std::string jsonResult;
+	boost::property_tree::ptree pt;
+	std::vector < std::string > ids;
 
 	// replace all spaces with %20
-	for (size_t pos = query.find(' '); pos != string::npos;
+	for (size_t pos = query.find(' '); pos != std::string::npos;
 	     pos = query.find(' ', pos))
 		query.replace(pos, 1, "%20");
 
@@ -31,19 +27,19 @@ vector < string > search(User * user, string query)
 	if (user->twitterObj.search(query) == false)
 		return ids;
 
-	// Get results, parse then and push to ids vector
+	// Get results, parse then and push to ids std::vector
 	user->twitterObj.getLastWebResponse(jsonResult);
-	stringstream ss(jsonResult);
+	std::stringstream ss(jsonResult);
 
 	try {
 		read_json(ss, pt);
-		BOOST_FOREACH(const ptree::value_type & child,
+		BOOST_FOREACH(const  boost::property_tree::ptree::value_type & child,
 			      pt.get_child("results")) {
-			ids.push_back(child.second.get < string >
+			ids.push_back(child.second.get < std::string >
 				      ("from_user_id"));
 		}
-	} catch(exception const &e) {
-		cerr << "(Err:Unable to parse json)" << endl;
+	} catch(std::exception const &e) {
+		std::cerr << "(Err:Unable to parse json)" << std::endl;
 		return ids;
 	}
 
@@ -58,12 +54,12 @@ int optionSelect()
 {
 	int opt = -1;
 
-	cout << "> ";
-	cin >> opt;
+	std::cout << "> ";
+	std::cin >> opt;
 
-	if (cin.fail() == true) {
-		cin.clear();
-		cin.ignore(numeric_limits < streamsize >::max(), 0x0a);
+	if (std::cin.fail() == true) {
+		std::cin.clear();
+		std::cin.ignore(std::numeric_limits < std::streamsize >::max(), 0x0a);
 		return -1;
 	}
 
@@ -71,7 +67,7 @@ int optionSelect()
 }
 
 /* @method      : createUser
- * @description : Will cin some information
+ * @description : Will std::cin some information
  * and add them to the database
  * @input       : user
  * @output      : true if successfuly inserted user to database
@@ -79,30 +75,30 @@ int optionSelect()
  */
 bool createUser(User * user)
 {
-	string q;
-	cout << "Creating a user" << endl;
+	std::string q;
+	std::cout << "Creating a user" << std::endl;
 
-	cout << "username : ";
-	cin >> user->username;
-	cout << "password : ";
-	cin >> user->password;
+	std::cout << "username : ";
+	std::cin >> user->username;
+	std::cout << "password : ";
+	std::cin >> user->password;
 
 	// Do we want to use proxies ?
-	cout << "Do you want to use a proxy [y/n] ? ";
-	cin >> q;
+	std::cout << "Do you want to use a proxy [y/n] ? ";
+	std::cin >> q;
 	if (q == "y" || q == "Y") {
-		cout << "Proxy address  : ";
-		cin >> user->proxy.address;
-		cout << "Proxy port     : ";
-		cin >> user->proxy.port;
-		cout <<
+		std::cout << "Proxy address  : ";
+		std::cin >> user->proxy.address;
+		std::cout << "Proxy port     : ";
+		std::cin >> user->proxy.port;
+		std::cout <<
 		    "Do you want to use a proxy username, password [y/n] ? ";
-		cin >> q;
+		std::cin >> q;
 		if (q == "y" || q == "Y") {
-			cout << "Proxy username : ";
-			cin >> user->proxy.username;
-			cout << "Proxy password : ";
-			cin >> user->proxy.password;
+			std::cout << "Proxy username : ";
+			std::cin >> user->proxy.username;
+			std::cout << "Proxy password : ";
+			std::cin >> user->proxy.password;
 		}
 	}
 	// Create inital user row
@@ -124,7 +120,7 @@ bool createUser(User * user)
 		if (change_proxy
 		    (user, user->proxy.address, user->proxy.port,
 		     user->proxy.username, user->proxy.password) == false) {
-			cerr << "[-] Error : Unable to set proxy" << endl;
+			std::cerr << "[-] Error : Unable to set proxy" << std::endl;
 			return false;
 		}
 
@@ -142,7 +138,7 @@ bool userExistInDB(User * user)
 {
 
 	user->db.connect(user->db_name.c_str());
-	query qry(user->db, "SELECT * from Config;");
+	sqlite3pp::query qry(user->db, "SELECT * from Config;");
 
 	if (qry.begin() == qry.end())
 		return false;
@@ -153,20 +149,21 @@ bool userExistInDB(User * user)
 
 /* @method      : dbToVector
  * @description : Reads a specific table and return the results in the value
- * as a vector of strings
+ * as a std::vector of std::strings
  * @input       : user, table, value
- * @output      : vector<string> of select value from table;
+ * @output      : std::vector<std::string> of select value from table;
  */
-vector < string > dbToVector(User * user, string table, string value)
+std::vector < std::string > dbToVector(User * user, std::string table, std::string value)
 {
-	vector < string > results;
-	string userid;
-	string q = "SELECT " + value + " FROM " + table + ";";
+	std::vector < std::string > results;
+	std::string userid;
+        sqlite3pp::query::iterator it;
+	std::string q = "SELECT " + value + " FROM " + table + ";";
 
 	user->db.connect(user->db_name.c_str());
-	query qry(user->db, q.c_str());
+	sqlite3pp::query qry(user->db, q.c_str());
 
-	for (query::iterator it = qry.begin(); it != qry.end(); ++it) {
+	for (it = qry.begin(); it != qry.end(); ++it) {
 		(*it).getter() >> userid;
 		results.push_back(userid);
 	}
@@ -178,20 +175,20 @@ vector < string > dbToVector(User * user, string table, string value)
 
 /*
  * @method      : fileToVector
- * @description : Takes a filename opens it get's the content convert it to a vector and
- * returns the vector.
+ * @description : Takes a filename opens it get's the content convert it to a std::vector and
+ * returns the std::vector.
  * @input       : filename
- * @output      : vector
+ * @output      : std::vector
  *
  */
-vector < string > fileToVector(string filename)
+std::vector < std::string > fileToVector(std::string filename)
 {
-	vector < string > v;
-	string temp;
-	fstream fs(filename.c_str(), fstream::in);
+	std::vector < std::string > v;
+	std::string temp;
+	std::fstream fs(filename.c_str(), std::fstream::in);
 
 	if (fs.is_open() == false) {
-		cerr << "\t[-] Error : Unable to open " << filename << endl;
+		std::cerr << "\t[-] Error : Unable to open " << filename << std::endl;
 		return v;
 	}
 
@@ -212,71 +209,71 @@ vector < string > fileToVector(string filename)
  */
 bool status(User * user)
 {
-	string result, followers, following, reset_time;
+	std::string result, followers, following, reset_time;
 	int remaining_hits = 0, hourly_limit = 0;
 
-	vector < string > tofollow(dbToVector(user, "ToFollow", "userid"));
-	vector < string > followed(dbToVector(user, "Followed", "userid"));
-	vector < string > unfollowed(dbToVector(user, "UnFollowed", "userid"));
+	std::vector < std::string > tofollow(dbToVector(user, "ToFollow", "userid"));
+	std::vector < std::string > followed(dbToVector(user, "Followed", "userid"));
+	std::vector < std::string > unfollowed(dbToVector(user, "UnFollowed", "userid"));
 
-	cout << "\tApplication Status :" << endl;
-	cout << "\t\tFollowed   : " << followed.size() << endl;
-	cout << "\t\tTo follow  : " << tofollow.size() << endl;
-	cout << "\t\tUnfollowed : " << unfollowed.size() << endl;
+	std::cout << "\tApplication Status :" << std::endl;
+	std::cout << "\t\tFollowed   : " << followed.size() << std::endl;
+	std::cout << "\t\tTo follow  : " << tofollow.size() << std::endl;
+	std::cout << "\t\tUnfollowed : " << unfollowed.size() << std::endl;
 
 	if (user->twitterObj.accountVerifyCredGet() == true) {
-		cout << "\tAccount Status     :" << endl;
+		std::cout << "\tAccount Status     :" << std::endl;
 		if (parseLastResponse(user, "user.followers_count",
 				      followers) == false) {
-			cerr <<
+			std::cerr <<
 			    "\t[-] Error : Unable to find the followers_count"
-			    << endl;
+			    << std::endl;
 			return false;
 		}
 		if (parseLastResponse(user, "user.friends_count", following) ==
 		    false) {
-			cerr << "\t[-] Error : Unable to find friends_count" <<
-			    endl;
+			std::cerr << "\t[-] Error : Unable to find friends_count" <<
+			    std::endl;
 			return false;
 		}
 
-		cout << "\t\tFollowers  : " << followers << endl;
-		cout << "\t\tFollowing  : " << following << endl;
+		std::cout << "\t\tFollowers  : " << followers << std::endl;
+		std::cout << "\t\tFollowing  : " << following << std::endl;
 	} else {
-		cerr << "\t[-] Error : Unable to get account status." << endl;
+		std::cerr << "\t[-] Error : Unable to get account status." << std::endl;
 		return false;
 	}
 
 	// API status
 	if (user->twitterObj.accountRateLimitGet() == true) {
 
-		cout << "\tAPI Status : " << endl;
+		std::cout << "\tAPI Status : " << std::endl;
 		if (parseLastResponse
 		    (user, "hash.remaining-hits", remaining_hits) == false) {
-			cerr << "[-] Error : Unable to get hash.remaining-hits"
-			    << endl;
+			std::cerr << "[-] Error : Unable to get hash.remaining-hits"
+			    << std::endl;
 			return false;
 		}
 
 		if (parseLastResponse
 		    (user, "hash.hourly-limit", hourly_limit) == false) {
-			cerr << "[-] Error : Unable to get hash.hourly-limit" <<
-			    endl;
+			std::cerr << "[-] Error : Unable to get hash.hourly-limit" <<
+			    std::endl;
 			return false;
 		}
 
 		if (parseLastResponse(user, "hash.reset-time", reset_time) ==
 		    false) {
-			cerr << "[-] Error : Unable to get hash.hourly-limit" <<
-			    endl;
+			std::cerr << "[-] Error : Unable to get hash.hourly-limit" <<
+			    std::endl;
 			return false;
 		}
 
-		cout << "\t\tRemaining hits : " << remaining_hits << endl;
-		cout << "\t\tHourly limit   : " << hourly_limit << endl;
-		cout << "\t\tReset  at      : " << reset_time << endl;
+		std::cout << "\t\tRemaining hits : " << remaining_hits << std::endl;
+		std::cout << "\t\tHourly limit   : " << hourly_limit << std::endl;
+		std::cout << "\t\tReset  at      : " << reset_time << std::endl;
 	} else {
-		cerr << "\t[-] Error : Unable to get API status" << endl;
+		std::cerr << "\t[-] Error : Unable to get API status" << std::endl;
 		return false;
 	}
 
@@ -298,7 +295,7 @@ int randomize(int from, int to)
  * @input            : filename
  * @output           : true if file exists, false otherwise
  */
-bool fileExists(string filename)
+bool fileExists(std::string filename)
 {
 	struct stat fi;
 	return stat(filename.c_str(), &fi) == 0;
@@ -311,18 +308,18 @@ bool fileExists(string filename)
  * @input            : user, node, v
  * @output           : true if got the result false otherwise
  */
-template < class T > bool parseLastResponse(User * user, string node, T & v)
+template < class T > bool parseLastResponse(User * user, std::string node, T & v)
 {
-	string result = "";
-	ptree pt;
+	std::string result = "";
+	 boost::property_tree::ptree pt;
 	user->twitterObj.getLastWebResponse(result);
-	stringstream ss(result);
+	std::stringstream ss(result);
 
 	try {
 		read_xml(ss, pt);
 		v = pt.get < T > (node.c_str());
 	}
-	catch(exception const &e) {
+	catch(std::exception const &e) {
 		return false;
 	}
 
@@ -337,19 +334,19 @@ template < class T > bool parseLastResponse(User * user, string node, T & v)
  */
 void optionParse(User * user, int opt)
 {
-	string username;
-	vector < string > ids;
+	std::string username;
+	std::vector < std::string > ids;
 
 	switch (opt) {
 	case 1:		// Get followers of a user
 		{
-			cout << "Username : ";
-			cin >> username;
+			std::cout << "Username : ";
+			std::cin >> username;
 
 			if (removeDuplicates(user) == false) {
-				cerr <<
+				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    endl;
+				    std::endl;
 				return;
 
 			}
@@ -358,23 +355,23 @@ void optionParse(User * user, int opt)
 
 			if (vectorToDB(user, ids, "ToFollow", "userid") ==
 			    false) {
-				cerr << "[-] Error : vectorToDB" << endl;
+				std::cerr << "[-] Error : vectorToDB" << std::endl;
 				return;
 			}
 
-			cout << "We have added " << ids.size() <<
-			    " new to follow" << endl;
+			std::cout << "We have added " << ids.size() <<
+			    " new to follow" << std::endl;
 		}
 		break;
 	case 2:		// Get following of a user
 		{
-			cout << "Username : ";
-			cin >> username;
+			std::cout << "Username : ";
+			std::cin >> username;
 
 			if (removeDuplicates(user) == false) {
-				cerr <<
+				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    endl;
+				    std::endl;
 				return;
 			}
 
@@ -382,26 +379,26 @@ void optionParse(User * user, int opt)
 
 			if (vectorToDB(user, ids, "ToFollow", "userid") ==
 			    false) {
-				cerr << "[-] Error : vectorToDB" << endl;
+				std::cerr << "[-] Error : vectorToDB" << std::endl;
 				return;
 			}
 
-			cout << "We have added " << ids.size() <<
-			    " new to follow" << endl;
+			std::cout << "We have added " << ids.size() <<
+			    " new to follow" << std::endl;
 
 			break;
 		}
 	case 3:		// Search
 		{
-			string query;
-			cout << "Enter a phrase : ";
-			cin.ignore();
-			getline(cin, query);
+			std::string query;
+			std::cout << "Enter a phrase : ";
+			std::cin.ignore();
+			getline(std::cin, query);
 
 			if (removeDuplicates(user) == false) {
-				cerr <<
+				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    endl;
+				    std::endl;
 				return;
 			}
 
@@ -409,19 +406,19 @@ void optionParse(User * user, int opt)
 
 			if (vectorToDB(user, ids, "ToFollow", "userid") ==
 			    false) {
-				cerr << "[-] Error : vectorToDB" << endl;
+				std::cerr << "[-] Error : vectorToDB" << std::endl;
 				return;
 			}
-			cout << "We have added " << ids.size() <<
-			    " new to follow" << endl;
+			std::cout << "We have added " << ids.size() <<
+			    " new to follow" << std::endl;
 		}
 		break;
 	case 4:		// follow users
 		{
 			if (removeDuplicates(user) == false) {
-				cerr <<
+				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    endl;
+				    std::endl;
 				return;
 			}
 
@@ -441,17 +438,17 @@ void optionParse(User * user, int opt)
 	case 7:		// Configure
 		{
 			configure(user);
-			cout << "Rerun application to apply changes." << endl;
+			std::cout << "Rerun application to apply changes." << std::endl;
 		}
 		break;
 	case 8:		// quit
 		{
-			cout << "\tHave a nice day!" << endl;
+			std::cout << "\tHave a nice day!" << std::endl;
 			exit(1);
 		}
 		break;
 	default:
-		cerr << "\t[-] Error : Invalid option" << endl;
+		std::cerr << "\t[-] Error : Invalid option" << std::endl;
 		break;
 	}
 }
@@ -464,27 +461,27 @@ void optionParse(User * user, int opt)
  */
 void unfollow(User * user)
 {
-	vector < string > followers(getFollowingOf(user, user->username));
-	vector < string >::iterator it;
-	vector < string > result;
-	string who;
+	std::vector < std::string > followers(getFollowingOf(user, user->username));
+	std::vector < std::string >::iterator it;
+	std::vector < std::string > result;
+	std::string who;
 	bool isfollow = true;
 	long unfollowed = 0;
 	gotExitSignal = false;
 
 	// Don't do anything if there's no one to unfollow
 	if (followers.size() == 0) {
-		cerr << "(Err:No one to unfollow)" << endl;
+		std::cerr << "(Err:No one to unfollow)" << std::endl;
 		return;
 	}
 
 	if (removeDuplicates(user) == false) {
-		cerr << "(Err:Unable to remove duplicates)" << endl;
+		std::cerr << "(Err:Unable to remove duplicates)" << std::endl;
 		return;
 	}
 	// Install the signal handler
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		cerr << "(Err:Unable to install signalHandler)" << endl;
+		std::cerr << "(Err:Unable to install signalHandler)" << std::endl;
 		return;
 	}
 
@@ -500,9 +497,9 @@ void unfollow(User * user)
 		if (parseLastResponse(user,
 				      "relationship.source.followed_by",
 				      isfollow) == false) {
-			cerr <<
+			std::cerr <<
 			    "(Err: Unable to find relationship.source.followed_by)"
-			    << endl;
+			    << std::endl;
 			break;
 		}
 
@@ -510,19 +507,19 @@ void unfollow(User * user)
 			if (parseLastResponse(user,
 					      "relationship.target.screen_name",
 					      who) == false) {
-				cerr <<
+				std::cerr <<
 				    "(Err:Unable to find relationship.target.screen_name)"
-				    << endl;
+				    << std::endl;
 				break;
 			}
 			if (user->twitterObj.friendshipDestroy(*it, true)) {
-				cout << "Unfollowed " << who;
+				std::cout << "Unfollowed " << who;
 				unfollowed++;
 				result.push_back(*it);
 				cleanLine(120);
 				sleep(randomize(1, 1));
 			} else {
-				cout << "Unable to Unfollow " << who;
+				std::cout << "Unable to Unfollow " << who;
 				cleanLine(120);
 			}
 		}
@@ -531,12 +528,12 @@ void unfollow(User * user)
 
 	// restart the exit signal flag
 	gotExitSignal = false;
-	cout << "We have unfollowed " << unfollowed << "/" << followers.size()
-	    << endl;
+	std::cout << "We have unfollowed " << unfollowed << "/" << followers.size()
+	    << std::endl;
 
 	// write results to db
 	if (vectorToDB(user, result, "UnFollowed", "userid") == false)
-		cerr << "[-] Error : Unable to write to db" << endl;
+		std::cerr << "[-] Error : Unable to write to db" << std::endl;
 }
 
 /* @method      : twitCurl::~twitCurl
@@ -550,14 +547,14 @@ twitCurl::~twitCurl()
  */
 void optionShow()
 {
-	cout << "1) Get followers of a user" << endl;
-	cout << "2) Get following of a user" << endl;
-	cout << "3) Search by " << endl;
-	cout << "4) Start following" << endl;
-	cout << "5) Status" << endl;
-	cout << "6) Unfollow users who haven't followed" << endl;
-	cout << "7) Configure" << endl;
-	cout << "8) Quit" << endl;
+	std::cout << "1) Get followers of a user" << std::endl;
+	std::cout << "2) Get following of a user" << std::endl;
+	std::cout << "3) Search by " << std::endl;
+	std::cout << "4) Start following" << std::endl;
+	std::cout << "5) Status" << std::endl;
+	std::cout << "6) Unfollow users who haven't followed" << std::endl;
+	std::cout << "7) Configure" << std::endl;
+	std::cout << "8) Quit" << std::endl;
 }
 
 /* @method      : For user configuration
@@ -567,46 +564,46 @@ void optionShow()
  */
 bool configure(User * user)
 {
-	string address, port, username, password, q;
+	std::string address, port, username, password, q;
 	int opt = -1;
 
-	cout << "1) Set proxy" << endl;
-	cout << "2) Filters" << endl;
-	cout << "3) Purge To Follow" << endl;
-	cout << "4) Purge Followed" << endl;
-	cout << "5) Purge Unfollowed" << endl;
-	cout << "6) Purge MyFollowers" << endl;
-	cout << "7) Pruge all" << endl;
-	cout << "8) Return" << endl;
+	std::cout << "1) Set proxy" << std::endl;
+	std::cout << "2) Filters" << std::endl;
+	std::cout << "3) Purge To Follow" << std::endl;
+	std::cout << "4) Purge Followed" << std::endl;
+	std::cout << "5) Purge Unfollowed" << std::endl;
+	std::cout << "6) Purge MyFollowers" << std::endl;
+	std::cout << "7) Pruge all" << std::endl;
+	std::cout << "8) Return" << std::endl;
 
 	opt = optionSelect();
 
 	switch (opt) {
 	case 1:		// configure proxy
 		{
-			cin.ignore();
+			std::cin.ignore();
 
-			cout << "address  : ";
-			getline(cin, address);
+			std::cout << "address  : ";
+			getline(std::cin, address);
 
-			cout << "port     : ";
-			getline(cin, port);
+			std::cout << "port     : ";
+			getline(std::cin, port);
 
-			cout <<
+			std::cout <<
 			    "Does this proxy use a username:password [y/n] ? ";
-			getline(cin, q);
+			getline(std::cin, q);
 
 			if (q == "y" || q == "Y") {
-				cout << "username : ";
-				getline(cin, username);
-				cout << "password : ";
-				getline(cin, password);
+				std::cout << "username : ";
+				getline(std::cin, username);
+				std::cout << "password : ";
+				getline(std::cin, password);
 			}
 
 			if (change_proxy
 			    (user, address, port, username, password) == false)
-				cerr << "[-] Error Unable to change proxy" <<
-				    endl;
+				std::cerr << "[-] Error Unable to change proxy" <<
+				    std::endl;
 		}
 		break;
 	case 2:		// filters
@@ -617,49 +614,49 @@ bool configure(User * user)
 	case 3:		// purge to follow
 		{
 			if (purgeTableDB(user, "ToFollow") == false)
-				cerr << "[-] Error : Unable toi purge ToFollow"
-				    << endl;
+				std::cerr << "[-] Error : Unable toi purge ToFollow"
+				    << std::endl;
 		}
 		break;
 	case 4:		// purge followed
 		{
 			if (purgeTableDB(user, "Followed") == false)
-				cerr << "[-] Error : Unable to purge Followed"
-				    << endl;
+				std::cerr << "[-] Error : Unable to purge Followed"
+				    << std::endl;
 		}
 		break;
 	case 5:		// purge unfollowed
 		{
 			if (purgeTableDB(user, "UnFollowed") == false)
-				cerr << "[-] Error : Unable to purge UnFollowed"
-				    << endl;
+				std::cerr << "[-] Error : Unable to purge UnFollowed"
+				    << std::endl;
 		}
 		break;
 	case 6:
 		{
 			if (purgeTableDB(user, "MyFollowers") == false)
-				cerr <<
+				std::cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
-				    endl;
+				    std::endl;
 		}
 		break;
 	case 7:		// purge all
 		{
 			if (purgeTableDB(user, "ToFollow") == false)
-				cerr << "[-] Error : Unable to purge ToFollow"
-				    << endl;
+				std::cerr << "[-] Error : Unable to purge ToFollow"
+				    << std::endl;
 
 			if (purgeTableDB(user, "Followed") == false)
-				cerr << "[-] Error : Unable to purge Followed"
-				    << endl;
+				std::cerr << "[-] Error : Unable to purge Followed"
+				    << std::endl;
 
 			if (purgeTableDB(user, "UnFollowed") == false)
-				cerr << "[-] Error : Unable to purge " << endl;
+				std::cerr << "[-] Error : Unable to purge " << std::endl;
 
 			if (purgeTableDB(user, "MyFollowers") == false)
-				cerr <<
+				std::cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
-				    endl;
+				    std::endl;
 		}
 		break;
 	case 8:		// return
@@ -677,9 +674,9 @@ bool configure(User * user)
  * @input       : user, table
  * @outpt       : false if failed, otherwise true.
  */
-bool purgeTableDB(User * user, string table)
+bool purgeTableDB(User * user, std::string table)
 {
-	string q;
+	std::string q;
 
 	user->db.connect(user->db_name.c_str());
 
@@ -697,11 +694,11 @@ bool purgeTableDB(User * user, string table)
  * @input       : address,port,username,password
  * @output      : false if failed
  */
-bool change_proxy(User * user, string address, string port, string username,
-		  string password)
+bool change_proxy(User * user, std::string address, std::string port, std::string username,
+		  std::string password)
 {
 
-	string q;
+	std::string q;
 
 	user->proxy.address = address;
 	user->proxy.port = port;
@@ -737,20 +734,20 @@ bool change_proxy(User * user, string address, string port, string username,
 
 /*
  * @method      : getValFromDB
- * @description : Get a value col from a table return vector.
+ * @description : Get a value col from a table return std::vector.
  * @input       : user, table, col
- * @output      : vector of string
+ * @output      : std::vector of std::string
  */
-vector < string > getValFromDB(User * user, string table, string col)
+std::vector < std::string > getValFromDB(User * user, std::string table, std::string col)
 {
-	string val, q;
-	vector < string > vals;
-	query::iterator it;
+	std::string val, q;
+	std::vector < std::string > vals;
+	sqlite3pp::query::iterator it;
 
 	q = "SELECT " + col + " FROM " + table + ";";
 	user->db.connect(user->db_name.c_str());
 
-	query qry(user->db, q.c_str());
+	sqlite3pp::query qry(user->db, q.c_str());
 
 	for (it = qry.begin(); it != qry.end(); it++) {
 		(*it).getter() >> val;
@@ -770,7 +767,7 @@ vector < string > getValFromDB(User * user, string table, string col)
  */
 bool authenticate(User * user)
 {
-	string q, authurl, pin;
+	std::string q, authurl, pin;
 
 	// set twitter user, pass, and consumer {key,secret}
 	user->twitterObj.setTwitterUsername(user->username);
@@ -788,11 +785,11 @@ bool authenticate(User * user)
 	} else {		// if we don't
 		// get pin
 		user->twitterObj.oAuthRequestToken(authurl);
-		cout <<
+		std::cout <<
 		    "Visit twitter and authorize the application then enter the PIN."
-		    << endl << authurl << endl;
-		cout << "PIN : ";
-		cin >> pin;
+		    << std::endl << authurl << std::endl;
+		std::cout << "PIN : ";
+		std::cin >> pin;
 		user->twitterObj.getOAuth().setOAuthPin(pin);
 		user->twitterObj.oAuthAccessToken();
 
@@ -820,9 +817,9 @@ bool authenticate(User * user)
  */
 int main()
 {
-	vector < string > myFollowers;
+	std::vector < std::string > myFollowers;
 	User *user = new User;
-	string result, temp, query;
+	std::string result, temp, query;
 	int opt;
 
 	srand(time(NULL));	// random seed
@@ -833,14 +830,14 @@ int main()
 
 	/* Initalize database */
 	if (initalizeDatabase(user) == false) {
-		cerr << "[-] Error : Unable to initalize database" << endl;
+		std::cerr << "[-] Error : Unable to initalize database" << std::endl;
 		return -1;
 	}
 	// we should see if the Config table has someone or not
 	if (userExistInDB(user) == false) {
 		// create the username, password
 		if (createUser(user) == false) {
-			cerr << "Unable to create user" << endl;
+			std::cerr << "Unable to create user" << std::endl;
 			return -1;
 		}
 	} else {		// Get all needed values from DB
@@ -864,8 +861,8 @@ int main()
 	if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
 		user->twitterObj.setProxyServerIp(user->proxy.address);
 		user->twitterObj.setProxyServerPort(user->proxy.port);
-		cout << "[+] Using proxy " << user->proxy.
-		    address << ":" << user->proxy.port << endl;
+		std::cout << "[+] Using proxy " << user->proxy.
+		    address << ":" << user->proxy.port << std::endl;
 		/* Set password if found */
 		if (!user->proxy.username.empty()
 		    && !user->proxy.password.empty()) {
@@ -877,7 +874,7 @@ int main()
 
 	/* Authenticate our user */
 	if (authenticate(user) == false) {
-		cerr << "[-] Failed while authenticating" << endl;
+		std::cerr << "[-] Failed while authenticating" << std::endl;
 		return -1;
 	}
 
@@ -886,24 +883,24 @@ int main()
 		// get following
 		if (parseLastResponse(user, "user.friends_count",
 				      user->following) == false) {
-			cerr << "[-] Error : Unable to find user.friends_count"
-			    << endl;
+			std::cerr << "[-] Error : Unable to find user.friends_count"
+			    << std::endl;
 			return -1;
 		}
 		// get followers
 		if (parseLastResponse(user, "user.followers_count",
 				      user->followers) == false) {
-			cerr <<
+			std::cerr <<
 			    "[-] Error : Unable to find user.followers_count" <<
-			    endl;
+			    std::endl;
 			return -1;
 		}
 		// set timezone if not set
 		if (user->timezone.empty()) {
 			if (parseLastResponse
 			    (user, "user.time_zone", user->timezone) == false) {
-				cerr << "[-] Error : Unable to find timezone" <<
-				    endl;
+				std::cerr << "[-] Error : Unable to find timezone" <<
+				    std::endl;
 				return -1;
 			} else {
 				user->db.connect(user->db_name.c_str());
@@ -911,51 +908,51 @@ int main()
 				    "UPDATE Config SET timezone = \"" +
 				    user->timezone + "\";";
 				if (user->db.execute(query.c_str()) != 0) {
-					cerr << "Unable to update timezone" <<
-					    endl;
+					std::cerr << "Unable to update timezone" <<
+					    std::endl;
 				}
 				user->db.disconnect();
-				cout << "We have set the timezone to " <<
-				    user->timezone << endl;
+				std::cout << "We have set the timezone to " <<
+				    user->timezone << std::endl;
 			}
 		}
 	} else {
-		cerr << "[-] Error : Unable to authenticate." << endl;
+		std::cerr << "[-] Error : Unable to authenticate." << std::endl;
 		if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
-			cout <<
+			std::cout <<
 			    "If this is due to misconfiguration you can change it"
-			    << endl;
+			    << std::endl;
 			if (configure(user) == false) {
-				cerr << "[-] Error : Unable to configure" <<
-				    endl;
+				std::cerr << "[-] Error : Unable to configure" <<
+				    std::endl;
 				return -1;
 			}
-			cout << "Rerun the application to apply changes." <<
-			    endl;
+			std::cout << "Rerun the application to apply changes." <<
+			    std::endl;
 		}
 
 		return -1;
 	}
 
-	cout << "=====================" << endl;
-	cout << "Hello @" << user->username << endl;
-	cout << "Following : " << user->following << endl;
-	cout << "Followers : " << user->followers << endl;
-	cout << "=====================" << endl << endl;
+	std::cout << "=====================" << std::endl;
+	std::cout << "Hello @" << user->username << std::endl;
+	std::cout << "Following : " << user->following << std::endl;
+	std::cout << "Followers : " << user->followers << std::endl;
+	std::cout << "=====================" << std::endl << std::endl;
 
 	/* We shall get our followers */
 	myFollowers = getFollowersOf(user, user->username);
 	if (myFollowers.size() != 0) {
-		cout << "Adding a result of " << myFollowers.size() <<
-		    " to MyFollowers;" << endl;
+		std::cout << "Adding a result of " << myFollowers.size() <<
+		    " to MyFollowers;" << std::endl;
 		if (vectorToDB(user, myFollowers, "MyFollowers", "userid") ==
 		    false) {
-			cerr << "[-] Error : Unable to vectorToDB" << endl;
+			std::cerr << "[-] Error : Unable to vectorToDB" << std::endl;
 		}
 	}
 	// Before entering the main loop fix the databases
 	if (removeDuplicates(user) == false) {
-		cerr << "[-] Error : Unable to remove duplicates" << endl;
+		std::cerr << "[-] Error : Unable to remove duplicates" << std::endl;
 		return -1;
 	}
 
@@ -977,7 +974,7 @@ int main()
  */
 bool initalizeDatabase(User * user)
 {
-	string query;
+	std::string query;
 
 	// Connect to database
 	if (user->db.connect(user->db_name.c_str()) != 0)
@@ -1000,15 +997,15 @@ bool initalizeDatabase(User * user)
 }
 
 /* @method      : vectorToDB
- * @description : will insert or replace UNIQUE a vector<string>.
- * @input       : User, vector, table, values
+ * @description : will insert or replace UNIQUE a std::vector<std::string>.
+ * @input       : User, std::vector, table, values
  * @output      : true if successful false if unable to connect to db
  * or unable to insert to table.
  */
-bool vectorToDB(User * user, vector < string > v, string table, string values)
+bool vectorToDB(User * user, std::vector < std::string > v, std::string table, std::string values)
 {
-	string query;
-	vector < string >::iterator it;
+	std::string query;
+	std::vector < std::string >::iterator it;
 
 	// chose database
 	if (user->db.connect(user->db_name.c_str()) == 1)
@@ -1023,7 +1020,7 @@ bool vectorToDB(User * user, vector < string > v, string table, string values)
 		    "INSERT OR REPLACE INTO " + table + " (" + values +
 		    ") VALUES ('" + *it + "');";
 		if (user->db.execute(query.c_str()) == 1) {
-			cerr << "[-] Error : vectorToDB " << query << endl;
+			std::cerr << "[-] Error : vectorToDB " << query << std::endl;
 			return false;
 		}
 	}
@@ -1055,39 +1052,39 @@ void signalHandler(int n)
 void cleanLine(int n)
 {
 	for (int i = 0; i < n; i++)
-		cout << " ";
-	cout << "\xd";
-	flush(cout);
+		std::cout << " ";
+	std::cout << "\xd";
+	flush(std::cout);
 }
 
 /* @method      : follow
- * @description : It will follow a vector of user ids
- * @input       : user ids string vector, and user
+ * @description : It will follow a std::vector of user ids
+ * @input       : user ids std::string std::vector, and user
  * @output      : None
  */
-void follow(vector < string > to_follow, User * user)
+void follow(std::vector < std::string > to_follow, User * user)
 {
 	gotExitSignal = false;
-	string username, error, result;
-	vector < string > followed;
-	vector < string >::iterator it;
+	std::string username, error, result;
+	std::vector < std::string > followed;
+	std::vector < std::string >::iterator it;
 	int ignored = 0;
 
 	if (to_follow.size() == 0) {
-		cerr << "(Err:Please add users to follow)" << endl;
+		std::cerr << "(Err:Please add users to follow)" << std::endl;
 		return;
 	}
 	// remove duplicates
 	if (removeDuplicates(user) == false) {
-		cerr << "(Err:Unable to remove duplicates)" << endl;
+		std::cerr << "(Err:Unable to remove duplicates)" << std::endl;
 		return;
 	}
 
-	cout << to_follow.size() << " to follow" << endl;
+	std::cout << to_follow.size() << " to follow" << std::endl;
 
 	/* Install the signal handler */
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		cerr << "(Err:Unable to install signalHandler)" << endl;
+		std::cerr << "(Err:Unable to install signalHandler)" << std::endl;
 		return;
 	}
 
@@ -1102,50 +1099,50 @@ void follow(vector < string > to_follow, User * user)
 					if (parseLastResponse(user, "hash.error", error) == true) {	// get hash error
 
 						// did we reach follow limit ?
-						if (string::npos !=
+						if (std::string::npos !=
 						    error.find
 						    ("You are unable to follow more people at this time"))
 						{
-							cout <<
+							std::cout <<
 							    "We have reached the follow limit for today."
-							    << endl;
+							    << std::endl;
 							followed.erase(followed.
 								       end());
 							break;
 						} else	// unhandled error (must handle if need to break)
 						{
-							cerr << "(Err:" << error
+							std::cerr << "(Err:" << error
 							    << ")";
 							cleanLine(120);
 							followed.push_back(*it);	// We have followed the user
 						}
 					}
 				} else {	// user followed
-					cout << "Followed " << username;
+					std::cout << "Followed " << username;
 					cleanLine(120);
 				}
 				// sleep for 1-3 seconds
 				//sleep(randomize(1, 2));
 			} else {	// unable to create friendship
-				cerr << "(Err:Unable to follow)";
+				std::cerr << "(Err:Unable to follow)";
 				cleanLine(120);
 			}
 		} else {	// filter ignored someone
 			// Did we reach API limit?
 			if (parseLastResponse(user, "hash.error", error) ==
 			    true) {
-				if (string::npos !=
+				if (std::string::npos !=
 				    error.find("Clients may not make")) {
-					cerr <<
+					std::cerr <<
 					    "The client have reached the API limit, please try again in an hour"
-					    << endl;
+					    << std::endl;
 					break;
 				}
 			}
 			// Who did we ignore ?
 			if (parseLastResponse(user, "user.name", username) ==
 			    true) {
-				cout << "Ignored " << username;
+				std::cout << "Ignored " << username;
 				cleanLine(120);
 			}
 			ignored++;
@@ -1155,24 +1152,24 @@ void follow(vector < string > to_follow, User * user)
 	/* when signal is caught or when block is over */
 	gotExitSignal = false;
 	if (followed.size() != 0)
-		cout << endl << "We have followed " << followed.size() << "/" <<
-		    to_follow.size() - ignored << endl;
+		std::cout << std::endl << "We have followed " << followed.size() << "/" <<
+		    to_follow.size() - ignored << std::endl;
 
 	if (vectorToDB(user, followed, "Followed", "userid") == false) {
-		cerr << "[-] Error : vectorToDB" << endl;
+		std::cerr << "[-] Error : vectorToDB" << std::endl;
 		return;
 	}
 	if (ignored > 0)
-		cout << "\tWe have Ignored : " << ignored << endl;
+		std::cout << "\tWe have Ignored : " << ignored << std::endl;
 }
 
 /*
  * @method      : concatVectors
  * @description : This will take src and add it to dest
- * @input       : destination vector, source vector
+ * @input       : destination std::vector, source std::vector
  * @output      : None
  */
-template < class T > void concatVectors(vector < T > &dest, vector < T > src)
+template < class T > void concatVectors(std::vector < T > &dest, std::vector < T > src)
 {
 	dest.insert(dest.end(), src.begin(), src.end());
 }
@@ -1181,21 +1178,21 @@ template < class T > void concatVectors(vector < T > &dest, vector < T > src)
  * @method      : removeDuplicates
  * @descrption  :
  * This will remove duplicates from the caches
- * 1) it will read the cache content to a vector
- * 2) it will sort and remove uniques from the vector
- * 3) it will delete cache, rewrite the new vector to it.
+ * 1) it will read the cache content to a std::vector
+ * 2) it will sort and remove uniques from the std::vector
+ * 3) it will delete cache, rewrite the new std::vector to it.
  * @input       : user 
  * @output      : true if duplicates are removed, otherwise false
  */
 bool removeDuplicates(User * user)
 {
-	vector < string > v_tofollow(dbToVector(user, "ToFollow", "userid"));
-	vector < string > v_followed(dbToVector(user, "Followed", "userid"));
-	vector < string >
+	std::vector < std::string > v_tofollow(dbToVector(user, "ToFollow", "userid"));
+	std::vector < std::string > v_followed(dbToVector(user, "Followed", "userid"));
+	std::vector < std::string >
 	    v_unfollowed(dbToVector(user, "UnFollowed", "userid"));
-	vector < string >
+	std::vector < std::string >
 	    v_myfollowers(dbToVector(user, "MyFollowers", "userid"));
-	vector < string >::iterator it;
+	std::vector < std::string >::iterator it;
 
 	// remove anything in myfollowers from tofollow list
 	for (it = v_myfollowers.begin(); it != v_myfollowers.end(); it++) {
@@ -1236,29 +1233,29 @@ bool removeDuplicates(User * user)
 /*
  * @method      : getFollowingOf
  * @description : Fetch the following of a user
- * and create a vector of their userids and return that vector
+ * and create a std::vector of their userids and return that std::vector
  * @input       : user, username
- * @output      : vector of userIDs of the username's following.
+ * @output      : std::vector of userIDs of the username's following.
  */
-vector < string > getFollowingOf(User * user, string username)
+std::vector < std::string > getFollowingOf(User * user, std::string username)
 {
-	string result, err, next_cursor;
-	vector < string > ids;
+	std::string result, err, next_cursor;
+	std::vector < std::string > ids;
 	next_cursor = "-1";
 
-	cout << "[+] Getting following of @" << username << endl;
+	std::cout << "[+] Getting following of @" << username << std::endl;
 
 	do {
 		if (user->twitterObj.friendsIdsGet(next_cursor, username,
 						   false) == true) {
 			user->twitterObj.getLastWebResponse(result);
-			ptree pt;
-			stringstream ss(result);
+			 boost::property_tree::ptree pt;
+			std::stringstream ss(result);
 			read_xml(ss, pt);
 
 			/* Catched and error ? */
 			if (parseLastResponse(user, "hash.error", err) == true) {
-				cerr << "[-] " << err << endl;
+				std::cerr << "[-] " << err << std::endl;
 				return ids;
 			}
 
@@ -1267,17 +1264,17 @@ vector < string > getFollowingOf(User * user, string username)
 					  next_cursor);
 
 			try {
-				BOOST_FOREACH(ptree::value_type & v,
+				BOOST_FOREACH( boost::property_tree::ptree::value_type & v,
 					      pt.get_child("id_list.ids"))
 				    ids.push_back(v.second.data());
 			}
-			catch(exception const &e) {
-				cerr << "[-] GetFollowingOf Exception" << endl;
+			catch(std::exception const &e) {
+				std::cerr << "[-] GetFollowingOf Exception" << std::endl;
 				return ids;
 			}
 		} else {
-			cerr << "[-] Failed to get following of @" <<
-			    username << endl;
+			std::cerr << "[-] Failed to get following of @" <<
+			    username << std::endl;
 			return ids;
 		}
 	} while (next_cursor != "0");
@@ -1288,30 +1285,30 @@ vector < string > getFollowingOf(User * user, string username)
 /*
  * @method      : getFollowersOf
  * @description : Get the followers of a user
- * and create a vector of their userIDs and return that vector
+ * and create a std::vector of their userIDs and return that std::vector
  * @input       : user, username
- * @output      : vector of userIDs of the username's followers
+ * @output      : std::vector of userIDs of the username's followers
  */
-vector < string > getFollowersOf(User * user, string username)
+std::vector < std::string > getFollowersOf(User * user, std::string username)
 {
-	string result, err, next_cursor;
-	vector < string > ids;
-	ptree pt;
+	std::string result, err, next_cursor;
+	std::vector < std::string > ids;
+	 boost::property_tree::ptree pt;
 
 	next_cursor = "-1";
 
-	cout << "[+] Getting followers of @" << username << endl;
+	std::cout << "[+] Getting followers of @" << username << std::endl;
 
 	do {
 		if (user->twitterObj.followersIdsGet(next_cursor, username,
 						     false) == true) {
 			user->twitterObj.getLastWebResponse(result);
-			stringstream ss(result);
+			std::stringstream ss(result);
 			read_xml(ss, pt);
 
 			/* Catched error ? */
 			if (parseLastResponse(user, "hash.error", err) == true) {
-				cerr << "[-] " << err << endl;
+				std::cerr << "[-] " << err << std::endl;
 				return ids;
 			}
 
@@ -1320,18 +1317,18 @@ vector < string > getFollowersOf(User * user, string username)
 					  next_cursor);
 
 			try {
-				BOOST_FOREACH(ptree::value_type & v,
+				BOOST_FOREACH( boost::property_tree::ptree::value_type & v,
 					      pt.get_child("id_list.ids"))
 				    ids.push_back(v.second.data());
 			}
-			catch(exception const &e) {
-				cerr << "[-] getFollowersOf Exception" << endl;
+			catch(std::exception const &e) {
+				std::cerr << "[-] getFollowersOf Exception" << std::endl;
 				return ids;
 			}
 		} else {
-			cerr <<
+			std::cerr <<
 			    "[-] Failed to get friendsIdsGet from @"
-			    << username << endl;
+			    << username << std::endl;
 		}
 	} while (next_cursor != "0");
 

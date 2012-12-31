@@ -1,7 +1,5 @@
 #include "twitterfu.h"
 
-using namespace std;
-
 /* @method      : filter::filter_list
  * @description : Show a list of filters and help
  * in toggling them.
@@ -11,19 +9,19 @@ void filter::filter_list(User * user)
 {
 	int opt;
 
-	cout << "Select one to toggle it" << endl;
+	std::cout << "Select one to toggle it" << std::endl;
 	do {
-		cout << "1) Have a profile picture : " << boolalpha <<
-		    user->filters.profilePicture << endl;
-		cout << "2) Have description       : " << boolalpha <<
-		    user->filters.description << endl;
-		cout << "3) Protected profile      : " << boolalpha <<
-		    user->filters.protectedProfile << endl;
-		cout << "4) Following ratio        : " << boolalpha <<
-		    user->filters.followRatio << endl;
-		cout << "5) Near by -4,+4 timezones: " << boolalpha <<
-		    user->filters.nearTimezone << endl;
-		cout << "6) return" << endl;
+		std::cout << "1) Have a profile picture : " << std::boolalpha <<
+		    user->filters.profilePicture << std::endl;
+		std::cout << "2) Have description       : " << std::boolalpha <<
+		    user->filters.description << std::endl;
+		std::cout << "3) Protected profile      : " << std::boolalpha <<
+		    user->filters.protectedProfile << std::endl;
+		std::cout << "4) Following ratio        : " << std::boolalpha <<
+		    user->filters.followRatio << std::endl;
+		std::cout << "5) Near by -4,+4 timezones: " << std::boolalpha <<
+		    user->filters.nearTimezone << std::endl;
+		std::cout << "6) return" << std::endl;
 
 		opt = optionSelect();
 		switch (opt) {
@@ -62,9 +60,9 @@ void filter::filter_list(User * user)
  * 5) Near our timezone by -4 or +4 timezones +1
  * @input       : user, userid
  */
-bool filter::main(User * user, string userid)
+bool filter::main(User * user, std::string userid)
 {
-	string resultXML, temp_following, temp_followers, timezone;
+	std::string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
 	int prediction = 0;
 	int total = 0;
@@ -80,8 +78,8 @@ bool filter::main(User * user, string userid)
 	if (parseLastResponse(user, "user.friends_count", temp_following) ==
 	    false)
 		return false;
-	stringstream sa(temp_following);
-	stringstream sb(temp_followers);
+	std::stringstream sa(temp_following);
+	std::stringstream sb(temp_followers);
 	sa >> following;
 	sb >> followers;
 
@@ -100,7 +98,7 @@ bool filter::main(User * user, string userid)
 
 	/* rule #2      : User not protected */
 	if (user->filters.protectedProfile == true) {
-		string protect;
+		std::string protect;
 		if (parseLastResponse(user, "user.protected", protect) == false)
 			return false;
 		if (protect == "false") {
@@ -111,7 +109,7 @@ bool filter::main(User * user, string userid)
 
 	/* rule #3      : Has profile image */
 	if (user->filters.profilePicture == true) {
-		string profile_image;
+		std::string profile_image;
 		if (parseLastResponse
 		    (user, "user.profile_image_url", profile_image) == false)
 			return false;
@@ -123,7 +121,7 @@ bool filter::main(User * user, string userid)
 
 	/* rule #4      : Has description */
 	if (user->filters.description == true) {
-		string description;
+		std::string description;
 		if (parseLastResponse(user, "user.description", description) ==
 		    false)
 			return false;
@@ -161,14 +159,14 @@ bool filter::main(User * user, string userid)
 
 /* @method      : filter::timezone
  * @description : Check if user's timezone is near us by -4 or +4 timezones
- * the timezones in the vector is pushed in order of their distance.
+ * the timezones in the std::vector is pushed in order of their distance.
  * @input       : user, timezone to check agains ours [-4,+4]
  * @output      : true if in range otherwise false
  */
-bool filter::predict_timezone(User * user, string timezone)
+bool filter::predict_timezone(User * user, std::string timezone)
 {
 	size_t timezoneAt;
-	vector < string > tzs;
+	std::vector < std::string > tzs;
 	tzs.push_back("International Date Line West");
 	tzs.push_back("Midway Island");
 	tzs.push_back("American Samoa");
@@ -315,8 +313,8 @@ bool filter::predict_timezone(User * user, string timezone)
 	tzs.push_back("Samoa");
 
 	// get the index of our timezone in the
-	// vector
-	vector < string >::iterator it =
+	// std::vector
+	std::vector < std::string >::iterator it =
 	    find(tzs.begin(), tzs.end(), user->timezone);
 	if (it != tzs.end()) {
 		timezoneAt = it - tzs.begin();
