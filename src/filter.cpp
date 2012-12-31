@@ -99,7 +99,8 @@ bool filter::main(User * user, std::string userid)
 	/* rule #2      : User not protected */
 	if (user->filters.protectedProfile == true) {
 		std::string protect;
-		if (action::lastResponse(user, "user.protected", protect) == false)
+		if (action::lastResponse(user, "user.protected", protect) ==
+		    false)
 			return false;
 		if (protect == "false") {
 			prediction++;
@@ -122,8 +123,8 @@ bool filter::main(User * user, std::string userid)
 	/* rule #4      : Has description */
 	if (user->filters.description == true) {
 		std::string description;
-		if (action::lastResponse(user, "user.description", description) ==
-		    false)
+		if (action::lastResponse(user, "user.description",
+					 description) == false)
 			return false;
 		if (!description.empty()) {
 			prediction++;

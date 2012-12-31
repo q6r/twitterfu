@@ -41,7 +41,7 @@ struct User {
 	std::string access_token_secret;
 	std::string db_name;
 	std::string timezone;
-	sqlite3pp::database db;		// sqlite3pp db
+	sqlite3pp::database db;	// sqlite3pp db
 	std::string followers, following;
 	Proxy proxy;
 	Filters filters;
@@ -49,44 +49,42 @@ struct User {
 };
 
 /* action */
-namespace action {        
-        bool lastResponse(User * user, std::string node, std::string & v);
-        void signalHandler(int n);
-        void follow(std::vector < std::string > to_follow, User * user);
-        void unfollow(User * user);
-        std::vector < std::string > getFollowers(User * user, std::string username);
-        std::vector < std::string > getFollowing(User * user, std::string username);
-        std::vector < std::string > search(User * user, std::string what);
-        bool status(User * user);
+namespace action {
+	bool lastResponse(User * user, std::string node, std::string & v);
+	void signalHandler(int n);
+	void follow(std::vector < std::string > to_follow, User * user);
+	void unfollow(User * user);
+	 std::vector < std::string > getFollowers(User * user,
+						  std::string username);
+	 std::vector < std::string > getFollowing(User * user,
+						  std::string username);
+	 std::vector < std::string > search(User * user, std::string what);
+	bool status(User * user);
 }
-
-
-/* database */
-namespace database {
-        bool removeDuplicatesInToFollow(User * user);
-        bool purgeTable(User * user, std::string table);
-        std::vector < std::string > toVector(User * user, std::string table, std::string value);
-        bool createUser(User * user);
-        std::vector < std::string > getVal(User * user, std::string table, std::string col);
-        bool initalize(User * user);
-        bool toDB(User * user, std::vector < std::string > v, std::string table, std::string values);
-        bool userExist(User * user);
+/* database */ namespace database {
+	bool removeDuplicatesInToFollow(User * user);
+	bool purgeTable(User * user, std::string table);
+	 std::vector < std::string > toVector(User * user, std::string table,
+					      std::string value);
+	bool createUser(User * user);
+	 std::vector < std::string > getVal(User * user, std::string table,
+					    std::string col);
+	bool initalize(User * user);
+	bool toDB(User * user, std::vector < std::string > v, std::string table,
+		  std::string values);
+	bool userExist(User * user);
 }
-
-
-/* filters */
-namespace filter {
+/* filters */ namespace filter {
 	bool main(User * user, std::string userid);
 	bool predict_timezone(User * user, std::string timezones);
 	void filter_list(User * user);
 }
-
 /* ProtoTypes
- */
-bool change_proxy(User * user, std::string address, std::string port, std::string username,
-		  std::string password);
+ */ bool change_proxy(User * user, std::string address, std::string port,
+		      std::string username, std::string password);
 bool configure(User * user);
-template < class T > void concatVectors(std::vector < T > &dest, std::vector < T > src);
+template < class T > void concatVectors(std::vector < T > &dest,
+					std::vector < T > src);
 std::vector < std::string > fileToVector(std::string filename);
 int optionSelect();
 void optionParse(User * user, int opt);

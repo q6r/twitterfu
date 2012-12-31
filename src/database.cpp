@@ -6,11 +6,12 @@
  * @input       : user, table, value
  * @output      : std::vector<std::string> of select value from table;
  */
-std::vector < std::string > database::toVector(User * user, std::string table, std::string value)
+std::vector < std::string > database::toVector(User * user, std::string table,
+					       std::string value)
 {
 	std::vector < std::string > results;
 	std::string userid;
-        sqlite3pp::query::iterator it;
+	sqlite3pp::query::iterator it;
 	std::string q = "SELECT " + value + " FROM " + table + ";";
 
 	user->db.connect(user->db_name.c_str());
@@ -73,8 +74,10 @@ bool database::purgeTable(User * user, std::string table)
  */
 bool database::removeDuplicatesInToFollow(User * user)
 {
-	std::vector < std::string > v_tofollow(database::toVector(user, "ToFollow", "userid"));
-	std::vector < std::string > v_followed(database::toVector(user, "Followed", "userid"));
+	std::vector < std::string >
+	    v_tofollow(database::toVector(user, "ToFollow", "userid"));
+	std::vector < std::string >
+	    v_followed(database::toVector(user, "Followed", "userid"));
 	std::vector < std::string >
 	    v_unfollowed(database::toVector(user, "UnFollowed", "userid"));
 	std::vector < std::string >
@@ -123,7 +126,8 @@ bool database::removeDuplicatesInToFollow(User * user)
  * @input       : user, table, col
  * @output      : std::vector of std::string
  */
-std::vector < std::string > database::getVal(User * user, std::string table, std::string col)
+std::vector < std::string > database::getVal(User * user, std::string table,
+					     std::string col)
 {
 	std::string val, q;
 	std::vector < std::string > vals;
@@ -198,7 +202,9 @@ bool database::createUser(User * user)
 		if (change_proxy
 		    (user, user->proxy.address, user->proxy.port,
 		     user->proxy.username, user->proxy.password) == false) {
-			std::cerr << "[-] Error : Unable to set proxy" << std::endl;
+			std::
+			    cerr << "[-] Error : Unable to set proxy" <<
+			    std::endl;
 			return false;
 		}
 
@@ -237,14 +243,14 @@ bool database::initalize(User * user)
 	return true;
 }
 
-
 /* @method      : toDB
  * @description : will insert or replace UNIQUE a std::vector<std::string>.
  * @input       : User, std::vector, table, values
  * @output      : true if successful false if unable to connect to db
  * or unable to insert to table.
  */
-bool database::toDB(User * user, std::vector < std::string > v, std::string table, std::string values)
+bool database::toDB(User * user, std::vector < std::string > v,
+		    std::string table, std::string values)
 {
 	std::string query;
 	std::vector < std::string >::iterator it;
@@ -262,7 +268,8 @@ bool database::toDB(User * user, std::vector < std::string > v, std::string tabl
 		    "INSERT OR REPLACE INTO " + table + " (" + values +
 		    ") VALUES ('" + *it + "');";
 		if (user->db.execute(query.c_str()) == 1) {
-			std::cerr << "[-] Error : database::toDB " << query << std::endl;
+			std::cerr << "[-] Error : database::toDB " << query <<
+			    std::endl;
 			return false;
 		}
 	}
@@ -273,4 +280,3 @@ bool database::toDB(User * user, std::vector < std::string > v, std::string tabl
 	user->db.disconnect();
 	return true;
 }
-
