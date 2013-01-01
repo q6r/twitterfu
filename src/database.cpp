@@ -202,8 +202,7 @@ bool database::createUser(User * user)
 		if (change_proxy
 		    (user, user->proxy.address, user->proxy.port,
 		     user->proxy.username, user->proxy.password) == false) {
-			std::
-			    cerr << "[-] Error : Unable to set proxy" <<
+			std::cerr << "[-] Error : Unable to set proxy" <<
 			    std::endl;
 			return false;
 		}

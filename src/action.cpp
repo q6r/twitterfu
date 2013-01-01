@@ -4,6 +4,33 @@
  */
 bool gotExitSignal = false;
 
+/*
+ * @method      : action::getLimit()
+ * @description : Get the limit
+ * @input       : user
+ * @output      : -1 error else rate limit
+ */
+int action::getRemainingHits(User * user)
+{
+	std::string temp_limit;
+	int limit;
+
+	// Get account limits remaining hits
+	if (user->twitterObj.accountRateLimitGet() == true) {
+		if (action::lastResponse(user, "hash.remaining-hits",
+					 temp_limit) == true) {
+			std::stringstream ss(temp_limit);
+			ss >> limit;
+		} else {
+			return -1;
+		}
+	} else {
+		return -1;
+	}
+
+	return limit;
+};
+
 /* @method      : action::status
  * @description : Show database, account and API status.
  * @input       : user
@@ -81,16 +108,13 @@ bool action::status(User * user)
 			return false;
 		}
 
-		std::
-		    cout << "\t\tRemaining hits : " << remaining_hits <<
+		std::cout << "\t\tRemaining hits : " << remaining_hits <<
 		    std::endl;
-		std::
-		    cout << "\t\tHourly limit   : " << hourly_limit <<
+		std::cout << "\t\tHourly limit   : " << hourly_limit <<
 		    std::endl;
 		std::cout << "\t\tReset  at      : " << reset_time << std::endl;
 	} else {
-		std::
-		    cerr << "\t[-] Error : Unable to get API status" <<
+		std::cerr << "\t[-] Error : Unable to get API status" <<
 		    std::endl;
 		return false;
 	}
@@ -310,8 +334,7 @@ void action::unfollow(User * user)
 	}
 	// Install the signal handler
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		std::
-		    cerr << "(Err:Unable to install signalHandler)" <<
+		std::cerr << "(Err:Unable to install signalHandler)" <<
 		    std::endl;
 		return;
 	}
@@ -359,8 +382,7 @@ void action::unfollow(User * user)
 
 	// restart the exit signal flag
 	gotExitSignal = false;
-	std::
-	    cout << "We have unfollowed " << unfollowed << "/" <<
+	std::cout << "We have unfollowed " << unfollowed << "/" <<
 	    followers.size()
 	    << std::endl;
 
@@ -396,8 +418,7 @@ void action::follow(std::vector < std::string > to_follow, User * user)
 
 	/* Install the signal handler */
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		std::
-		    cerr << "(Err:Unable to install signalHandler)" <<
+		std::cerr << "(Err:Unable to install signalHandler)" <<
 		    std::endl;
 		return;
 	}

@@ -50,6 +50,7 @@ struct User {
 
 /* action */
 namespace action {
+	int getRemainingHits(User * user);
 	bool lastResponse(User * user, std::string node, std::string & v);
 	void signalHandler(int n);
 	void follow(std::vector < std::string > to_follow, User * user);

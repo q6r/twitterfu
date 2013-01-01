@@ -171,9 +171,8 @@ void optionParse(User * user, int opt)
 				return;
 			}
 
-			action::
-			    follow(database::toVector
-				   (user, "ToFollow", "userid"), user);
+			action::follow(database::toVector
+				       (user, "ToFollow", "userid"), user);
 		}
 		break;
 	case 5:		// our status
@@ -445,10 +444,11 @@ bool authenticate(User * user)
  */
 int main()
 {
+	std::string error;
 	std::vector < std::string > myFollowers;
 	User *user = new User;
 	std::string result, temp, query;
-	int opt;
+	int opt, remainingHits;
 
 	srand(time(NULL));	// random seed
 
@@ -458,8 +458,7 @@ int main()
 
 	/* Initalize database */
 	if (database::initalize(user) == false) {
-		std::
-		    cerr << "[-] Error : Unable to initalize database" <<
+		std::cerr << "[-] Error : Unable to initalize database" <<
 		    std::endl;
 		return -1;
 	}
@@ -507,6 +506,23 @@ int main()
 	/* Authenticate our user */
 	if (authenticate(user) == false) {
 		std::cerr << "[-] Failed while authenticating" << std::endl;
+		return -1;
+	}
+
+	/* If we don't have enough hits suggest using a proxy
+	 * and exit 
+	 **/
+	remainingHits = action::getRemainingHits(user);
+	if (remainingHits == 0) {
+		std::cerr <<
+		    "[-] Error : You have reached the limit, maybe using a proxy might help"
+		    << std::endl;
+		if (configure(user) == false) {
+			std::
+			    cerr << "[-] Error : Unable to configure" <<
+			    std::endl;
+			return -1;
+		}
 		return -1;
 	}
 
@@ -587,8 +603,7 @@ int main()
 	}
 	// Before entering the main loop fix the databases
 	if (database::removeDuplicatesInToFollow(user) == false) {
-		std::
-		    cerr << "[-] Error : Unable to remove duplicates" <<
+		std::cerr << "[-] Error : Unable to remove duplicates" <<
 		    std::endl;
 		return -1;
 	}
