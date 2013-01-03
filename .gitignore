@@ -1,4 +1,17 @@
-# protected
+config.log
+src/.deps
+Makefile
+src/Makefile
+src/stamp-h1
+clean.sh
+autom4te.cache
+aclocal.m4
+missing
+*.in
+src/*.in
+install-sh
+depcomp
+configure
 protected/*
 cache/*
 tags

@@ -518,8 +518,7 @@ int main()
 		    "[-] Error : You have reached the limit, maybe using a proxy might help"
 		    << std::endl;
 		if (configure(user) == false) {
-			std::
-			    cerr << "[-] Error : Unable to configure" <<
+			std::cerr << "[-] Error : Unable to configure" <<
 			    std::endl;
 			return -1;
 		}

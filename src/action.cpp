@@ -325,6 +325,7 @@ void action::unfollow(User * user)
 	std::string who;
 	std::string isfollow = "true";
 	long unfollowed = 0;
+	int remainingHits = 0;
 	gotExitSignal = false;
 
 	// Don't do anything if there's no one to unfollow
@@ -348,19 +349,40 @@ void action::unfollow(User * user)
 
 		user->twitterObj.friendshipShow(*it, true);
 
-		if (lastResponse(user,
-				 "relationship.source.followed_by",
-				 isfollow) == false) {
-			std::cerr <<
-			    "(Err: Unable to find relationship.source.followed_by)"
-			    << std::endl;
+		/* get followed_by and if fails check
+		 * the remaining hits and reconfigure
+		 **/
+		if (action::lastResponse(user,
+					 "relationship.source.followed_by",
+					 isfollow) == false) {
+			// check if we reached the limit
+			remainingHits = action::getRemainingHits(user);
+			if (remainingHits == 0) {
+				std::cerr <<
+				    "[-] Error : You have reached the limit how about using a proxy ?"
+				    << std::endl;
+				if (configure(user) == false) {
+					std::cerr <<
+					    "[-] Error : Unable to configure" <<
+					    std::endl;
+				} else {
+					std::
+					    cout << "Rerun to apply changes" <<
+					    std::endl;
+				}
+			} else {	// unknown exception
+				std::cerr <<
+				    "(Err: Unable to find relationship.source.followed_by)"
+				    << std::endl;
+			}
 			break;
 		}
 
+		/* If the user is not following us */
 		if (isfollow == "false") {
-			if (lastResponse(user,
-					 "relationship.target.screen_name",
-					 who) == false) {
+			if (action::lastResponse(user,
+						 "relationship.target.screen_name",
+						 who) == false) {
 				std::cerr <<
 				    "(Err:Unable to find relationship.target.screen_name)"
 				    << std::endl;
@@ -377,6 +399,7 @@ void action::unfollow(User * user)
 				cleanLine(120);
 			}
 		}
+
 		isfollow = "true";
 	}
 
