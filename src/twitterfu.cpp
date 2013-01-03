@@ -449,10 +449,13 @@ int main()
 	User *user = new User;
 	std::string result, temp, query;
 	int opt, remainingHits;
+        struct passwd *pw = getpwuid( getuid() );
 
 	srand(time(NULL));	// random seed
 
-	user->db_name = "cache/db.sql";
+        /* get users directory */
+        user->db_name = pw->pw_dir;
+        user->db_name += "/.twitterfu.sql";
 	user->consumer_key = "nYFCp8lj4LHqmLTnVHFc0Q";
 	user->consumer_secret = "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4";
 

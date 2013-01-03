@@ -6,6 +6,9 @@
 #include <assert.h>
 #include <signal.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <limits>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
