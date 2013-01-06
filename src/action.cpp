@@ -410,7 +410,7 @@ void action::unfollow(User * user)
 				unfollowed++;
 				result.push_back(*it);
 				cleanLine(120);
-				sleep(randomize(1, 1));
+				sleep(randomize(3, 5));
 			} else {
 				std::cout << "Unable to Unfollow " << who;
 				cleanLine(120);
@@ -496,12 +496,11 @@ void action::follow(std::vector < std::string > to_follow, User * user)
 					std::cout << "Followed " << username;
 					cleanLine(120);
 				}
-				// sleep for 1-3 seconds
-				//sleep(randomize(1, 2));
 			} else {	// unable to create friendship
 				std::cerr << "(Err:Unable to follow)";
 				cleanLine(120);
 			}
+                        sleep(randomize(3,5));
 		} else {	// filter ignored someone
 			// Did we reach API limit?
 			if (lastResponse(user, "hash.error", error) == true) {
