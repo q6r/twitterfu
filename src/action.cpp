@@ -336,8 +336,8 @@ std::vector < std::string > action::getFollowers(User * user,
 void action::unfollow(User * user)
 {
 	std::vector < std::string >
-	    followers(getFollowing(user, user->username));
-	std::vector < std::string >::iterator it;
+                followers(database::getVal(user, "MyFollowers", "userid"));
+        std::vector < std::string >::iterator it;
 	std::vector < std::string > result;
 	std::string who;
 	std::string isfollow = "true";
