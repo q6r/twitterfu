@@ -366,7 +366,10 @@ bool authenticate(User * user)
 		return true;
 	} else {		// if we don't
 		// get pin
-		user->twitterObj.oAuthRequestToken(authurl);
+		if(user->twitterObj.oAuthRequestToken(authurl) == false) {
+                        std::cerr << "[-] Failed while trying to get auth url" << std::endl;
+                        return false;
+                }
 		std::cout <<
 		    "Visit twitter and authorize the application then enter the PIN."
 		    << std::endl << authurl << std::endl;
