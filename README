@@ -1,13 +1,20 @@
-twitterfu: Automated twitter follow/unfollow
+twitterfu: Automated twitter follow and unfollow
+
+( Using latest version of twitcurl by the time of this
+push; seems there's a problem while requesting oauth token in
+method twitcurl::oAuthRequestToken() submitted the bug to the
+author )
 
 Deps
 ====
+
 - boost
 - twitcurl (http://code.google.com/p/twitcurl/)
 - sqlite3
 
 Compile
 =======
+
 ./autogen.sh && ./configure && make && make install
 
 Configure
@@ -16,3 +23,4 @@ Configure
 Type twitterfu, when you run the application for the first time you will be ask to enter
 your password and username then a link to authorize the application using a PIN.
 
+Database is a sqlite3 at $HOME/.twitterfu.sql
