@@ -1,26 +1,8 @@
-/* Twitterfu
- *
- * This file is part of Twitterfu.
- *
- * Twitterfu is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * Twitterfu is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Twitterfu. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "twitterfu.h"
+#include "action.h"
+#include "database.h"
+#include "filter.h"
 
-/*
- * @method      : optionSelect
- * @output      : opt
- */
 int optionSelect()
 {
 	int opt = -1;
@@ -38,14 +20,6 @@ int optionSelect()
 	return opt;
 }
 
-/*
- * @method      : fileToVector
- * @description : Takes a filename opens it get's the content convert it to a std::vector and
- * returns the std::vector.
- * @input       : filename
- * @output      : std::vector
- *
- */
 std::vector < std::string > fileToVector(std::string filename)
 {
 	std::vector < std::string > v;
@@ -53,8 +27,9 @@ std::vector < std::string > fileToVector(std::string filename)
 	std::fstream fs(filename.c_str(), std::fstream::in);
 
 	if (fs.is_open() == false) {
-		std::cerr << "\t[-] Error : Unable to open " << filename <<
-		    std::endl;
+		std::
+		    cerr << "\t[-] Error : Unable to open " << filename << std::
+		    endl;
 		return v;
 	}
 
@@ -68,33 +43,17 @@ std::vector < std::string > fileToVector(std::string filename)
 	return v;
 }
 
-/* @method           : randomize
- * @input            : from, to
- * @output           : from <= random <= to
- */
 int randomize(int from, int to)
 {
 	return rand() % to + from;
 }
 
-/*
- * @method           : fileExists
- * @description      : check if file exists
- * @input            : filename
- * @output           : true if file exists, false otherwise
- */
 bool fileExists(std::string filename)
 {
 	struct stat fi;
 	return stat(filename.c_str(), &fi) == 0;
 }
 
-/*
- * @method      : optionParse
- * @description : Do a specific job depending on the opt
- * @input       : User object, option number
- * @output      : None
- */
 void optionParse(User * user, int opt)
 {
 	std::string username;
@@ -106,7 +65,7 @@ void optionParse(User * user, int opt)
 			std::cout << "Username : ";
 			std::cin >> username;
 
-			if (database::removeDuplicatesInToFollow(user) == false) {
+			if (removeDuplicatesInToFollow(user) == false) {
 				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    std::endl;
@@ -114,12 +73,10 @@ void optionParse(User * user, int opt)
 
 			}
 
-			ids = action::getFollowers(user, username);
+			ids = getFollowers(user, username);
 
-			if (database::toDB(user, ids, "ToFollow", "userid") ==
-			    false) {
-				std::cerr << "[-] Error : database::toDB" <<
-				    std::endl;
+			if (toDB(user, ids, "ToFollow", "userid") == false) {
+				std::cerr << "[-] Error : toDB" << std::endl;
 				return;
 			}
 
@@ -132,19 +89,17 @@ void optionParse(User * user, int opt)
 			std::cout << "Username : ";
 			std::cin >> username;
 
-			if (database::removeDuplicatesInToFollow(user) == false) {
+			if (removeDuplicatesInToFollow(user) == false) {
 				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    std::endl;
 				return;
 			}
 
-			ids = action::getFollowing(user, username);
+			ids = getFollowing(user, username);
 
-			if (database::toDB(user, ids, "ToFollow", "userid") ==
-			    false) {
-				std::cerr << "[-] Error : database::toDB" <<
-				    std::endl;
+			if (toDB(user, ids, "ToFollow", "userid") == false) {
+				std::cerr << "[-] Error : toDB" << std::endl;
 				return;
 			}
 
@@ -160,19 +115,17 @@ void optionParse(User * user, int opt)
 			std::cin.ignore();
 			getline(std::cin, query);
 
-			if (database::removeDuplicatesInToFollow(user) == false) {
+			if (removeDuplicatesInToFollow(user) == false) {
 				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    std::endl;
 				return;
 			}
 
-			ids = action::search(user, query);
+			ids = search(user, query);
 
-			if (database::toDB(user, ids, "ToFollow", "userid") ==
-			    false) {
-				std::cerr << "[-] Error : database::toDB" <<
-				    std::endl;
+			if (toDB(user, ids, "ToFollow", "userid") == false) {
+				std::cerr << "[-] Error : toDB" << std::endl;
 				return;
 			}
 			std::cout << "We have added " << ids.size() <<
@@ -181,31 +134,31 @@ void optionParse(User * user, int opt)
 		break;
 	case 4:		// follow users
 		{
-			if (database::removeDuplicatesInToFollow(user) == false) {
+			if (removeDuplicatesInToFollow(user) == false) {
 				std::cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    std::endl;
 				return;
 			}
 
-			action::follow(database::toVector
-				       (user, "ToFollow", "userid"), user);
+			follow(toVector(user, "ToFollow", "userid"), user);
 		}
 		break;
 	case 5:		// our status
 		{
-			action::status(user);
+			status(user);
 		}
 		break;
 	case 6:		// unfollow users
 		{
-			action::unfollow(user);
+			unfollow(user);
 		}
 		break;
 	case 7:		// Configure
 		{
 			configure(user);
-			std::cout << "Rerun application to apply changes." <<
+			std::
+			    cout << "Rerun application to apply changes." <<
 			    std::endl;
 		}
 		break;
@@ -221,15 +174,6 @@ void optionParse(User * user, int opt)
 	}
 }
 
-/* @method      : twitCurl::~twitCurl
- */
-twitCurl::~twitCurl()
-{
-}
-
-/* @method      : optionShow
- * @description : Show available option to the user
- */
 void optionShow()
 {
 	std::cout << "1) Get followers of a user" << std::endl;
@@ -242,11 +186,6 @@ void optionShow()
 	std::cout << "8) Quit" << std::endl;
 }
 
-/* @method      : For user configuration
- * @description : Configure various options for user
- * @input       : user
- * @output      : false if failed otherwise true
- */
 bool configure(User * user)
 {
 	std::string address, port, username, password, q;
@@ -274,7 +213,8 @@ bool configure(User * user)
 			std::cout << "port     : ";
 			getline(std::cin, port);
 
-			std::cout <<
+			std::
+			    cout <<
 			    "Does this proxy use a username:password [y/n] ? ";
 			getline(std::cin, q);
 
@@ -287,65 +227,74 @@ bool configure(User * user)
 
 			if (change_proxy
 			    (user, address, port, username, password) == false)
-				std::cerr << "[-] Error Unable to change proxy"
+				std::
+				    cerr << "[-] Error Unable to change proxy"
 				    << std::endl;
 		}
 		break;
 	case 2:		// filters
 		{
-			filter::filter_list(user);
+			filter_list(user);
 		}
 		break;
 	case 3:		// purge to follow
 		{
-			if (database::purgeTable(user, "ToFollow") == false)
-				std::cerr <<
+			if (purgeTable(user, "ToFollow") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable toi purge ToFollow" <<
 				    std::endl;
 		}
 		break;
 	case 4:		// purge followed
 		{
-			if (database::purgeTable(user, "Followed") == false)
-				std::cerr <<
+			if (purgeTable(user, "Followed") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable to purge Followed" <<
 				    std::endl;
 		}
 		break;
 	case 5:		// purge unfollowed
 		{
-			if (database::purgeTable(user, "UnFollowed") == false)
-				std::cerr <<
+			if (purgeTable(user, "UnFollowed") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable to purge UnFollowed" <<
 				    std::endl;
 		}
 		break;
 	case 6:
 		{
-			if (database::purgeTable(user, "MyFollowers") == false)
-				std::cerr <<
+			if (purgeTable(user, "MyFollowers") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
 				    std::endl;
 		}
 		break;
 	case 7:		// purge all
 		{
-			if (database::purgeTable(user, "ToFollow") == false)
-				std::cerr <<
+			if (purgeTable(user, "ToFollow") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable to purge ToFollow" <<
 				    std::endl;
 
-			if (database::purgeTable(user, "Followed") == false)
-				std::cerr <<
+			if (purgeTable(user, "Followed") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable to purge Followed" <<
 				    std::endl;
 
-			if (database::purgeTable(user, "UnFollowed") == false)
-				std::cerr << "[-] Error : Unable to purge " <<
+			if (purgeTable(user, "UnFollowed") == false)
+				std::
+				    cerr << "[-] Error : Unable to purge " <<
 				    std::endl;
 
-			if (database::purgeTable(user, "MyFollowers") == false)
-				std::cerr <<
+			if (purgeTable(user, "MyFollowers") == false)
+				std::
+				    cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
 				    std::endl;
 		}
@@ -359,14 +308,9 @@ bool configure(User * user)
 	return true;
 }
 
-/*
- * @method      : change_proxy
- * @description : change proxy and set it in database
- * @input       : address,port,username,password
- * @output      : false if failed
- */
-bool change_proxy(User * user, std::string address, std::string port,
-		  std::string username, std::string password)
+bool
+change_proxy(User * user, std::string address, std::string port,
+	     std::string username, std::string password)
 {
 
 	std::string q;
@@ -403,12 +347,6 @@ bool change_proxy(User * user, std::string address, std::string port,
 	return true;
 }
 
-/*
- * @method      : authenticate
- * @description : authenticate the user
- * @input       : user
- * @output      : true if successful, otherwise false
- */
 bool authenticate(User * user)
 {
 	std::string q, authurl, pin;
@@ -457,8 +395,6 @@ bool authenticate(User * user)
 	return false;
 }
 
-/* @method      : main
- */
 int main()
 {
 	std::string error;
@@ -466,46 +402,43 @@ int main()
 	User *user = new User;
 	std::string result, temp, query;
 	int opt, remainingHits;
-        struct passwd *pw = getpwuid( getuid() );
+	struct passwd *pw = getpwuid(getuid());
 
 	srand(time(NULL));	// random seed
 
-        /* get users directory */
-        user->db_name = pw->pw_dir;
-        user->db_name += "/.twitterfu.sql";
+	/* get users directory */
+	user->db_name = pw->pw_dir;
+	user->db_name += "/.twitterfu.sql";
 	user->consumer_key = "nYFCp8lj4LHqmLTnVHFc0Q";
 	user->consumer_secret = "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4";
 
 	/* Initalize database */
-	if (database::initalize(user) == false) {
-		std::cerr << "[-] Error : Unable to initalize database" <<
-		    std::endl;
+	if (initalize(user) == false) {
+		std::cerr << "[-] Error : Unable to initalize database" << std::
+		    endl;
 		return -1;
 	}
 	// we should see if the Config table has someone or not
-	if (database::userExist(user) == false) {
+	if (userExist(user) == false) {
 		// create the username, password
-		if (database::createUser(user) == false) {
+		if (createUser(user) == false) {
 			std::cerr << "Unable to create user" << std::endl;
 			return -1;
 		}
 	} else {		// Get all needed values from DB
-		user->username =
-		    database::getVal(user, "Config", "username").at(0);
+		user->username = getVal(user, "Config", "username").at(0);
 		user->access_token_key =
-		    database::getVal(user, "Config", "access_key").at(0);
+		    getVal(user, "Config", "access_key").at(0);
 		user->access_token_secret =
-		    database::getVal(user, "Config", "access_secret").at(0);
+		    getVal(user, "Config", "access_secret").at(0);
 		user->proxy.address =
-		    database::getVal(user, "Config", "proxy_address").at(0);
-		user->proxy.port =
-		    database::getVal(user, "Config", "proxy_port").at(0);
+		    getVal(user, "Config", "proxy_address").at(0);
+		user->proxy.port = getVal(user, "Config", "proxy_port").at(0);
 		user->proxy.username =
-		    database::getVal(user, "Config", "proxy_username").at(0);
+		    getVal(user, "Config", "proxy_username").at(0);
 		user->proxy.password =
-		    database::getVal(user, "Config", "proxy_password").at(0);
-		user->timezone =
-		    database::getVal(user, "Config", "timezone").at(0);
+		    getVal(user, "Config", "proxy_password").at(0);
+		user->timezone = getVal(user, "Config", "timezone").at(0);
 	}
 
 	/* Set up proxy if found */
@@ -532,14 +465,14 @@ int main()
 	/* If we don't have enough hits suggest using a proxy
 	 * and exit 
 	 **/
-	remainingHits = action::getRemainingHits(user);
+	remainingHits = getRemainingHits(user);
 	if (remainingHits == 0) {
 		std::cerr <<
 		    "[-] Error : You have reached the limit, maybe using a proxy might help"
 		    << std::endl;
 		if (configure(user) == false) {
-			std::cerr << "[-] Error : Unable to configure" <<
-			    std::endl;
+			std::cerr << "[-] Error : Unable to configure" << std::
+			    endl;
 			return -1;
 		}
 		return -1;
@@ -548,16 +481,17 @@ int main()
 	/* Verifying authentication */
 	if (user->twitterObj.accountVerifyCredGet() == true) {
 		// get following
-		if (action::lastResponse(user, "user.friends_count",
-					 user->following) == false) {
-			std::cerr <<
+		if (lastResponse(user, "user.friends_count", user->following) ==
+		    false) {
+			std::
+			    cerr <<
 			    "[-] Error : Unable to find user.friends_count" <<
 			    std::endl;
 			return -1;
 		}
 		// get followers
-		if (action::lastResponse(user, "user.followers_count",
-					 user->followers) == false) {
+		if (lastResponse(user, "user.followers_count",
+				 user->followers) == false) {
 			std::cerr <<
 			    "[-] Error : Unable to find user.followers_count" <<
 			    std::endl;
@@ -565,9 +499,10 @@ int main()
 		}
 		// set timezone if not set
 		if (user->timezone.empty()) {
-			if (action::lastResponse
-			    (user, "user.time_zone", user->timezone) == false) {
-				std::cerr <<
+			if (lastResponse(user, "user.time_zone", user->timezone)
+			    == false) {
+				std::
+				    cerr <<
 				    "[-] Error : Unable to find timezone" <<
 				    std::endl;
 				return -1;
@@ -577,7 +512,8 @@ int main()
 				    "UPDATE Config SET timezone = \"" +
 				    user->timezone + "\";";
 				if (user->db.execute(query.c_str()) != 0) {
-					std::cerr << "Unable to update timezone"
+					std::
+					    cerr << "Unable to update timezone"
 					    << std::endl;
 				}
 				user->db.disconnect();
@@ -592,12 +528,14 @@ int main()
 			    "If this is due to misconfiguration you can change it"
 			    << std::endl;
 			if (configure(user) == false) {
-				std::cerr << "[-] Error : Unable to configure"
-				    << std::endl;
+				std::
+				    cerr << "[-] Error : Unable to configure" <<
+				    std::endl;
 				return -1;
 			}
-			std::cout << "Rerun the application to apply changes."
-			    << std::endl;
+			std::
+			    cout << "Rerun the application to apply changes." <<
+			    std::endl;
 		}
 
 		return -1;
@@ -610,20 +548,18 @@ int main()
 	std::cout << "=====================" << std::endl << std::endl;
 
 	/* We shall get our followers */
-	myFollowers = action::getFollowers(user, user->username);
+	myFollowers = getFollowers(user, user->username);
 	if (myFollowers.size() != 0) {
 		std::cout << "Adding a result of " << myFollowers.size() <<
 		    " to MyFollowers;" << std::endl;
-		if (database::toDB(user, myFollowers, "MyFollowers", "userid")
-		    == false) {
-			std::cerr << "[-] Error : Unable to database::toDB" <<
-			    std::endl;
+		if (toDB(user, myFollowers, "MyFollowers", "userid") == false) {
+			std::cerr << "[-] Error : Unable to toDB" << std::endl;
 		}
 	}
 	// Before entering the main loop fix the databases
-	if (database::removeDuplicatesInToFollow(user) == false) {
-		std::cerr << "[-] Error : Unable to remove duplicates" <<
-		    std::endl;
+	if (removeDuplicatesInToFollow(user) == false) {
+		std::cerr << "[-] Error : Unable to remove duplicates" << std::
+		    endl;
 		return -1;
 	}
 
@@ -637,12 +573,6 @@ int main()
 	return 0;
 }
 
-/*
- * @method      : cleanLine
- * @description : Back to the first line and erase n characters
- * @input       : n of blanks
- * @output      : None
- */
 void cleanLine(int n)
 {
 	for (int i = 0; i < n; i++)
@@ -651,14 +581,8 @@ void cleanLine(int n)
 	flush(std::cout);
 }
 
-/*
- * @method      : concatVectors
- * @description : This will take src and add it to dest
- * @input       : destination std::vector, source std::vector
- * @output      : None
- */
-template < class T > void concatVectors(std::vector < T > &dest,
-					std::vector < T > src)
+template < class T > void
+concatVectors(std::vector < T > &dest, std::vector < T > src)
 {
 	dest.insert(dest.end(), src.begin(), src.end());
 }

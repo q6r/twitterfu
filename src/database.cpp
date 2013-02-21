@@ -1,30 +1,8 @@
-/* Twitterfu
- *
- * This file is part of Twitterfu.
- *
- * Twitterfu is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * Twitterfu is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Twitterfu. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "twitterfu.h"
+#include "database.h"
 
-/* @method      : database::toVector
- * @description : Reads a specific table and return the results in the value
- * as a std::vector of std::strings
- * @input       : user, table, value
- * @output      : std::vector<std::string> of select value from table;
- */
-std::vector < std::string > database::toVector(User * user, std::string table,
-					       std::string value)
+std::vector < std::string > toVector(User * user, std::string table,
+				     std::string value)
 {
 	std::vector < std::string > results;
 	std::string userid;
@@ -44,12 +22,7 @@ std::vector < std::string > database::toVector(User * user, std::string table,
 	return results;
 }
 
-/* @method      : database::userExist
- * @description : Check if there's a user in the DB.
- * @input       : User
- * @output      : true if exists otherwise false
- */
-bool database::userExist(User * user)
+bool userExist(User * user)
 {
 
 	user->db.connect(user->db_name.c_str());
@@ -62,13 +35,7 @@ bool database::userExist(User * user)
 	return true;
 }
 
-/*
- * @method      : database::purgeTable
- * @description : delete everything in a database
- * @input       : user, table
- * @outpt       : false if failed, otherwise true.
- */
-bool database::purgeTable(User * user, std::string table)
+bool purgeTable(User * user, std::string table)
 {
 	std::string q;
 
@@ -82,23 +49,16 @@ bool database::purgeTable(User * user, std::string table)
 	return true;
 }
 
-/*
- * @method      : database::removeDuplicatesInToFollow
- * @descrption  : This will remove duplicates from ToFollow
- * against the other tables
- * @input       : user 
- * @output      : true if duplicates are removed, otherwise false
- */
-bool database::removeDuplicatesInToFollow(User * user)
+bool removeDuplicatesInToFollow(User * user)
 {
 	std::vector < std::string >
-	    v_tofollow(database::toVector(user, "ToFollow", "userid"));
+	    v_tofollow(toVector(user, "ToFollow", "userid"));
 	std::vector < std::string >
-	    v_followed(database::toVector(user, "Followed", "userid"));
+	    v_followed(toVector(user, "Followed", "userid"));
 	std::vector < std::string >
-	    v_unfollowed(database::toVector(user, "UnFollowed", "userid"));
+	    v_unfollowed(toVector(user, "UnFollowed", "userid"));
 	std::vector < std::string >
-	    v_myfollowers(database::toVector(user, "MyFollowers", "userid"));
+	    v_myfollowers(toVector(user, "MyFollowers", "userid"));
 	std::vector < std::string >::iterator it;
 
 	// remove anything in myfollowers from tofollow list
@@ -129,7 +89,7 @@ bool database::removeDuplicatesInToFollow(User * user)
 	if (user->db.execute("DELETE FROM ToFollow;") == 1)
 		return false;
 
-	if (database::toDB(user, v_tofollow, "ToFollow", "userid") == false)
+	if (toDB(user, v_tofollow, "ToFollow", "userid") == false)
 		return false;
 
 	user->db.disconnect();
@@ -137,14 +97,8 @@ bool database::removeDuplicatesInToFollow(User * user)
 	return true;
 }
 
-/*
- * @method      : database::getVal
- * @description : Get a value col from a table return std::vector.
- * @input       : user, table, col
- * @output      : std::vector of std::string
- */
-std::vector < std::string > database::getVal(User * user, std::string table,
-					     std::string col)
+std::vector < std::string > getVal(User * user, std::string table,
+				   std::string col)
 {
 	std::string val, q;
 	std::vector < std::string > vals;
@@ -165,14 +119,7 @@ std::vector < std::string > database::getVal(User * user, std::string table,
 	return vals;
 }
 
-/* @method      : database::createUser
- * @description : Will std::cin some information
- * and add them to the database
- * @input       : user
- * @output      : true if successfuly inserted user to database
- * otherwise false;
- */
-bool database::createUser(User * user)
+bool createUser(User * user)
 {
 	std::string q;
 	std::cout << "Creating a user" << std::endl;
@@ -190,7 +137,8 @@ bool database::createUser(User * user)
 		std::cin >> user->proxy.address;
 		std::cout << "Proxy port     : ";
 		std::cin >> user->proxy.port;
-		std::cout <<
+		std::
+		    cout <<
 		    "Do you want to use a proxy username, password [y/n] ? ";
 		std::cin >> q;
 		if (q == "y" || q == "Y") {
@@ -219,8 +167,8 @@ bool database::createUser(User * user)
 		if (change_proxy
 		    (user, user->proxy.address, user->proxy.port,
 		     user->proxy.username, user->proxy.password) == false) {
-			std::cerr << "[-] Error : Unable to set proxy" <<
-			    std::endl;
+			std::cerr << "[-] Error : Unable to set proxy" << std::
+			    endl;
 			return false;
 		}
 
@@ -229,13 +177,7 @@ bool database::createUser(User * user)
 	return true;
 }
 
-/*
- * @method      : database::initalize
- * @description : It creates necessary tables if they don't exists
- * @input       : User
- * @output      : false if unable to connect to db, true otherwise.
- */
-bool database::initalize(User * user)
+bool initalize(User * user)
 {
 	std::string query;
 
@@ -259,14 +201,9 @@ bool database::initalize(User * user)
 	return true;
 }
 
-/* @method      : toDB
- * @description : will insert or replace UNIQUE a std::vector<std::string>.
- * @input       : User, std::vector, table, values
- * @output      : true if successful false if unable to connect to db
- * or unable to insert to table.
- */
-bool database::toDB(User * user, std::vector < std::string > v,
-		    std::string table, std::string values)
+bool
+toDB(User * user, std::vector < std::string > v,
+     std::string table, std::string values)
 {
 	std::string query;
 	std::vector < std::string >::iterator it;
@@ -284,8 +221,7 @@ bool database::toDB(User * user, std::vector < std::string > v,
 		    "INSERT OR REPLACE INTO " + table + " (" + values +
 		    ") VALUES ('" + *it + "');";
 		if (user->db.execute(query.c_str()) == 1) {
-			std::cerr << "[-] Error : database::toDB " << query <<
-			    std::endl;
+			std::cerr << "[-] Error : toDB " << query << std::endl;
 			return false;
 		}
 	}

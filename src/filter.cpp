@@ -1,28 +1,8 @@
-/* Twitterfu
- *
- * This file is part of Twitterfu.
- *
- * Twitterfu is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * Twitterfu is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Twitterfu. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "twitterfu.h"
+#include "filter.h"
+#include "action.h"
 
-/* @method      : filter::filter_list
- * @description : Show a list of filters and help
- * in toggling them.
- * @input       : user
- */
-void filter::filter_list(User * user)
+void filter_list(User * user)
 {
 	int opt;
 
@@ -65,19 +45,11 @@ void filter::filter_list(User * user)
 		default:
 			break;
 		}
-	} while (opt != 6);
+	}
+	while (opt != 6);
 }
 
-/* @method      : filter::main
- * @description : We filter users depending on 5 rules
- * 1) have a profile picture +1
- * 2) have description +1
- * 3) not protected profile +1
- * 4) following>follower or following:followers ratio 75% +1
- * 5) Near our timezone by -4 or +4 timezones +1
- * @input       : user, userid
- */
-bool filter::main(User * user, std::string userid)
+bool mainfilter(User * user, std::string userid)
 {
 	std::string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
@@ -89,11 +61,9 @@ bool filter::main(User * user, std::string userid)
 	user->twitterObj.getLastWebResponse(resultXML);
 
 	// get user following, and followers
-	if (action::lastResponse(user, "user.followers_count", temp_followers)
-	    == false)
+	if (lastResponse(user, "user.followers_count", temp_followers) == false)
 		return false;
-	if (action::lastResponse(user, "user.friends_count", temp_following) ==
-	    false)
+	if (lastResponse(user, "user.friends_count", temp_following) == false)
 		return false;
 	std::stringstream sa(temp_following);
 	std::stringstream sb(temp_followers);
@@ -116,8 +86,7 @@ bool filter::main(User * user, std::string userid)
 	/* rule #2      : User not protected */
 	if (user->filters.protectedProfile == true) {
 		std::string protect;
-		if (action::lastResponse(user, "user.protected", protect) ==
-		    false)
+		if (lastResponse(user, "user.protected", protect) == false)
 			return false;
 		if (protect == "false") {
 			prediction++;
@@ -128,7 +97,7 @@ bool filter::main(User * user, std::string userid)
 	/* rule #3      : Has profile image */
 	if (user->filters.profilePicture == true) {
 		std::string profile_image;
-		if (action::lastResponse
+		if (lastResponse
 		    (user, "user.profile_image_url", profile_image) == false)
 			return false;
 		if (!profile_image.empty()) {
@@ -140,8 +109,8 @@ bool filter::main(User * user, std::string userid)
 	/* rule #4      : Has description */
 	if (user->filters.description == true) {
 		std::string description;
-		if (action::lastResponse(user, "user.description",
-					 description) == false)
+		if (lastResponse(user, "user.description", description) ==
+		    false)
 			return false;
 		if (!description.empty()) {
 			prediction++;
@@ -153,15 +122,14 @@ bool filter::main(User * user, std::string userid)
 	 * ignore anyone who doesn't have a timezone
 	 */
 	if (user->filters.nearTimezone == true) {
-		if (action::lastResponse(user, "user.time_zone", timezone) ==
-		    false) {
+		if (lastResponse(user, "user.time_zone", timezone) == false) {
 			return false;
 		}
 		// if he or us don't have timezones then false;
 		if (timezone.empty() || user->timezone.empty()) {
 			return false;
 		}
-		if (filter::predict_timezone(user, timezone) == true)
+		if (predict_timezone(user, timezone) == true)
 			prediction++;
 		total++;
 	}
@@ -175,13 +143,7 @@ bool filter::main(User * user, std::string userid)
 	return true;
 }
 
-/* @method      : filter::timezone
- * @description : Check if user's timezone is near us by -4 or +4 timezones
- * the timezones in the std::vector is pushed in order of their distance.
- * @input       : user, timezone to check agains ours [-4,+4]
- * @output      : true if in range otherwise false
- */
-bool filter::predict_timezone(User * user, std::string timezone)
+bool predict_timezone(User * user, std::string timezone)
 {
 	size_t timezoneAt;
 	std::vector < std::string > tzs;
