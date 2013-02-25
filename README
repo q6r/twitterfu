@@ -1,21 +1,17 @@
 twitterfu: Automated twitter follow and unfollow
 
-( Using latest version of twitcurl by the time of this
-push; seems there's a problem while requesting oauth token in
-method twitcurl::oAuthRequestToken() submitted the bug to the
-author )
-
 Deps
 ====
 
 - boost
 - twitcurl (http://code.google.com/p/twitcurl/)
+        Included in this code, with twitter oauth api patch
 - sqlite3
 
 Compile
 =======
 
-./autogen.sh && ./configure && make && make install
+./autogen.sh && ./configure && make && make install && twitterfu
 
 Configure
 =========
