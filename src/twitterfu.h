@@ -1,3 +1,9 @@
+#ifndef TWITTERFU_H_
+#define TWITTERFU_H_
+#include "action.h"
+#include "database.h"
+#include "filter.h"
+
 /**
  * The main part of twitterfu
  * @file twitterfu.h
@@ -96,3 +102,4 @@ bool authenticate(User * user);
  * @param n number of blanks
  */
 void cleanLine(int n);
+#endif

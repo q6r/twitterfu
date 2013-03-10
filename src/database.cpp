@@ -1,4 +1,3 @@
-#include "twitterfu.h"
 #include "database.h"
 
 std::vector < std::string > toVector(User * user, std::string table,

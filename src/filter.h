@@ -1,3 +1,9 @@
+#ifndef FILTER_H_
+#define FILTER_H_
+#include "twitterfu.h"
+#include "action.h"
+#include "common.h"
+
 /**
  * Filters to filter in process of following
  * @file filter.h
@@ -31,3 +37,4 @@ bool predict_timezone(User * user, std::string timezones);
  * @param user the user object
  */
 void filter_list(User * user);
+#endif

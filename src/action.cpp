@@ -1,7 +1,4 @@
-#include "twitterfu.h"
 #include "action.h"
-#include "filter.h"
-#include "database.h"
 
 /**
  * Globals

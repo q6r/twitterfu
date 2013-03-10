@@ -1,6 +1,4 @@
-#include "twitterfu.h"
 #include "filter.h"
-#include "action.h"
 
 void filter_list(User * user)
 {

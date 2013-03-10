@@ -1,3 +1,10 @@
+#ifndef ACTION_H_
+#define ACTION_H_
+#include "twitterfu.h"
+#include "filter.h"
+#include "database.h"
+#include "common.h"
+
 /**
  * Actions related to the user objcet and API
  * @file action.h
@@ -70,3 +77,4 @@ std::vector < std::string > search(User * user, std::string what);
  * @return true of can read status
  */
 bool status(User * user);
+#endif

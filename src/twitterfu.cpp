@@ -1,7 +1,4 @@
 #include "twitterfu.h"
-#include "action.h"
-#include "database.h"
-#include "filter.h"
 
 int optionSelect()
 {

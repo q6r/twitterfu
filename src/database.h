@@ -1,3 +1,9 @@
+#ifndef DATABASE_H_
+#define DATABASE_H_
+#include "twitterfu.h"
+#include "common.h"
+#include <vector>
+
 /**
  * Helps with dealing with sqlite3 database
  * @file database.h
@@ -68,3 +74,4 @@ toDB(User * user, std::vector < std::string > v, std::string table,
  * @return true if user exists
  */
 bool userExist(User * user);
+#endif

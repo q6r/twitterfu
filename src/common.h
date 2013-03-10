@@ -1,3 +1,8 @@
+#ifndef COMMON_H_
+#define COMMON_H_
+#include <iostream>
+#include "sqlite3pp.h"
+#include <twitcurl.h>
 /**
  * Common things used in various parts of the code
  * @file common.h
@@ -73,3 +78,4 @@ struct User {
 	/** the twitter curl object */
 	twitCurl twitterObj;
 };
+#endif
