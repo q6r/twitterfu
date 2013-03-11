@@ -8,6 +8,7 @@
 #include "filter.h"
 #include "common.h"
 #include "Proxy.h"
+#include "Filters.h"
 
 using namespace std;
 

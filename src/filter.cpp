@@ -7,36 +7,34 @@ void filter_list(User * user)
 	cout << "Select one to toggle it" << endl;
 	do {
 		cout << "1) Have a profile picture : " << boolalpha <<
-		    user->filters.profilePicture << endl;
+		    user->filters.getProfilePicture() << endl;
 		cout << "2) Have description       : " << boolalpha <<
-		    user->filters.description << endl;
+		    user->filters.getDescription() << endl;
 		cout << "3) Protected profile      : " << boolalpha <<
-		    user->filters.protectedProfile << endl;
+		    user->filters.getProtectedProfile() << endl;
 		cout << "4) Following ratio        : " << boolalpha <<
-		    user->filters.followRatio << endl;
+		    user->filters.getFollowRatio() << endl;
 		cout << "5) Near by -4,+4 timezones: " << boolalpha <<
-		    user->filters.nearTimezone << endl;
+		    user->filters.getNearTimezone() << endl;
 		cout << "6) return" << endl;
 
 		opt = optionSelect();
 		switch (opt) {
 		case 1:
-			user->filters.profilePicture =
-			    !user->filters.profilePicture;
+			user->filters.setProfilePicture(
+			    !user->filters.getProfilePicture());
 			break;
 		case 2:
-			user->filters.description = !user->filters.description;
+			user->filters.setDescription(!user->filters.getDescription());
 			break;
 		case 3:
-			user->filters.protectedProfile =
-			    !user->filters.protectedProfile;
+			user->filters.setProtectedProfile(!user->filters.getProtectedProfile());
 			break;
 		case 4:
-			user->filters.followRatio = !user->filters.followRatio;
+			user->filters.setFollowRatio(!user->filters.getFollowRatio());
 			break;
 		case 5:
-			user->filters.nearTimezone =
-			    !user->filters.nearTimezone;
+			user->filters.setNearTimezone(!user->filters.getNearTimezone());
 			break;
 		case 6:	// return
 			break;
@@ -69,7 +67,7 @@ bool mainfilter(User * user, string userid)
 	sb >> followers;
 
 	/* rule #1      : Following more than followers or a ratio of 75% */
-	if (user->filters.followRatio == true) {
+	if (user->filters.getFollowRatio() == true) {
 		if (following >= followers) {
 			prediction++;
 		} else {
@@ -82,7 +80,7 @@ bool mainfilter(User * user, string userid)
 	}
 
 	/* rule #2      : User not protected */
-	if (user->filters.protectedProfile == true) {
+	if (user->filters.getProtectedProfile() == true) {
 		string protect;
 		if (lastResponse(user, "user.protected", protect) == false)
 			return false;
@@ -93,7 +91,7 @@ bool mainfilter(User * user, string userid)
 	}
 
 	/* rule #3      : Has profile image */
-	if (user->filters.profilePicture == true) {
+	if (user->filters.getProfilePicture() == true) {
 		string profile_image;
 		if (lastResponse
 		    (user, "user.profile_image_url", profile_image) == false)
@@ -105,7 +103,7 @@ bool mainfilter(User * user, string userid)
 	}
 
 	/* rule #4      : Has description */
-	if (user->filters.description == true) {
+	if (user->filters.getDescription() == true) {
 		string description;
 		if (lastResponse(user, "user.description", description) ==
 		    false)
@@ -119,7 +117,7 @@ bool mainfilter(User * user, string userid)
 	/* rule #5      : Predict by near by timezone of -4,+4
 	 * ignore anyone who doesn't have a timezone
 	 */
-	if (user->filters.nearTimezone == true) {
+	if (user->filters.getNearTimezone() == true) {
 		if (lastResponse(user, "user.time_zone", timezone) == false) {
 			return false;
 		}
@@ -293,7 +291,6 @@ bool predict_timezone(User * user, string timezone)
 	// get the index of our timezone in the
 	// vector
 	vector < string >::iterator it =
-	    //find(tzs.begin(), tzs.end(), user->timezone);
 	    find(tzs.begin(), tzs.end(), user->getTimezone());
 	if (it != tzs.end()) {
 		timezoneAt = it - tzs.begin();

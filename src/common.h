@@ -11,19 +11,4 @@ using namespace std;
  * @file common.h
  */
 
-/**
- * A structure to represent a user filter
- */
-struct Filters {
-	/** have profile picture */
-	bool profilePicture;
-	/** have description */
-	bool description;
-	/** is the profile protected */
-	bool protectedProfile;
-	/** falls in our follow ratio */
-	bool followRatio;
-	/** is near us */
-	bool nearTimezone;
-};
 #endif

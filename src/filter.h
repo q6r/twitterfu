@@ -5,10 +5,11 @@
 #include "action.h"
 #include "common.h"
 #include "User.h"
-
+#include "Filters.h"
 
 using namespace std;
 class User;
+class Filters;
 
 /**
  * Filters to filter in process of following
