@@ -36,7 +36,7 @@ class Filters {
                  * @param userid the user id to apply filters to it
                  * @return true if successfuly filtered
                  */
-                bool mainfilter(User *user, string userid);
+                bool mainFilter(User *user, string userid);
                 /**
                  * Check if user's timezone is near us by -4 or +4 timezones
                  * the timezones in the vector is pushed in order of their
@@ -46,13 +46,13 @@ class Filters {
                  * @param timezones of the userid
                  * @return true if able to predict time zone
                  */
-                bool predict_timezone(User *user, string timezones);
+                bool predictTimezone(User *user, string timezones);
                 /**
                  * Show a list of filters and help
                  * in toggling them.
                  * @param user the user object
                  */
-                void filter_list();
+                void filterList();
         private:
                 /** have profile picture */
                 bool profilePicture;

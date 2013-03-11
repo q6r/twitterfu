@@ -400,7 +400,7 @@ void follow(vector < string > to_follow, User * user)
 
 		// follow only those that applies to the
 		// by_ratio filter
-		if (user->filters->mainfilter(user, *it) == true) {
+		if (user->filters->mainFilter(user, *it) == true) {
 			if (user->twitterObj.friendshipCreate(*it, true) == true) {	// if followed the user
 				followed.push_back(*it);
 				if (lastResponse(user, "user.name", username) == false) {	// if can't get username

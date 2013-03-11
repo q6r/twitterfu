@@ -46,7 +46,7 @@ bool Filters::getNearTimezone() {
         return nearTimezone;
 }
 
-bool Filters::mainfilter(User * user, string userid)
+bool Filters::mainFilter(User * user, string userid)
 {
 	string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
@@ -127,7 +127,7 @@ bool Filters::mainfilter(User * user, string userid)
 		if (timezone.empty() || user->getTimezone().empty()) {
 			return false;
 		}
-		if (Filters::predict_timezone(user, timezone) == true)
+		if (Filters::predictTimezone(user, timezone) == true)
 			prediction++;
 		total++;
 	}
@@ -141,7 +141,7 @@ bool Filters::mainfilter(User * user, string userid)
 	return true;
 }
 
-void Filters::filter_list()
+void Filters::filterList()
 {
 	int opt;
 
@@ -185,7 +185,7 @@ void Filters::filter_list()
 	while (opt != 6);
 }
 
-bool Filters::predict_timezone(User * user, string timezone)
+bool Filters::predictTimezone(User * user, string timezone)
 {
 	size_t timezoneAt;
 	vector < string > tzs;

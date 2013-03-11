@@ -1,9 +1,11 @@
 #include "User.h"
 
 User::User() {
+        filters = new Filters;
 }
 
 User::~User() {
+        delete filters;
 }
 
 void User::setUsername(string n) {
