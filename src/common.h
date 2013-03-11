@@ -12,20 +12,6 @@ using namespace std;
  */
 
 /**
- * A structure representing the user proxy
- */
-struct Proxy {
-	/** ip address of proxy */
-	string address;
-	/** port number of proxy */
-	string port;
-	/** username of proxy */
-	string username;
-	/** password of proxy */
-	string password;
-};
-
-/**
  * A structure to represent a user filter
  */
 struct Filters {

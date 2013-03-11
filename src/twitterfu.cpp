@@ -312,30 +312,30 @@ change_proxy(User * user, string address, string port,
 
 	string q;
 
-	user->proxy.address = address;
-	user->proxy.port = port;
-	user->proxy.username = username;
-	user->proxy.password = password;
+        user->proxy.setAddress(address);
+        user->proxy.setPort(port);
+        user->proxy.setUsername(username);
+        user->proxy.setPassword(password);
 
 	user->db.connect(user->getDBname().c_str());
 
 	// update DB with new proxy
-	q = "UPDATE Config SET proxy_address = \"" + user->proxy.address +
+	q = "UPDATE Config SET proxy_address = \"" + user->proxy.getAddress() +
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
 
-	q = "UPDATE Config SET proxy_port = \"" + user->proxy.port +
+	q = "UPDATE Config SET proxy_port = \"" + user->proxy.getPort() +
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
 
-	q = "UPDATE Config SET proxy_username = \"" + user->proxy.username +
+	q = "UPDATE Config SET proxy_username = \"" + user->proxy.getUsername() +
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
 
-	q = "UPDATE Config SET proxy_password = \"" + user->proxy.password +
+	q = "UPDATE Config SET proxy_password = \"" + user->proxy.getPassword() +
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
@@ -429,27 +429,22 @@ int main()
 		user->setAccessTokenKey(getVal(user, "Config", "access_key").at(0));
 		user->setAccessTokenSecret(getVal(user, "Config", "access_secret").at(0));
 		user->setTimezone(getVal(user, "Config", "timezone").at(0));
-		user->proxy.address =
-		    getVal(user, "Config", "proxy_address").at(0);
-		user->proxy.port = getVal(user, "Config", "proxy_port").at(0);
-		user->proxy.username =
-		    getVal(user, "Config", "proxy_username").at(0);
-		user->proxy.password =
-		    getVal(user, "Config", "proxy_password").at(0);
+		user->proxy.setAddress(getVal(user, "Config", "proxy_address").at(0));
+		user->proxy.setPort(getVal(user, "Config", "proxy_port").at(0));
+		user->proxy.setUsername(getVal(user, "Config", "proxy_username").at(0));
+		user->proxy.setPassword(getVal(user, "Config", "proxy_password").at(0));
 	}
 
 	/* Set up proxy if found */
-	if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
-		user->twitterObj.setProxyServerIp(user->proxy.address);
-		user->twitterObj.setProxyServerPort(user->proxy.port);
-		cout << "[+] Using proxy " << user->proxy.
-		    address << ":" << user->proxy.port << endl;
+	if (!user->proxy.getAddress().empty() && !user->proxy.getPort().empty()) {
+		user->twitterObj.setProxyServerIp(user->proxy.getAddress());
+		user->twitterObj.setProxyServerPort(user->proxy.getPort());
+		cout << "[+] Using proxy " << user->proxy.getAddress() << ":" << user->proxy.getPort() << endl;
 		/* Set password if found */
-		if (!user->proxy.username.empty()
-		    && !user->proxy.password.empty()) {
-			user->twitterObj.setProxyUserName(user->proxy.username);
-			user->twitterObj.setTwitterPassword(user->proxy.
-							    password);
+		if (!user->proxy.getUsername().empty()
+		    && !user->proxy.getPassword().empty()) {
+			user->twitterObj.setProxyUserName(user->proxy.getUsername());
+			user->twitterObj.setTwitterPassword(user->proxy.getPassword());
 		}
 	}
 
@@ -518,7 +513,7 @@ int main()
 		}
 	} else {
 		cerr << "[-] Error : Unable to authenticate." << endl;
-		if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
+		if (!user->proxy.getAddress().empty() && !user->proxy.getPort().empty()) {
 			cout <<
 			    "If this is due to misconfiguration you can change it"
 			    << endl;

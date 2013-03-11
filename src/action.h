@@ -4,6 +4,7 @@
 #include "filter.h"
 #include "database.h"
 #include "common.h"
+#include "Proxy.h"
 
 using namespace std;
 class User;

@@ -6,8 +6,8 @@
 #include "sqlite3pp.h"
 #include <twitcurl.h>
 #include "filter.h"
-#include "proxy.h"
 #include "common.h"
+#include "Proxy.h"
 
 using namespace std;
 
