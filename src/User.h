@@ -3,14 +3,13 @@
 
 #include <iostream>
 #include <string>
-#include "sqlite3pp.h"
 #include <twitcurl.h>
-#include "filter.h"
-#include "common.h"
+#include "sqlite3pp.h"
 #include "Proxy.h"
 #include "Filters.h"
 
 using namespace std;
+class Filters;
 
 class User {
         public:
@@ -36,10 +35,9 @@ class User {
                 string & getTimezone();
                 string & getFollowers();
                 string & getFollowing();
-
                 sqlite3pp::database db;
                 Proxy proxy;
-                Filters filters;
+                Filters *filters;
                 twitCurl twitterObj;
         private:
                 string username;

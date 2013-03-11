@@ -1,9 +1,8 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
-#include "twitterfu.h"
-#include "common.h"
-#include "User.h"
+#include <string>
 #include <vector>
+#include "User.h"
 
 using namespace std;
 class User;

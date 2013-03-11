@@ -231,7 +231,7 @@ bool configure(User * user)
 		break;
 	case 2:		// filters
 		{
-			filter_list(user);
+                        user->filters->filter_list();
 		}
 		break;
 	case 3:		// purge to follow

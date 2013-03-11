@@ -1,13 +1,10 @@
 #ifndef ACTION_H_
 #define ACTION_H_
+#include <vector>
 #include "twitterfu.h"
-#include "filter.h"
-#include "database.h"
-#include "common.h"
-#include "Proxy.h"
+#include "User.h"
 
 using namespace std;
-class User;
 
 /**
  * Actions related to the user objcet and API

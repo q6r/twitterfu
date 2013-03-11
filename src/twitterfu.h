@@ -1,10 +1,5 @@
 #ifndef TWITTERFU_H_
 #define TWITTERFU_H_
-#include "action.h"
-#include "database.h"
-#include "filter.h"
-#include "User.h"
-
 /**
  * The main part of twitterfu
  * @file twitterfu.h
@@ -30,7 +25,9 @@
 #include <algorithm>
 #include <vector>
 #include "sqlite3pp.h"
-#include "common.h"
+#include "action.h"
+#include "database.h"
+#include "User.h"
 
 using namespace std;
 class User;
