@@ -3,6 +3,7 @@
 #include "action.h"
 #include "database.h"
 #include "filter.h"
+#include "User.h"
 
 /**
  * The main part of twitterfu
@@ -31,6 +32,9 @@
 #include "sqlite3pp.h"
 #include "common.h"
 
+using namespace std;
+class User;
+
 /**
  * Change proxy and set it in database
  * @param user the user object
@@ -40,8 +44,8 @@
  * @param password password of proxy
  * @return true if successfuly changed proxy
  */
-bool change_proxy(User * user, std::string address, std::string port,
-		  std::string username, std::string password);
+bool change_proxy(User * user, string address, string port,
+		  string username, string password);
 /**
  * Configure various options for user
  * @param user the user object
@@ -53,15 +57,15 @@ bool configure(User * user);
  * @param dest the destination vector
  * @param src the source vector
  */
-template < class T > void concatVectors(std::vector < T > &dest,
-					std::vector < T > src);
+template < class T > void concatVectors(vector < T > &dest,
+					vector < T > src);
 /**
  * Takes a filename opens it get's the content
- * convert it to a std::vector and
+ * convert it to a vector and
  * @param filename the filename
- * @return std::vector.
+ * @return vector.
  */
-std::vector < std::string > fileToVector(std::string filename);
+vector < string > fileToVector(string filename);
 /**
  * Take user input from stdin
  * @return selected option number
@@ -83,7 +87,7 @@ void optionShow();
  * @param filename the filename
  * @return true if file exists
  */
-bool fileExists(std::string filename);
+bool fileExists(string filename);
 /**
  * return a random number between from and to
  * @param from the from number
@@ -96,7 +100,7 @@ int randomize(int from, int to);
  * @param user the user object
  * @return true of user authenticated successfuly
  */
-bool authenticate(User * user);
+bool authenticate(User * &user);
 /**
  * Back to the first line and erase n characters
  * @param n number of blanks

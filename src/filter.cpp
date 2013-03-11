@@ -4,19 +4,19 @@ void filter_list(User * user)
 {
 	int opt;
 
-	std::cout << "Select one to toggle it" << std::endl;
+	cout << "Select one to toggle it" << endl;
 	do {
-		std::cout << "1) Have a profile picture : " << std::boolalpha <<
-		    user->filters.profilePicture << std::endl;
-		std::cout << "2) Have description       : " << std::boolalpha <<
-		    user->filters.description << std::endl;
-		std::cout << "3) Protected profile      : " << std::boolalpha <<
-		    user->filters.protectedProfile << std::endl;
-		std::cout << "4) Following ratio        : " << std::boolalpha <<
-		    user->filters.followRatio << std::endl;
-		std::cout << "5) Near by -4,+4 timezones: " << std::boolalpha <<
-		    user->filters.nearTimezone << std::endl;
-		std::cout << "6) return" << std::endl;
+		cout << "1) Have a profile picture : " << boolalpha <<
+		    user->filters.profilePicture << endl;
+		cout << "2) Have description       : " << boolalpha <<
+		    user->filters.description << endl;
+		cout << "3) Protected profile      : " << boolalpha <<
+		    user->filters.protectedProfile << endl;
+		cout << "4) Following ratio        : " << boolalpha <<
+		    user->filters.followRatio << endl;
+		cout << "5) Near by -4,+4 timezones: " << boolalpha <<
+		    user->filters.nearTimezone << endl;
+		cout << "6) return" << endl;
 
 		opt = optionSelect();
 		switch (opt) {
@@ -47,9 +47,9 @@ void filter_list(User * user)
 	while (opt != 6);
 }
 
-bool mainfilter(User * user, std::string userid)
+bool mainfilter(User * user, string userid)
 {
-	std::string resultXML, temp_following, temp_followers, timezone;
+	string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
 	int prediction = 0;
 	int total = 0;
@@ -63,8 +63,8 @@ bool mainfilter(User * user, std::string userid)
 		return false;
 	if (lastResponse(user, "user.friends_count", temp_following) == false)
 		return false;
-	std::stringstream sa(temp_following);
-	std::stringstream sb(temp_followers);
+	stringstream sa(temp_following);
+	stringstream sb(temp_followers);
 	sa >> following;
 	sb >> followers;
 
@@ -83,7 +83,7 @@ bool mainfilter(User * user, std::string userid)
 
 	/* rule #2      : User not protected */
 	if (user->filters.protectedProfile == true) {
-		std::string protect;
+		string protect;
 		if (lastResponse(user, "user.protected", protect) == false)
 			return false;
 		if (protect == "false") {
@@ -94,7 +94,7 @@ bool mainfilter(User * user, std::string userid)
 
 	/* rule #3      : Has profile image */
 	if (user->filters.profilePicture == true) {
-		std::string profile_image;
+		string profile_image;
 		if (lastResponse
 		    (user, "user.profile_image_url", profile_image) == false)
 			return false;
@@ -106,7 +106,7 @@ bool mainfilter(User * user, std::string userid)
 
 	/* rule #4      : Has description */
 	if (user->filters.description == true) {
-		std::string description;
+		string description;
 		if (lastResponse(user, "user.description", description) ==
 		    false)
 			return false;
@@ -124,7 +124,7 @@ bool mainfilter(User * user, std::string userid)
 			return false;
 		}
 		// if he or us don't have timezones then false;
-		if (timezone.empty() || user->timezone.empty()) {
+		if (timezone.empty() || user->getTimezone().empty()) {
 			return false;
 		}
 		if (predict_timezone(user, timezone) == true)
@@ -141,10 +141,10 @@ bool mainfilter(User * user, std::string userid)
 	return true;
 }
 
-bool predict_timezone(User * user, std::string timezone)
+bool predict_timezone(User * user, string timezone)
 {
 	size_t timezoneAt;
-	std::vector < std::string > tzs;
+	vector < string > tzs;
 	tzs.push_back("International Date Line West");
 	tzs.push_back("Midway Island");
 	tzs.push_back("American Samoa");
@@ -291,9 +291,10 @@ bool predict_timezone(User * user, std::string timezone)
 	tzs.push_back("Samoa");
 
 	// get the index of our timezone in the
-	// std::vector
-	std::vector < std::string >::iterator it =
-	    find(tzs.begin(), tzs.end(), user->timezone);
+	// vector
+	vector < string >::iterator it =
+	    //find(tzs.begin(), tzs.end(), user->timezone);
+	    find(tzs.begin(), tzs.end(), user->getTimezone());
 	if (it != tzs.end()) {
 		timezoneAt = it - tzs.begin();
 	} else {		// user->timezone is invalid timezone 'or not defined'

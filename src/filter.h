@@ -1,8 +1,14 @@
 #ifndef FILTER_H_
 #define FILTER_H_
+#include <string>
 #include "twitterfu.h"
 #include "action.h"
 #include "common.h"
+#include "User.h"
+
+
+using namespace std;
+class User;
 
 /**
  * Filters to filter in process of following
@@ -20,17 +26,17 @@
  * @param userid the user id to apply filters to it
  * @return true if successfuly filtered
  */
-bool mainfilter(User * user, std::string userid);
+bool mainfilter(User * user, string userid);
 /**
  * Check if user's timezone is near us by -4 or +4 timezones
- * the timezones in the std::vector is pushed in order of their
+ * the timezones in the vector is pushed in order of their
  * distance.
  *
  * @param user the user object
  * @param timezones of the userid
  * @return true if able to predict time zone
  */
-bool predict_timezone(User * user, std::string timezones);
+bool predict_timezone(User * user, string timezones);
 /**
  * Show a list of filters and help
  * in toggling them.

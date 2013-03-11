@@ -1,15 +1,15 @@
 #include "database.h"
 
-std::vector < std::string > toVector(User * user, std::string table,
-				     std::string value)
+vector < string > toVector(User * user, string table,
+				     string value)
 {
-	std::vector < std::string > results;
-	std::string userid;
+	vector < string > results;
+	string userid;
 	sqlite3pp::query::iterator it;
-	std::string q = "SELECT " + value + " FROM " + table + ";";
+	string q = "SELECT " + value + " FROM " + table + ";";
 
-	user->db.connect(user->db_name.c_str());
-	sqlite3pp::query qry(user->db, q.c_str());
+        user->db.connect(user->getDBname().c_str());
+        sqlite3pp::query qry(user->db, q.c_str());
 
 	for (it = qry.begin(); it != qry.end(); ++it) {
 		(*it).getter() >> userid;
@@ -23,8 +23,7 @@ std::vector < std::string > toVector(User * user, std::string table,
 
 bool userExist(User * user)
 {
-
-	user->db.connect(user->db_name.c_str());
+        user->db.connect(user->getDBname().c_str());
 	sqlite3pp::query qry(user->db, "SELECT * from Config;");
 
 	if (qry.begin() == qry.end())
@@ -34,12 +33,12 @@ bool userExist(User * user)
 	return true;
 }
 
-bool purgeTable(User * user, std::string table)
+bool purgeTable(User * user, string table)
 {
-	std::string q;
+	string q;
 
-	user->db.connect(user->db_name.c_str());
-
+	//user->db.connect(user->db_name.c_str());
+        user->db.connect(user->getDBname().c_str());
 	q = "DELETE FROM " + table + ";";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
@@ -50,15 +49,15 @@ bool purgeTable(User * user, std::string table)
 
 bool removeDuplicatesInToFollow(User * user)
 {
-	std::vector < std::string >
+	vector < string >
 	    v_tofollow(toVector(user, "ToFollow", "userid"));
-	std::vector < std::string >
+	vector < string >
 	    v_followed(toVector(user, "Followed", "userid"));
-	std::vector < std::string >
+	vector < string >
 	    v_unfollowed(toVector(user, "UnFollowed", "userid"));
-	std::vector < std::string >
+	vector < string >
 	    v_myfollowers(toVector(user, "MyFollowers", "userid"));
-	std::vector < std::string >::iterator it;
+	vector < string >::iterator it;
 
 	// remove anything in myfollowers from tofollow list
 	for (it = v_myfollowers.begin(); it != v_myfollowers.end(); it++) {
@@ -82,7 +81,7 @@ bool removeDuplicatesInToFollow(User * user)
 	}
 
 	// Write the new tofollow to ToFollow table
-	if (user->db.connect(user->db_name.c_str()) == 1)
+	if (user->db.connect(user->getDBname().c_str()) == 1)
 		return false;
 
 	if (user->db.execute("DELETE FROM ToFollow;") == 1)
@@ -96,15 +95,15 @@ bool removeDuplicatesInToFollow(User * user)
 	return true;
 }
 
-std::vector < std::string > getVal(User * user, std::string table,
-				   std::string col)
+vector < string > getVal(User * user, string table,
+				   string col)
 {
-	std::string val, q;
-	std::vector < std::string > vals;
+	string val, q;
+	vector < string > vals;
 	sqlite3pp::query::iterator it;
 
 	q = "SELECT " + col + " FROM " + table + ";";
-	user->db.connect(user->db_name.c_str());
+	user->db.connect(user->getDBname().c_str());
 
 	sqlite3pp::query qry(user->db, q.c_str());
 
@@ -120,31 +119,34 @@ std::vector < std::string > getVal(User * user, std::string table,
 
 bool createUser(User * user)
 {
-	std::string q;
-	std::cout << "Creating a user" << std::endl;
+	string q;
+        string temp;
+	cout << "Creating a user" << endl;
 
-	std::cout << "username : ";
-	std::cin >> user->username;
-	std::cout << "password : ";
-	std::cin >> user->password;
+	cout << "username : ";
+	cin >> temp;
+        user->setUsername(temp);
+	cout << "password : ";
+	cin >> temp;
+        user->setPassword(temp);
 
 	// Do we want to use proxies ?
-	std::cout << "Do you want to use a proxy [y/n] ? ";
-	std::cin >> q;
+	cout << "Do you want to use a proxy [y/n] ? ";
+	cin >> q;
 	if (q == "y" || q == "Y") {
-		std::cout << "Proxy address  : ";
-		std::cin >> user->proxy.address;
-		std::cout << "Proxy port     : ";
-		std::cin >> user->proxy.port;
-		std::
+		cout << "Proxy address  : ";
+		cin >> user->proxy.address;
+		cout << "Proxy port     : ";
+		cin >> user->proxy.port;
+		
 		    cout <<
 		    "Do you want to use a proxy username, password [y/n] ? ";
-		std::cin >> q;
+		cin >> q;
 		if (q == "y" || q == "Y") {
-			std::cout << "Proxy username : ";
-			std::cin >> user->proxy.username;
-			std::cout << "Proxy password : ";
-			std::cin >> user->proxy.password;
+			cout << "Proxy username : ";
+			cin >> user->proxy.username;
+			cout << "Proxy password : ";
+			cin >> user->proxy.password;
 		}
 	}
 	// Create inital user row
@@ -154,11 +156,11 @@ bool createUser(User * user)
 		return false;
 
 	// update values in Config table
-	q = "UPDATE Config SET username = \"" + user->username +
+	q = "UPDATE Config SET username = \"" + user->getUsername() +
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
-	q = "UPDATE Config SET password = \"" + user->password +
+	q = "UPDATE Config SET password = \"" + user->getPassword() +
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
@@ -166,7 +168,7 @@ bool createUser(User * user)
 		if (change_proxy
 		    (user, user->proxy.address, user->proxy.port,
 		     user->proxy.username, user->proxy.password) == false) {
-			std::cerr << "[-] Error : Unable to set proxy" << std::
+			cerr << "[-] Error : Unable to set proxy" << 
 			    endl;
 			return false;
 		}
@@ -178,10 +180,10 @@ bool createUser(User * user)
 
 bool initalize(User * user)
 {
-	std::string query;
+	string query;
 
 	// Connect to database
-	if (user->db.connect(user->db_name.c_str()) != 0)
+	if (user->db.connect(user->getDBname().c_str()) != 0)
 		return false;
 
 	// Create necessary tables
@@ -201,14 +203,14 @@ bool initalize(User * user)
 }
 
 bool
-toDB(User * user, std::vector < std::string > v,
-     std::string table, std::string values)
+toDB(User * user, vector < string > v,
+     string table, string values)
 {
-	std::string query;
-	std::vector < std::string >::iterator it;
+	string query;
+	vector < string >::iterator it;
 
 	// chose database
-	if (user->db.connect(user->db_name.c_str()) == 1)
+	if (user->db.connect(user->getDBname().c_str()) == 1)
 		return false;
 
 	// Inserting into the database
@@ -220,7 +222,7 @@ toDB(User * user, std::vector < std::string > v,
 		    "INSERT OR REPLACE INTO " + table + " (" + values +
 		    ") VALUES ('" + *it + "');";
 		if (user->db.execute(query.c_str()) == 1) {
-			std::cerr << "[-] Error : toDB " << query << std::endl;
+			cerr << "[-] Error : toDB " << query << endl;
 			return false;
 		}
 	}

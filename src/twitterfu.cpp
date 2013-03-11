@@ -4,12 +4,12 @@ int optionSelect()
 {
 	int opt = -1;
 
-	std::cout << "> ";
-	std::cin >> opt;
+	cout << "> ";
+	cin >> opt;
 
-	if (std::cin.fail() == true) {
-		std::cin.clear();
-		std::cin.ignore(std::numeric_limits < std::streamsize >::max(),
+	if (cin.fail() == true) {
+		cin.clear();
+		cin.ignore(numeric_limits < streamsize >::max(),
 				0x0a);
 		return -1;
 	}
@@ -17,15 +17,15 @@ int optionSelect()
 	return opt;
 }
 
-std::vector < std::string > fileToVector(std::string filename)
+vector < string > fileToVector(string filename)
 {
-	std::vector < std::string > v;
-	std::string temp;
-	std::fstream fs(filename.c_str(), std::fstream::in);
+	vector < string > v;
+	string temp;
+	fstream fs(filename.c_str(), fstream::in);
 
 	if (fs.is_open() == false) {
-		std::
-		    cerr << "\t[-] Error : Unable to open " << filename << std::
+		
+		    cerr << "\t[-] Error : Unable to open " << filename << 
 		    endl;
 		return v;
 	}
@@ -45,7 +45,7 @@ int randomize(int from, int to)
 	return rand() % to + from;
 }
 
-bool fileExists(std::string filename)
+bool fileExists(string filename)
 {
 	struct stat fi;
 	return stat(filename.c_str(), &fi) == 0;
@@ -53,19 +53,19 @@ bool fileExists(std::string filename)
 
 void optionParse(User * user, int opt)
 {
-	std::string username;
-	std::vector < std::string > ids;
+	string username;
+	vector < string > ids;
 
 	switch (opt) {
 	case 1:		// Get followers of a user
 		{
-			std::cout << "Username : ";
-			std::cin >> username;
+			cout << "Username : ";
+			cin >> username;
 
 			if (removeDuplicatesInToFollow(user) == false) {
-				std::cerr <<
+				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    std::endl;
+				    endl;
 				return;
 
 			}
@@ -73,68 +73,68 @@ void optionParse(User * user, int opt)
 			ids = getFollowers(user, username);
 
 			if (toDB(user, ids, "ToFollow", "userid") == false) {
-				std::cerr << "[-] Error : toDB" << std::endl;
+				cerr << "[-] Error : toDB" << endl;
 				return;
 			}
 
-			std::cout << "We have added " << ids.size() <<
-			    " new to follow" << std::endl;
+			cout << "We have added " << ids.size() <<
+			    " new to follow" << endl;
 		}
 		break;
 	case 2:		// Get following of a user
 		{
-			std::cout << "Username : ";
-			std::cin >> username;
+			cout << "Username : ";
+			cin >> username;
 
 			if (removeDuplicatesInToFollow(user) == false) {
-				std::cerr <<
+				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    std::endl;
+				    endl;
 				return;
 			}
 
 			ids = getFollowing(user, username);
 
 			if (toDB(user, ids, "ToFollow", "userid") == false) {
-				std::cerr << "[-] Error : toDB" << std::endl;
+				cerr << "[-] Error : toDB" << endl;
 				return;
 			}
 
-			std::cout << "We have added " << ids.size() <<
-			    " new to follow" << std::endl;
+			cout << "We have added " << ids.size() <<
+			    " new to follow" << endl;
 
 			break;
 		}
 	case 3:		// Search
 		{
-			std::string query;
-			std::cout << "Enter a phrase : ";
-			std::cin.ignore();
-			getline(std::cin, query);
+			string query;
+			cout << "Enter a phrase : ";
+			cin.ignore();
+			getline(cin, query);
 
 			if (removeDuplicatesInToFollow(user) == false) {
-				std::cerr <<
+				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    std::endl;
+				    endl;
 				return;
 			}
 
 			ids = search(user, query);
 
 			if (toDB(user, ids, "ToFollow", "userid") == false) {
-				std::cerr << "[-] Error : toDB" << std::endl;
+				cerr << "[-] Error : toDB" << endl;
 				return;
 			}
-			std::cout << "We have added " << ids.size() <<
-			    " new to follow" << std::endl;
+			cout << "We have added " << ids.size() <<
+			    " new to follow" << endl;
 		}
 		break;
 	case 4:		// follow users
 		{
 			if (removeDuplicatesInToFollow(user) == false) {
-				std::cerr <<
+				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
-				    std::endl;
+				    endl;
 				return;
 			}
 
@@ -154,79 +154,79 @@ void optionParse(User * user, int opt)
 	case 7:		// Configure
 		{
 			configure(user);
-			std::
+			
 			    cout << "Rerun application to apply changes." <<
-			    std::endl;
+			    endl;
 		}
 		break;
 	case 8:		// quit
 		{
-			std::cout << "\tHave a nice day!" << std::endl;
+			cout << "\tHave a nice day!" << endl;
 			exit(1);
 		}
 		break;
 	default:
-		std::cerr << "\t[-] Error : Invalid option" << std::endl;
+		cerr << "\t[-] Error : Invalid option" << endl;
 		break;
 	}
 }
 
 void optionShow()
 {
-	std::cout << "1) Get followers of a user" << std::endl;
-	std::cout << "2) Get following of a user" << std::endl;
-	std::cout << "3) Search by " << std::endl;
-	std::cout << "4) Start following" << std::endl;
-	std::cout << "5) Status" << std::endl;
-	std::cout << "6) Unfollow users who haven't followed" << std::endl;
-	std::cout << "7) Configure" << std::endl;
-	std::cout << "8) Quit" << std::endl;
+	cout << "1) Get followers of a user" << endl;
+	cout << "2) Get following of a user" << endl;
+	cout << "3) Search by " << endl;
+	cout << "4) Start following" << endl;
+	cout << "5) Status" << endl;
+	cout << "6) Unfollow users who haven't followed" << endl;
+	cout << "7) Configure" << endl;
+	cout << "8) Quit" << endl;
 }
 
 bool configure(User * user)
 {
-	std::string address, port, username, password, q;
+	string address, port, username, password, q;
 	int opt = -1;
 
-	std::cout << "1) Set proxy" << std::endl;
-	std::cout << "2) Filters" << std::endl;
-	std::cout << "3) Purge To Follow" << std::endl;
-	std::cout << "4) Purge Followed" << std::endl;
-	std::cout << "5) Purge Unfollowed" << std::endl;
-	std::cout << "6) Purge MyFollowers" << std::endl;
-	std::cout << "7) Pruge all" << std::endl;
-	std::cout << "8) Return" << std::endl;
+	cout << "1) Set proxy" << endl;
+	cout << "2) Filters" << endl;
+	cout << "3) Purge To Follow" << endl;
+	cout << "4) Purge Followed" << endl;
+	cout << "5) Purge Unfollowed" << endl;
+	cout << "6) Purge MyFollowers" << endl;
+	cout << "7) Pruge all" << endl;
+	cout << "8) Return" << endl;
 
 	opt = optionSelect();
 
 	switch (opt) {
 	case 1:		// configure proxy
 		{
-			std::cin.ignore();
+			cin.ignore();
 
-			std::cout << "address  : ";
-			getline(std::cin, address);
+			cout << "address  : ";
+			getline(cin, address);
 
-			std::cout << "port     : ";
-			getline(std::cin, port);
+			cout << "port     : ";
+			getline(cin, port);
 
-			std::
+			
 			    cout <<
 			    "Does this proxy use a username:password [y/n] ? ";
-			getline(std::cin, q);
+			getline(cin, q);
 
 			if (q == "y" || q == "Y") {
-				std::cout << "username : ";
-				getline(std::cin, username);
-				std::cout << "password : ";
-				getline(std::cin, password);
+				cout << "username : ";
+				getline(cin, username);
+				cout << "password : ";
+				getline(cin, password);
 			}
 
 			if (change_proxy
 			    (user, address, port, username, password) == false)
-				std::
+				
 				    cerr << "[-] Error Unable to change proxy"
-				    << std::endl;
+				    << endl;
 		}
 		break;
 	case 2:		// filters
@@ -237,63 +237,63 @@ bool configure(User * user)
 	case 3:		// purge to follow
 		{
 			if (purgeTable(user, "ToFollow") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable toi purge ToFollow" <<
-				    std::endl;
+				    endl;
 		}
 		break;
 	case 4:		// purge followed
 		{
 			if (purgeTable(user, "Followed") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to purge Followed" <<
-				    std::endl;
+				    endl;
 		}
 		break;
 	case 5:		// purge unfollowed
 		{
 			if (purgeTable(user, "UnFollowed") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to purge UnFollowed" <<
-				    std::endl;
+				    endl;
 		}
 		break;
 	case 6:
 		{
 			if (purgeTable(user, "MyFollowers") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
-				    std::endl;
+				    endl;
 		}
 		break;
 	case 7:		// purge all
 		{
 			if (purgeTable(user, "ToFollow") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to purge ToFollow" <<
-				    std::endl;
+				    endl;
 
 			if (purgeTable(user, "Followed") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to purge Followed" <<
-				    std::endl;
+				    endl;
 
 			if (purgeTable(user, "UnFollowed") == false)
-				std::
+				
 				    cerr << "[-] Error : Unable to purge " <<
-				    std::endl;
+				    endl;
 
 			if (purgeTable(user, "MyFollowers") == false)
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
-				    std::endl;
+				    endl;
 		}
 		break;
 	case 8:		// return
@@ -306,18 +306,18 @@ bool configure(User * user)
 }
 
 bool
-change_proxy(User * user, std::string address, std::string port,
-	     std::string username, std::string password)
+change_proxy(User * user, string address, string port,
+	     string username, string password)
 {
 
-	std::string q;
+	string q;
 
 	user->proxy.address = address;
 	user->proxy.port = port;
 	user->proxy.username = username;
 	user->proxy.password = password;
 
-	user->db.connect(user->db_name.c_str());
+	user->db.connect(user->getDBname().c_str());
 
 	// update DB with new proxy
 	q = "UPDATE Config SET proxy_address = \"" + user->proxy.address +
@@ -344,49 +344,47 @@ change_proxy(User * user, std::string address, std::string port,
 	return true;
 }
 
-bool authenticate(User * user)
+bool authenticate(User * &user)
 {
-	std::string q, authurl, pin;
+	string q, authurl, pin;
 
 	// set twitter user, pass, and consumer {key,secret}
-	user->twitterObj.setTwitterUsername(user->username);
-	user->twitterObj.setTwitterPassword(user->password);
-	user->twitterObj.getOAuth().setConsumerKey(user->consumer_key);
-	user->twitterObj.getOAuth().setConsumerSecret(user->consumer_secret);
+        user->twitterObj.setTwitterUsername(user->getUsername());
+	user->twitterObj.setTwitterPassword(user->getPassword());
+	user->twitterObj.getOAuth().setConsumerKey(user->getConsumerKey());
+	user->twitterObj.getOAuth().setConsumerSecret(user->getConsumerSecret());
 
 	// if we already have oauth keys
-	if (user->access_token_key.size() && user->access_token_secret.size()) {
-		user->twitterObj.getOAuth().setOAuthTokenKey(user->
-							     access_token_key);
+	if (user->getAccessTokenKey().size() && user->getAccessTokenSecret().size()) {
+		user->twitterObj.getOAuth().setOAuthTokenKey(user->getAccessTokenKey());
 		user->twitterObj.getOAuth().
-		    setOAuthTokenSecret(user->access_token_secret);
+		    setOAuthTokenSecret(user->getAccessTokenSecret());
 		return true;
 	} else {		// if we don't
 		// get pin
 		if(user->twitterObj.oAuthRequestToken(authurl) == false) {
-                        std::cerr << "[-] Failed while trying to get auth url" << std::endl;
+                        cerr << "[-] Failed while trying to get auth url" << endl;
                         return false;
                 }
-		std::cout <<
+		cout <<
 		    "Visit twitter and authorize the application then enter the PIN."
-		    << std::endl << authurl << std::endl;
-		std::cout << "PIN : ";
-		std::cin >> pin;
+		    << endl << authurl << endl;
+		cout << "PIN : ";
+		cin >> pin;
 		user->twitterObj.getOAuth().setOAuthPin(pin);
 		user->twitterObj.oAuthAccessToken();
 
 		// update database with access keys
-		user->twitterObj.getOAuth().getOAuthTokenKey(user->
-							     access_token_key);
+		user->twitterObj.getOAuth().getOAuthTokenKey(user->getAccessTokenKey());
 		user->twitterObj.getOAuth().
-		    getOAuthTokenSecret(user->access_token_secret);
+		    getOAuthTokenSecret(user->getAccessTokenSecret());
 
 		q = "UPDATE Config SET access_key = \"" +
-		    user->access_token_key + "\" WHERE Id=1;";
+		    user->getAccessTokenKey() + "\" WHERE Id=1;";
 		if (user->db.execute(q.c_str()) != 0)
 			return false;
 		q = "UPDATE Config SET access_secret = \"" +
-		    user->access_token_secret + "\" WHERE Id=1;";
+		    user->getAccessTokenSecret() + "\" WHERE Id=1;";
 		if (user->db.execute(q.c_str()) != 0)
 			return false;
 		return true;
@@ -397,24 +395,25 @@ bool authenticate(User * user)
 
 int main()
 {
-	std::string error;
-	std::vector < std::string > myFollowers;
+	string error;
+	vector < string > myFollowers;
 	User *user = new User;
-	std::string result, temp, query;
+	string result, temp, query;
 	int opt, remainingHits;
 	struct passwd *pw = getpwuid(getuid());
 
 	srand(time(NULL));	// random seed
 
 	/* get users directory */
-	user->db_name = pw->pw_dir;
-	user->db_name += "/.twitterfu.sql";
-	user->consumer_key = "nYFCp8lj4LHqmLTnVHFc0Q";
-	user->consumer_secret = "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4";
+        string dbtemp = pw->pw_dir;
+        dbtemp += "/.twitterfu.sql";
+        user->setDBname( dbtemp );
+	user->setConsumerKey("nYFCp8lj4LHqmLTnVHFc0Q");
+	user->setConsumerSecret("EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
 
 	/* Initalize database */
 	if (initalize(user) == false) {
-		std::cerr << "[-] Error : Unable to initalize database" << std::
+		cerr << "[-] Error : Unable to initalize database" << 
 		    endl;
 		return -1;
 	}
@@ -422,15 +421,14 @@ int main()
 	if (userExist(user) == false) {
 		// create the username, password
 		if (createUser(user) == false) {
-			std::cerr << "Unable to create user" << std::endl;
+			cerr << "Unable to create user" << endl;
 			return -1;
 		}
 	} else {		// Get all needed values from DB
-		user->username = getVal(user, "Config", "username").at(0);
-		user->access_token_key =
-		    getVal(user, "Config", "access_key").at(0);
-		user->access_token_secret =
-		    getVal(user, "Config", "access_secret").at(0);
+		user->setUsername(getVal(user, "Config", "username").at(0));
+		user->setAccessTokenKey(getVal(user, "Config", "access_key").at(0));
+		user->setAccessTokenSecret(getVal(user, "Config", "access_secret").at(0));
+		user->setTimezone(getVal(user, "Config", "timezone").at(0));
 		user->proxy.address =
 		    getVal(user, "Config", "proxy_address").at(0);
 		user->proxy.port = getVal(user, "Config", "proxy_port").at(0);
@@ -438,15 +436,14 @@ int main()
 		    getVal(user, "Config", "proxy_username").at(0);
 		user->proxy.password =
 		    getVal(user, "Config", "proxy_password").at(0);
-		user->timezone = getVal(user, "Config", "timezone").at(0);
 	}
 
 	/* Set up proxy if found */
 	if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
 		user->twitterObj.setProxyServerIp(user->proxy.address);
 		user->twitterObj.setProxyServerPort(user->proxy.port);
-		std::cout << "[+] Using proxy " << user->proxy.
-		    address << ":" << user->proxy.port << std::endl;
+		cout << "[+] Using proxy " << user->proxy.
+		    address << ":" << user->proxy.port << endl;
 		/* Set password if found */
 		if (!user->proxy.username.empty()
 		    && !user->proxy.password.empty()) {
@@ -458,7 +455,7 @@ int main()
 
 	/* Authenticate our user */
 	if (authenticate(user) == false) {
-		std::cerr << "[-] Failed while authenticating" << std::endl;
+		cerr << "[-] Failed while authenticating" << endl;
 		return -1;
 	}
 
@@ -467,11 +464,11 @@ int main()
 	 **/
 	remainingHits = getRemainingHits(user);
 	if (remainingHits == 0) {
-		std::cerr <<
+		cerr <<
 		    "[-] Error : You have reached the limit, maybe using a proxy might help"
-		    << std::endl;
+		    << endl;
 		if (configure(user) == false) {
-			std::cerr << "[-] Error : Unable to configure" << std::
+			cerr << "[-] Error : Unable to configure" << 
 			    endl;
 			return -1;
 		}
@@ -481,84 +478,82 @@ int main()
 	/* Verifying authentication */
 	if (user->twitterObj.accountVerifyCredGet() == true) {
 		// get following
-		if (lastResponse(user, "user.friends_count", user->following) ==
-		    false) {
-			std::
+		if (lastResponse(user, "user.friends_count", user->getFollowing() ) == false) {
 			    cerr <<
 			    "[-] Error : Unable to find user.friends_count" <<
-			    std::endl;
+			    endl;
 			return -1;
 		}
 		// get followers
 		if (lastResponse(user, "user.followers_count",
-				 user->followers) == false) {
-			std::cerr <<
+				 user->getFollowers()) == false) {
+			cerr <<
 			    "[-] Error : Unable to find user.followers_count" <<
-			    std::endl;
+			    endl;
 			return -1;
 		}
 		// set timezone if not set
-		if (user->timezone.empty()) {
-			if (lastResponse(user, "user.time_zone", user->timezone)
+		if (user->getTimezone().empty()) {
+			if (lastResponse(user, "user.time_zone", user->getTimezone())
 			    == false) {
-				std::
+				
 				    cerr <<
 				    "[-] Error : Unable to find timezone" <<
-				    std::endl;
+				    endl;
 				return -1;
 			} else {
-				user->db.connect(user->db_name.c_str());
+				user->db.connect(user->getDBname().c_str());
 				query =
 				    "UPDATE Config SET timezone = \"" +
-				    user->timezone + "\";";
+				    user->getTimezone() + "\";";
 				if (user->db.execute(query.c_str()) != 0) {
-					std::
+					
 					    cerr << "Unable to update timezone"
-					    << std::endl;
+					    << endl;
 				}
 				user->db.disconnect();
-				std::cout << "We have set the timezone to " <<
-				    user->timezone << std::endl;
+				cout << "We have set the timezone to " <<
+				    user->getTimezone() << endl;
 			}
 		}
 	} else {
-		std::cerr << "[-] Error : Unable to authenticate." << std::endl;
+		cerr << "[-] Error : Unable to authenticate." << endl;
 		if (!user->proxy.address.empty() && !user->proxy.port.empty()) {
-			std::cout <<
+			cout <<
 			    "If this is due to misconfiguration you can change it"
-			    << std::endl;
+			    << endl;
 			if (configure(user) == false) {
-				std::
+				
 				    cerr << "[-] Error : Unable to configure" <<
-				    std::endl;
+				    endl;
 				return -1;
 			}
-			std::
+			
 			    cout << "Rerun the application to apply changes." <<
-			    std::endl;
+			    endl;
 		}
 
 		return -1;
 	}
 
-	std::cout << "=====================" << std::endl;
-	std::cout << "Hello @" << user->username << std::endl;
-	std::cout << "Following : " << user->following << std::endl;
-	std::cout << "Followers : " << user->followers << std::endl;
-	std::cout << "=====================" << std::endl << std::endl;
+	cout << "=====================" << endl;
+	cout << "Hello @" << user->getUsername() << endl;
+	cout << "Following : " << user->getFollowing() << endl;
+	cout << "Followers : " << user->getFollowers() << endl;
+	cout << "=====================" << endl << endl;
 
 	/* We shall get our followers */
-	myFollowers = getFollowers(user, user->username);
+        myFollowers = getFollowers(user, user->getUsername());
 	if (myFollowers.size() != 0) {
-		std::cout << "Adding a result of " << myFollowers.size() <<
-		    " to MyFollowers;" << std::endl;
+		cout << "Adding a result of " << myFollowers.size() <<
+		    " to MyFollowers;" << endl;
 		if (toDB(user, myFollowers, "MyFollowers", "userid") == false) {
-			std::cerr << "[-] Error : Unable to toDB" << std::endl;
+			cerr << "[-] Error : Unable to toDB" << endl;
 		}
 	}
 	// Before entering the main loop fix the databases
 	if (removeDuplicatesInToFollow(user) == false) {
-		std::cerr << "[-] Error : Unable to remove duplicates" << std::
+		cerr << "[-] Error : Unable to remove duplicates" << 
 		    endl;
 		return -1;
 	}
@@ -576,13 +571,13 @@ int main()
 void cleanLine(int n)
 {
 	for (int i = 0; i < n; i++)
-		std::cout << " ";
-	std::cout << "\xd";
-	flush(std::cout);
+		cout << " ";
+	cout << "\xd";
+	flush(cout);
 }
 
 template < class T > void
-concatVectors(std::vector < T > &dest, std::vector < T > src)
+concatVectors(vector < T > &dest, vector < T > src)
 {
 	dest.insert(dest.end(), src.begin(), src.end());
 }

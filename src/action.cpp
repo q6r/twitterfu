@@ -7,14 +7,14 @@ bool gotExitSignal = false;
 
 int getRemainingHits(User * user)
 {
-	std::string temp_limit;
+	string temp_limit;
 	int limit;
 
 	// Get account limits remaining hits
 	if (user->twitterObj.accountRateLimitGet() == true) {
 		if (lastResponse(user, "hash.remaining-hits", temp_limit) ==
 		    true) {
-			std::stringstream ss(temp_limit);
+			stringstream ss(temp_limit);
 			ss >> limit;
 		} else {
 			return -1;
@@ -28,87 +28,87 @@ int getRemainingHits(User * user)
 
 bool status(User * user)
 {
-	std::string result, followers, following, reset_time;
-	std::string remaining_hits, hourly_limit;
+	string result, followers, following, reset_time;
+	string remaining_hits, hourly_limit;
 
-	std::vector < std::string >
+	vector < string >
 	    tofollow(toVector(user, "ToFollow", "userid"));
-	std::vector < std::string >
+	vector < string >
 	    followed(toVector(user, "Followed", "userid"));
-	std::vector < std::string >
+	vector < string >
 	    unfollowed(toVector(user, "UnFollowed", "userid"));
-	std::vector < std::string >
+	vector < string >
 	    myfollowers(toVector(user, "MyFollowers", "userid"));
 
-	std::cout << "\tDatabase Status :" << std::endl;
-	std::cout << "\t\tFollowed     : " << followed.size() << std::endl;
-	std::cout << "\t\tTo follow    : " << tofollow.size() << std::endl;
-	std::cout << "\t\tUnfollowed   : " << unfollowed.size() << std::endl;
-	std::cout << "\t\tMy followers : " << myfollowers.size() << std::endl;
+	cout << "\tDatabase Status :" << endl;
+	cout << "\t\tFollowed     : " << followed.size() << endl;
+	cout << "\t\tTo follow    : " << tofollow.size() << endl;
+	cout << "\t\tUnfollowed   : " << unfollowed.size() << endl;
+	cout << "\t\tMy followers : " << myfollowers.size() << endl;
 
 	if (user->twitterObj.accountVerifyCredGet() == true) {
-		std::cout << "\tAccount Status     :" << std::endl;
+		cout << "\tAccount Status     :" << endl;
 		if (lastResponse(user, "user.followers_count", followers) ==
 		    false) {
-			std::
+			
 			    cerr <<
 			    "\t[-] Error : Unable to find the followers_count"
-			    << std::endl;
+			    << endl;
 			return false;
 		}
 		if (lastResponse(user, "user.friends_count", following) ==
 		    false) {
-			std::
+			
 			    cerr << "\t[-] Error : Unable to find friends_count"
-			    << std::endl;
+			    << endl;
 			return false;
 		}
 
-		std::cout << "\t\tFollowers  : " << followers << std::endl;
-		std::cout << "\t\tFollowing  : " << following << std::endl;
+		cout << "\t\tFollowers  : " << followers << endl;
+		cout << "\t\tFollowing  : " << following << endl;
 	} else {
-		std::
+		
 		    cerr << "\t[-] Error : Unable to get account status." <<
-		    std::endl;
+		    endl;
 		return false;
 	}
 
 	// API status
 	if (user->twitterObj.accountRateLimitGet() == true) {
 
-		std::cout << "\tAPI Status : " << std::endl;
+		cout << "\tAPI Status : " << endl;
 		if (lastResponse(user, "hash.remaining-hits", remaining_hits) ==
 		    false) {
-			std::
+			
 			    cerr <<
 			    "[-] Error : Unable to get hash.remaining-hits" <<
-			    std::endl;
+			    endl;
 			return false;
 		}
 
 		if (lastResponse(user, "hash.hourly-limit", hourly_limit) ==
 		    false) {
-			std::
+			
 			    cerr <<
 			    "[-] Error : Unable to get hash.hourly-limit" <<
-			    std::endl;
+			    endl;
 			return false;
 		}
 
 		if (lastResponse(user, "hash.reset-time", reset_time) == false) {
-			std::cerr <<
+			cerr <<
 			    "[-] Error : Unable to get hash.hourly-limit" <<
-			    std::endl;
+			    endl;
 			return false;
 		}
 
-		std::cout << "\t\tRemaining hits : " << remaining_hits << std::
+		cout << "\t\tRemaining hits : " << remaining_hits << 
 		    endl;
-		std::cout << "\t\tHourly limit   : " << hourly_limit << std::
+		cout << "\t\tHourly limit   : " << hourly_limit << 
 		    endl;
-		std::cout << "\t\tReset  at      : " << reset_time << std::endl;
+		cout << "\t\tReset  at      : " << reset_time << endl;
 	} else {
-		std::cerr << "\t[-] Error : Unable to get API status" << std::
+		cerr << "\t[-] Error : Unable to get API status" << 
 		    endl;
 		return false;
 	}
@@ -116,18 +116,18 @@ bool status(User * user)
 	return true;
 }
 
-bool lastResponse(User * user, std::string node, std::string & v)
+bool lastResponse(User * user, string node, string & v)
 {
-	std::string result = "";
+	string result = "";
 	boost::property_tree::ptree pt;
 	user->twitterObj.getLastWebResponse(result);
-	std::stringstream ss(result);
+	stringstream ss(result);
 
 	try {
 		read_xml(ss, pt);
-		v = pt.get < std::string > (node.c_str());
+		v = pt.get < string > (node.c_str());
 	}
-	catch(std::exception const &e) {
+	catch(exception const &e) {
 		return false;
 	}
 
@@ -139,14 +139,14 @@ void signalHandler(int n)
 	gotExitSignal = true;
 }
 
-std::vector < std::string > search(User * user, std::string query)
+vector < string > search(User * user, string query)
 {
-	std::string jsonResult;
+	string jsonResult;
 	boost::property_tree::ptree pt;
-	std::vector < std::string > ids;
+	vector < string > ids;
 
 	// replace all spaces with %20
-	for (size_t pos = query.find(' '); pos != std::string::npos;
+	for (size_t pos = query.find(' '); pos != string::npos;
 	     pos = query.find(' ', pos))
 		query.replace(pos, 1, "%20");
 
@@ -154,44 +154,44 @@ std::vector < std::string > search(User * user, std::string query)
 	if (user->twitterObj.search(query) == false)
 		return ids;
 
-	// Get results, parse then and push to ids std::vector
+	// Get results, parse then and push to ids vector
 	user->twitterObj.getLastWebResponse(jsonResult);
-	std::stringstream ss(jsonResult);
+	stringstream ss(jsonResult);
 
 	try {
 		read_json(ss, pt);
 		BOOST_FOREACH(const boost::property_tree::ptree::
 			      value_type & child, pt.get_child("results")) {
-			ids.push_back(child.second.get < std::string >
+			ids.push_back(child.second.get < string >
 				      ("from_user_id"));
 		}
-	} catch(std::exception const &e) {
-		std::cerr << "(Err:Unable to parse json)" << std::endl;
+	} catch(exception const &e) {
+		cerr << "(Err:Unable to parse json)" << endl;
 		return ids;
 	}
 
 	return ids;
 }
 
-std::vector < std::string > getFollowing(User * user, std::string username)
+vector < string > getFollowing(User * user, string username)
 {
-	std::string result, err, next_cursor;
-	std::vector < std::string > ids;
+	string result, err, next_cursor;
+	vector < string > ids;
 	next_cursor = "-1";
 
-	std::cout << "[+] Getting following of @" << username << std::endl;
+	cout << "[+] Getting following of @" << username << endl;
 
 	do {
 		if (user->twitterObj.friendsIdsGet(next_cursor, username,
 						   false) == true) {
 			user->twitterObj.getLastWebResponse(result);
 			boost::property_tree::ptree pt;
-			std::stringstream ss(result);
+			stringstream ss(result);
 			read_xml(ss, pt);
 
 			/* Catched and error ? */
 			if (lastResponse(user, "hash.error", err) == true) {
-				std::cerr << "[-] " << err << std::endl;
+				cerr << "[-] " << err << endl;
 				return ids;
 			}
 
@@ -204,15 +204,15 @@ std::vector < std::string > getFollowing(User * user, std::string username)
 					      pt.get_child("id_list.ids"))
 				    ids.push_back(v.second.data());
 			}
-			catch(std::exception const &e) {
-				std::
+			catch(exception const &e) {
+				
 				    cerr << "[-] GetFollowingOf Exception" <<
-				    std::endl;
+				    endl;
 				return ids;
 			}
 		} else {
-			std::cerr << "[-] Failed to get following of @" <<
-			    username << std::endl;
+			cerr << "[-] Failed to get following of @" <<
+			    username << endl;
 			return ids;
 		}
 	}
@@ -221,26 +221,26 @@ std::vector < std::string > getFollowing(User * user, std::string username)
 	return ids;
 }
 
-std::vector < std::string > getFollowers(User * user, std::string username)
+vector < string > getFollowers(User * user, string username)
 {
-	std::string result, err, next_cursor;
-	std::vector < std::string > ids;
+	string result, err, next_cursor;
+	vector < string > ids;
 	boost::property_tree::ptree pt;
 
 	next_cursor = "-1";
 
-	std::cout << "[+] Getting followers of @" << username << std::endl;
+	cout << "[+] Getting followers of @" << username << endl;
 
 	do {
 		if (user->twitterObj.followersIdsGet(next_cursor, username,
 						     false) == true) {
 			user->twitterObj.getLastWebResponse(result);
-			std::stringstream ss(result);
+			stringstream ss(result);
 			read_xml(ss, pt);
 
 			/* Catched error ? */
 			if (lastResponse(user, "hash.error", err) == true) {
-				std::cerr << "[-] " << err << std::endl;
+				cerr << "[-] " << err << endl;
 				return ids;
 			}
 
@@ -253,16 +253,16 @@ std::vector < std::string > getFollowers(User * user, std::string username)
 					      pt.get_child("id_list.ids"))
 				    ids.push_back(v.second.data());
 			}
-			catch(std::exception const &e) {
-				std::
+			catch(exception const &e) {
+				
 				    cerr << "[-] getFollowersOf Exception" <<
-				    std::endl;
+				    endl;
 				return ids;
 			}
 		} else {
-			std::cerr <<
+			cerr <<
 			    "[-] Failed to get friendsIdsGet from @" << username
-			    << std::endl;
+			    << endl;
 		}
 	}
 	while (next_cursor != "0");
@@ -272,24 +272,24 @@ std::vector < std::string > getFollowers(User * user, std::string username)
 
 void unfollow(User * user)
 {
-	std::vector < std::string >
+	vector < string >
 	    followers(getVal(user, "MyFollowers", "userid"));
-	std::vector < std::string >::iterator it;
-	std::vector < std::string > result;
-	std::string who;
-	std::string isfollow = "true";
+	vector < string >::iterator it;
+	vector < string > result;
+	string who;
+	string isfollow = "true";
 	long unfollowed = 0;
 	int remainingHits = 0;
 	gotExitSignal = false;
 
 	// Don't do anything if there's no one to unfollow
 	if (followers.size() == 0) {
-		std::cerr << "(Err:No one to unfollow)" << std::endl;
+		cerr << "(Err:No one to unfollow)" << endl;
 		return;
 	}
 	// Install the signal handler
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		std::cerr << "(Err:Unable to install signalHandler)" << std::
+		cerr << "(Err:Unable to install signalHandler)" << 
 		    endl;
 		return;
 	}
@@ -312,23 +312,23 @@ void unfollow(User * user)
 			// check if we reached the limit
 			remainingHits = getRemainingHits(user);
 			if (remainingHits == 0) {
-				std::cerr <<
+				cerr <<
 				    "[-] Error : You have reached the limit how about using a proxy ?"
-				    << std::endl;
+				    << endl;
 				if (configure(user) == false) {
-					std::
+					
 					    cerr <<
 					    "[-] Error : Unable to configure" <<
-					    std::endl;
+					    endl;
 				} else {
-					std::
+					
 					    cout << "Rerun to apply changes" <<
-					    std::endl;
+					    endl;
 				}
 			} else {	// unknown exception
-				std::cerr <<
+				cerr <<
 				    "(Err: Unable to find relationship.source.followed_by)"
-				    << std::endl;
+				    << endl;
 			}
 			break;
 		}
@@ -338,20 +338,20 @@ void unfollow(User * user)
 			if (lastResponse(user,
 					 "relationship.target.screen_name",
 					 who) == false) {
-				std::
+				
 				    cerr <<
 				    "(Err:Unable to find relationship.target.screen_name)"
-				    << std::endl;
+				    << endl;
 				break;
 			}
 			if (user->twitterObj.friendshipDestroy(*it, true)) {
-				std::cout << "Unfollowed " << who;
+				cout << "Unfollowed " << who;
 				unfollowed++;
 				result.push_back(*it);
 				cleanLine(120);
 				sleep(randomize(3, 5));
 			} else {
-				std::cout << "Unable to Unfollow " << who;
+				cout << "Unable to Unfollow " << who;
 				cleanLine(120);
 			}
 		}
@@ -361,37 +361,37 @@ void unfollow(User * user)
 
 	// restart the exit signal flag
 	gotExitSignal = false;
-	std::cout << "We have unfollowed " << unfollowed << "/" <<
-	    followers.size() << std::endl;
+	cout << "We have unfollowed " << unfollowed << "/" <<
+	    followers.size() << endl;
 
 	// write results to db
 	if (toDB(user, result, "UnFollowed", "userid") == false)
-		std::cerr << "[-] Error : Unable to write to db" << std::endl;
+		cerr << "[-] Error : Unable to write to db" << endl;
 }
 
-void follow(std::vector < std::string > to_follow, User * user)
+void follow(vector < string > to_follow, User * user)
 {
 	gotExitSignal = false;
-	std::string username, error, result;
-	std::vector < std::string > followed;
-	std::vector < std::string >::iterator it;
+	string username, error, result;
+	vector < string > followed;
+	vector < string >::iterator it;
 	int ignored = 0;
 
 	if (to_follow.size() == 0) {
-		std::cerr << "(Err:Please add users to follow)" << std::endl;
+		cerr << "(Err:Please add users to follow)" << endl;
 		return;
 	}
 	// remove duplicates
 	if (removeDuplicatesInToFollow(user) == false) {
-		std::cerr << "(Err:Unable to remove duplicates)" << std::endl;
+		cerr << "(Err:Unable to remove duplicates)" << endl;
 		return;
 	}
 
-	std::cout << to_follow.size() << " to follow" << std::endl;
+	cout << to_follow.size() << " to follow" << endl;
 
 	/* Install the signal handler */
 	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		std::cerr << "(Err:Unable to install signalHandler)" << std::
+		cerr << "(Err:Unable to install signalHandler)" << 
 		    endl;
 		return;
 	}
@@ -407,19 +407,19 @@ void follow(std::vector < std::string > to_follow, User * user)
 					if (lastResponse(user, "hash.error", error) == true) {	// get hash error
 
 						// did we reach follow limit ?
-						if (std::string::npos !=
+						if (string::npos !=
 						    error.find
 						    ("You are unable to follow more people at this time"))
 						{
-							std::cout <<
+							cout <<
 							    "We have reached the follow limit for today."
-							    << std::endl;
+							    << endl;
 							followed.erase(followed.
 								       end());
 							break;
 						} else	// unhandled error (must handle if need to break)
 						{
-							std::
+							
 							    cerr << "(Err:" <<
 							    error << ")";
 							cleanLine(120);
@@ -427,29 +427,29 @@ void follow(std::vector < std::string > to_follow, User * user)
 						}
 					}
 				} else {	// user followed
-					std::cout << "Followed " << username;
+					cout << "Followed " << username;
 					cleanLine(120);
 				}
 			} else {	// unable to create friendship
-				std::cerr << "(Err:Unable to follow)";
+				cerr << "(Err:Unable to follow)";
 				cleanLine(120);
 			}
 			sleep(randomize(3, 5));
 		} else {	// filter ignored someone
 			// Did we reach API limit?
 			if (lastResponse(user, "hash.error", error) == true) {
-				if (std::string::npos !=
+				if (string::npos !=
 				    error.find("Clients may not make")) {
-					std::
+					
 					    cerr <<
 					    "The client have reached the API limit, please try again in an hour"
-					    << std::endl;
+					    << endl;
 					break;
 				}
 			}
 			// Who did we ignore ?
 			if (lastResponse(user, "user.name", username) == true) {
-				std::cout << "Ignored " << username;
+				cout << "Ignored " << username;
 				cleanLine(120);
 			}
 			ignored++;
@@ -459,13 +459,13 @@ void follow(std::vector < std::string > to_follow, User * user)
 	/* when signal is caught or when block is over */
 	gotExitSignal = false;
 	if (followed.size() != 0)
-		std::cout << std::endl << "We have followed " << followed.
-		    size() << "/" << to_follow.size() - ignored << std::endl;
+		cout << endl << "We have followed " << followed.
+		    size() << "/" << to_follow.size() - ignored << endl;
 
 	if (toDB(user, followed, "Followed", "userid") == false) {
-		std::cerr << "[-] Error : toDB" << std::endl;
+		cerr << "[-] Error : toDB" << endl;
 		return;
 	}
 	if (ignored > 0)
-		std::cout << "\tWe have Ignored : " << ignored << std::endl;
+		cout << "\tWe have Ignored : " << ignored << endl;
 }
