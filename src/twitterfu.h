@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <vector>
 #include "sqlite3pp.h"
-#include "action.h"
 #include "database.h"
 #include "User.h"
 
@@ -43,12 +42,6 @@ class User;
  */
 bool change_proxy(User * user, string address, string port,
 		  string username, string password);
-/**
- * Configure various options for user
- * @param user the user object
- * @return true if configured successfuly
- */
-bool configure(User * user);
 /**
  * This will take src and add it to dest
  * @param dest the destination vector

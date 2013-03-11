@@ -59,9 +59,9 @@ bool Filters::mainFilter(User * user, string userid)
 	user->twitterObj.getLastWebResponse(resultXML);
 
 	// get user following, and followers
-	if (lastResponse(user, "user.followers_count", temp_followers) == false)
+	if (user->lastResponse("user.followers_count", temp_followers) == false)
 		return false;
-	if (lastResponse(user, "user.friends_count", temp_following) == false)
+	if (user->lastResponse("user.friends_count", temp_following) == false)
 		return false;
 	stringstream sa(temp_following);
 	stringstream sb(temp_followers);
@@ -84,7 +84,7 @@ bool Filters::mainFilter(User * user, string userid)
 	/* rule #2      : User not protected */
 	if (Filters::getProtectedProfile() == true) {
 		string protect;
-		if (lastResponse(user, "user.protected", protect) == false)
+		if (user->lastResponse("user.protected", protect) == false)
 			return false;
 		if (protect == "false") {
 			prediction++;
@@ -95,8 +95,8 @@ bool Filters::mainFilter(User * user, string userid)
 	/* rule #3      : Has profile image */
 	if (Filters::getProfilePicture() == true) {
 		string profile_image;
-		if (lastResponse
-		    (user, "user.profile_image_url", profile_image) == false)
+		if (user->lastResponse
+		    ("user.profile_image_url", profile_image) == false)
 			return false;
 		if (!profile_image.empty()) {
 			prediction++;
@@ -107,7 +107,7 @@ bool Filters::mainFilter(User * user, string userid)
 	/* rule #4      : Has description */
 	if (Filters::getDescription() == true) {
 		string description;
-		if (lastResponse(user, "user.description", description) ==
+		if (user->lastResponse("user.description", description) ==
 		    false)
 			return false;
 		if (!description.empty()) {
@@ -120,7 +120,7 @@ bool Filters::mainFilter(User * user, string userid)
 	 * ignore anyone who doesn't have a timezone
 	 */
 	if (Filters::getNearTimezone() == true) {
-		if (lastResponse(user, "user.time_zone", timezone) == false) {
+		if (user->lastResponse("user.time_zone", timezone) == false) {
 			return false;
 		}
 		// if he or us don't have timezones then false;
@@ -160,21 +160,37 @@ void Filters::filterList()
 		cout << "6) return" << endl;
 
 		opt = optionSelect();
+                cout << "Option is " << opt << endl;
 		switch (opt) {
 		case 1:
-			Filters::setProfilePicture(!Filters::getProfilePicture());
+                        if(Filters::getProfilePicture() == true)
+                                Filters::setProfilePicture(false);
+                        else
+                                Filters::setProfilePicture(true);
 			break;
 		case 2:
-			Filters::setDescription(!Filters::getDescription());
+                        if(Filters::getDescription() == true)
+                                Filters::setDescription(false);
+                        else
+                                Filters::setDescription(true);
 			break;
 		case 3:
-			Filters::setProtectedProfile(!Filters::getProtectedProfile());
+                        if(Filters::getProtectedProfile() == true)
+                                Filters::setProtectedProfile(false);
+                        else
+                                Filters::setProtectedProfile(true);
 			break;
 		case 4:
-			Filters::setFollowRatio(!Filters::getFollowRatio());
+                        if(Filters::getFollowRatio() == true)
+                                Filters::setFollowRatio(false);
+                        else
+                                Filters::setFollowRatio(true);
 			break;
 		case 5:
-			Filters::setNearTimezone(!Filters::getNearTimezone());
+                        if(Filters::getNearTimezone() == true)
+                                Filters::setNearTimezone(false);
+                        else
+                                Filters::setNearTimezone(true);
 			break;
 		case 6:	// return
 			break;

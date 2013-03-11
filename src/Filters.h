@@ -2,7 +2,7 @@
 #define FILTERS_H_
 #include <iostream>
 #include <string>
-#include "action.h"
+#include "twitterfu.h"
 
 using namespace std;
 class User;

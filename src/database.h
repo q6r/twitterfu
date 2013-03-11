@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "User.h"
+#include "twitterfu.h"
 
 using namespace std;
 class User;

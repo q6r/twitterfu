@@ -70,7 +70,7 @@ void optionParse(User * user, int opt)
 
 			}
 
-			ids = getFollowers(user, username);
+			ids = user->getFollowers(username);
 
 			if (toDB(user, ids, "ToFollow", "userid") == false) {
 				cerr << "[-] Error : toDB" << endl;
@@ -93,7 +93,7 @@ void optionParse(User * user, int opt)
 				return;
 			}
 
-			ids = getFollowing(user, username);
+			ids = user->getFollowing(username);
 
 			if (toDB(user, ids, "ToFollow", "userid") == false) {
 				cerr << "[-] Error : toDB" << endl;
@@ -119,7 +119,7 @@ void optionParse(User * user, int opt)
 				return;
 			}
 
-			ids = search(user, query);
+			ids = user->search(query);
 
 			if (toDB(user, ids, "ToFollow", "userid") == false) {
 				cerr << "[-] Error : toDB" << endl;
@@ -138,22 +138,22 @@ void optionParse(User * user, int opt)
 				return;
 			}
 
-			follow(toVector(user, "ToFollow", "userid"), user);
+			user->follow(toVector(user, "ToFollow", "userid"));
 		}
 		break;
 	case 5:		// our status
 		{
-			status(user);
+			user->status();
 		}
 		break;
 	case 6:		// unfollow users
 		{
-			unfollow(user);
+			user->unfollow();
 		}
 		break;
 	case 7:		// Configure
 		{
-			configure(user);
+			user->configure();
 			
 			    cout << "Rerun application to apply changes." <<
 			    endl;
@@ -181,128 +181,6 @@ void optionShow()
 	cout << "6) Unfollow users who haven't followed" << endl;
 	cout << "7) Configure" << endl;
 	cout << "8) Quit" << endl;
-}
-
-bool configure(User * user)
-{
-	string address, port, username, password, q;
-	int opt = -1;
-
-	cout << "1) Set proxy" << endl;
-	cout << "2) Filters" << endl;
-	cout << "3) Purge To Follow" << endl;
-	cout << "4) Purge Followed" << endl;
-	cout << "5) Purge Unfollowed" << endl;
-	cout << "6) Purge MyFollowers" << endl;
-	cout << "7) Pruge all" << endl;
-	cout << "8) Return" << endl;
-
-	opt = optionSelect();
-
-	switch (opt) {
-	case 1:		// configure proxy
-		{
-			cin.ignore();
-
-			cout << "address  : ";
-			getline(cin, address);
-
-			cout << "port     : ";
-			getline(cin, port);
-
-			
-			    cout <<
-			    "Does this proxy use a username:password [y/n] ? ";
-			getline(cin, q);
-
-			if (q == "y" || q == "Y") {
-				cout << "username : ";
-				getline(cin, username);
-				cout << "password : ";
-				getline(cin, password);
-			}
-
-			if (change_proxy
-			    (user, address, port, username, password) == false)
-				
-				    cerr << "[-] Error Unable to change proxy"
-				    << endl;
-		}
-		break;
-	case 2:		// filters
-		{
-                        user->filters->filterList();
-		}
-		break;
-	case 3:		// purge to follow
-		{
-			if (purgeTable(user, "ToFollow") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable toi purge ToFollow" <<
-				    endl;
-		}
-		break;
-	case 4:		// purge followed
-		{
-			if (purgeTable(user, "Followed") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge Followed" <<
-				    endl;
-		}
-		break;
-	case 5:		// purge unfollowed
-		{
-			if (purgeTable(user, "UnFollowed") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge UnFollowed" <<
-				    endl;
-		}
-		break;
-	case 6:
-		{
-			if (purgeTable(user, "MyFollowers") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge MyFollowers" <<
-				    endl;
-		}
-		break;
-	case 7:		// purge all
-		{
-			if (purgeTable(user, "ToFollow") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge ToFollow" <<
-				    endl;
-
-			if (purgeTable(user, "Followed") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge Followed" <<
-				    endl;
-
-			if (purgeTable(user, "UnFollowed") == false)
-				
-				    cerr << "[-] Error : Unable to purge " <<
-				    endl;
-
-			if (purgeTable(user, "MyFollowers") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge MyFollowers" <<
-				    endl;
-		}
-		break;
-	case 8:		// return
-		break;
-	default:
-		break;
-	}
-
-	return true;
 }
 
 bool
@@ -457,12 +335,12 @@ int main()
 	/* If we don't have enough hits suggest using a proxy
 	 * and exit 
 	 **/
-	remainingHits = getRemainingHits(user);
+	remainingHits = user->getRemainingHits();
 	if (remainingHits == 0) {
 		cerr <<
 		    "[-] Error : You have reached the limit, maybe using a proxy might help"
 		    << endl;
-		if (configure(user) == false) {
+		if (user->configure() == false) {
 			cerr << "[-] Error : Unable to configure" << 
 			    endl;
 			return -1;
@@ -473,14 +351,14 @@ int main()
 	/* Verifying authentication */
 	if (user->twitterObj.accountVerifyCredGet() == true) {
 		// get following
-		if (lastResponse(user, "user.friends_count", user->getFollowing() ) == false) {
+		if (user->lastResponse("user.friends_count", user->getFollowing() ) == false) {
 			    cerr <<
 			    "[-] Error : Unable to find user.friends_count" <<
 			    endl;
 			return -1;
 		}
 		// get followers
-		if (lastResponse(user, "user.followers_count",
+		if (user->lastResponse("user.followers_count",
 				 user->getFollowers()) == false) {
 			cerr <<
 			    "[-] Error : Unable to find user.followers_count" <<
@@ -489,7 +367,7 @@ int main()
 		}
 		// set timezone if not set
 		if (user->getTimezone().empty()) {
-			if (lastResponse(user, "user.time_zone", user->getTimezone())
+			if (user->lastResponse("user.time_zone", user->getTimezone())
 			    == false) {
 				
 				    cerr <<
@@ -517,7 +395,7 @@ int main()
 			cout <<
 			    "If this is due to misconfiguration you can change it"
 			    << endl;
-			if (configure(user) == false) {
+			if (user->configure() == false) {
 				
 				    cerr << "[-] Error : Unable to configure" <<
 				    endl;
@@ -538,7 +416,7 @@ int main()
 	cout << "=====================" << endl << endl;
 
 	/* We shall get our followers */
-        myFollowers = getFollowers(user, user->getUsername());
+        myFollowers = user->getFollowers(user->getUsername());
 	if (myFollowers.size() != 0) {
 		cout << "Adding a result of " << myFollowers.size() <<
 		    " to MyFollowers;" << endl;
