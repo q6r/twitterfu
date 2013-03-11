@@ -1,4 +1,7 @@
-twitterfu: Automated twitter follow and unfollow
+twitterfu: Automated twitter follow and unfollow. It will use your twitter
+account and help you get more followers. It have some features that can help
+you to do so. It also support filters. More filters will be added to the code.
+This tool uses the API and is restricted by the API limits.
 
 Deps
 ====
