@@ -1,6 +1,6 @@
 #include "Filters.h"
 
-Filters::Filters() {
+Filters::Filters(User *p) : parent(p){
 }
 
 Filters::~Filters() {
@@ -46,22 +46,22 @@ bool Filters::getNearTimezone() {
         return nearTimezone;
 }
 
-bool Filters::mainFilter(User * user, string userid)
+bool Filters::mainFilter(string userid)
 {
 	string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
 	int prediction = 0;
 	int total = 0;
 
-	if (user->twitterObj.userGet(userid, true) == false)
+	if (parent->twitterObj.userGet(userid, true) == false)
 		return false;
 
-	user->twitterObj.getLastWebResponse(resultXML);
+	parent->twitterObj.getLastWebResponse(resultXML);
 
 	// get user following, and followers
-	if (user->lastResponse("user.followers_count", temp_followers) == false)
+	if (parent->lastResponse("user.followers_count", temp_followers) == false)
 		return false;
-	if (user->lastResponse("user.friends_count", temp_following) == false)
+	if (parent->lastResponse("user.friends_count", temp_following) == false)
 		return false;
 	stringstream sa(temp_following);
 	stringstream sb(temp_followers);
@@ -84,7 +84,7 @@ bool Filters::mainFilter(User * user, string userid)
 	/* rule #2      : User not protected */
 	if (Filters::getProtectedProfile() == true) {
 		string protect;
-		if (user->lastResponse("user.protected", protect) == false)
+		if (parent->lastResponse("user.protected", protect) == false)
 			return false;
 		if (protect == "false") {
 			prediction++;
@@ -95,7 +95,7 @@ bool Filters::mainFilter(User * user, string userid)
 	/* rule #3      : Has profile image */
 	if (Filters::getProfilePicture() == true) {
 		string profile_image;
-		if (user->lastResponse
+		if (parent->lastResponse
 		    ("user.profile_image_url", profile_image) == false)
 			return false;
 		if (!profile_image.empty()) {
@@ -107,7 +107,7 @@ bool Filters::mainFilter(User * user, string userid)
 	/* rule #4      : Has description */
 	if (Filters::getDescription() == true) {
 		string description;
-		if (user->lastResponse("user.description", description) ==
+		if (parent->lastResponse("user.description", description) ==
 		    false)
 			return false;
 		if (!description.empty()) {
@@ -120,14 +120,14 @@ bool Filters::mainFilter(User * user, string userid)
 	 * ignore anyone who doesn't have a timezone
 	 */
 	if (Filters::getNearTimezone() == true) {
-		if (user->lastResponse("user.time_zone", timezone) == false) {
+		if (parent->lastResponse("user.time_zone", timezone) == false) {
 			return false;
 		}
 		// if he or us don't have timezones then false;
-		if (timezone.empty() || user->getTimezone().empty()) {
+		if (timezone.empty() || parent->getTimezone().empty()) {
 			return false;
 		}
-		if (Filters::predictTimezone(user, timezone) == true)
+		if (Filters::predictTimezone(timezone) == true)
 			prediction++;
 		total++;
 	}
@@ -201,7 +201,7 @@ void Filters::filterList()
 	while (opt != 6);
 }
 
-bool Filters::predictTimezone(User * user, string timezone)
+bool Filters::predictTimezone(string timezone)
 {
 	size_t timezoneAt;
 	vector < string > tzs;
@@ -353,10 +353,10 @@ bool Filters::predictTimezone(User * user, string timezone)
 	// get the index of our timezone in the
 	// vector
 	vector < string >::iterator it =
-	    find(tzs.begin(), tzs.end(), user->getTimezone());
+	    find(tzs.begin(), tzs.end(), parent->getTimezone());
 	if (it != tzs.end()) {
 		timezoneAt = it - tzs.begin();
-	} else {		// user->timezone is invalid timezone 'or not defined'
+	} else {		// parent->timezone is invalid timezone 'or not defined'
 		return false;
 	}
 

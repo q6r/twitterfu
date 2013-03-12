@@ -135,12 +135,12 @@ bool createUser(User * user)
 	cin >> q;
 	if (q == "y" || q == "Y") {
 		cout << "Proxy address  : ";
-		//cin >> user->proxy.address;
+		//cin >> user->proxy->address;
 		cin >> temp;
-                user->proxy.setAddress(temp);
+                user->proxy->setAddress(temp);
 		cout << "Proxy port     : ";
                 cin >> temp;
-                user->proxy.setPort(temp);
+                user->proxy->setPort(temp);
 		
 		    cout <<
 		    "Do you want to use a proxy username, password [y/n] ? ";
@@ -148,10 +148,10 @@ bool createUser(User * user)
 		if (q == "y" || q == "Y") {
 			cout << "Proxy username : ";
                         cin >> temp;
-                        user->proxy.setUsername(temp);
+                        user->proxy->setUsername(temp);
 			cout << "Proxy password : ";
 			cin >> temp;
-                        user->proxy.setPassword(temp);
+                        user->proxy->setPassword(temp);
 		}
 	}
 	// Create inital user row
@@ -169,10 +169,10 @@ bool createUser(User * user)
 	    "\" WHERE Id=1;";
 	if (user->db.execute(q.c_str()) != 0)
 		return false;
-	if (user->proxy.getAddress() != "" && user->proxy.getPort() != "") {
-		if (change_proxy
-		    (user, user->proxy.getAddress(), user->proxy.getPort(),
-		     user->proxy.getUsername(), user->proxy.getPassword()) == false) {
+	if (user->proxy->getAddress() != "" && user->proxy->getPort() != "") {
+		if (user->proxy->change_proxy
+		    (user->proxy->getAddress(), user->proxy->getPort(),
+		     user->proxy->getUsername(), user->proxy->getPassword()) == false) {
 			cerr << "[-] Error : Unable to set proxy" << 
 			    endl;
 			return false;

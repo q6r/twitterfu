@@ -32,17 +32,6 @@ using namespace std;
 class User;
 
 /**
- * Change proxy and set it in database
- * @param user the user object
- * @param address ip address of the proxy
- * @param port port number of the proxy
- * @param username username of proxy
- * @param password password of proxy
- * @return true if successfuly changed proxy
- */
-bool change_proxy(User * user, string address, string port,
-		  string username, string password);
-/**
  * This will take src and add it to dest
  * @param dest the destination vector
  * @param src the source vector

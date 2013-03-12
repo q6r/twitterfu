@@ -11,6 +11,7 @@
 
 using namespace std;
 class Filters;
+class Proxy;
 
 class User {
         public:
@@ -107,7 +108,7 @@ class User {
                 static void signalHandler(int n);
 
                 sqlite3pp::database db;
-                Proxy proxy;
+                Proxy *proxy;
                 Filters *filters;
                 twitCurl twitterObj;
                 static bool gotExitSignal;

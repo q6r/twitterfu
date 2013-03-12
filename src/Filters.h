@@ -2,7 +2,8 @@
 #define FILTERS_H_
 #include <iostream>
 #include <string>
-#include "twitterfu.h"
+#include <vector>
+#include "User.h"
 
 using namespace std;
 class User;
@@ -12,7 +13,7 @@ class User;
  */
 class Filters {
         public:
-                Filters();
+                Filters(User *p);
                 ~Filters();
                 void setProfilePicture(bool n);
                 void setDescription(bool n);
@@ -36,7 +37,7 @@ class Filters {
                  * @param userid the user id to apply filters to it
                  * @return true if successfuly filtered
                  */
-                bool mainFilter(User *user, string userid);
+                bool mainFilter(string userid);
                 /**
                  * Check if user's timezone is near us by -4 or +4 timezones
                  * the timezones in the vector is pushed in order of their
@@ -46,7 +47,7 @@ class Filters {
                  * @param timezones of the userid
                  * @return true if able to predict time zone
                  */
-                bool predictTimezone(User *user, string timezones);
+                bool predictTimezone(string timezones);
                 /**
                  * Show a list of filters and help
                  * in toggling them.
@@ -64,5 +65,7 @@ class Filters {
                 bool followRatio;
                 /** is near us */
                 bool nearTimezone;
+                /** User parent */
+                User *parent;
 };
 #endif

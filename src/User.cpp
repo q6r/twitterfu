@@ -3,11 +3,13 @@
 bool User::gotExitSignal = false;
 
 User::User() {
-        filters = new Filters;
+        filters = new Filters(this);
+        proxy = new Proxy(this);
 }
 
 User::~User() {
         delete filters;
+        delete proxy;
 }
 
 void User::setUsername(string n) {
@@ -274,7 +276,7 @@ void User::follow(vector < string > to_follow)
 
 		// follow only those that applies to the
 		// by_ratio filter
-		if (User::filters->mainFilter(this, *it) == true) {
+		if (User::filters->mainFilter(*it) == true) {
 			if (User::twitterObj.friendshipCreate(*it, true) == true) {	// if followed the user
 				followed.push_back(*it);
 				if (User::lastResponse("user.name", username) == false) {	// if can't get username
@@ -383,8 +385,8 @@ bool User::configure()
 				getline(cin, password);
 			}
 
-			if (change_proxy
-			    (this, address, port, username, password) == false)
+			if (this->proxy->change_proxy
+			    (address, port, username, password) == false)
 				
 				    cerr << "[-] Error Unable to change proxy"
 				    << endl;
