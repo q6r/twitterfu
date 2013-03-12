@@ -92,6 +92,10 @@ string & User::getFollowing() {
         return following;
 }
 
+bool User::verify() {
+        return User::twitterObj.accountVerifyCredGet();
+}
+
 bool User::lastResponse(string node, string & v)
 {
 	string result = "";

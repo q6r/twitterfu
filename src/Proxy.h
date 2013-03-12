@@ -33,6 +33,11 @@ class Proxy {
                  */
                 bool change_proxy(string address, string port,
                                   string username, string password);
+                /**
+                * Check if the parent have set the values of the proxy
+                * if so then setup the parent's twitterObj to use that proxy
+                */
+                void setup(); 
         private:
                 /** ip address of proxy */
                 string address;

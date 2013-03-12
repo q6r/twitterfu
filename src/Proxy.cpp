@@ -6,6 +6,18 @@ Proxy::Proxy(User *p) : parent(p) {
 Proxy::~Proxy() {
 }
 
+void Proxy::setup() {
+        if(Proxy::getAddress().empty() && !Proxy::getPort().empty()) {
+                parent->twitterObj.setProxyServerIp( Proxy::getAddress() );
+                parent->twitterObj.setProxyPassword( Proxy::getPort() );
+                cout << "[+] Using proxy " << Proxy::getAddress() << ":" << Proxy::getPort() << endl;
+                if(!Proxy::getUsername().empty() && !Proxy::getPassword().empty()) {
+                        parent->twitterObj.setProxyUserName( Proxy::getUsername() );
+                        parent->twitterObj.setProxyPassword( Proxy::getPassword() );
+                }
+        }
+}
+
 void Proxy::setAddress(string n) {
         address = n;
 }

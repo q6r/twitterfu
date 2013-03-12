@@ -112,13 +112,22 @@ class User {
                  * @return n the catched signal number
                  */
                 static void signalHandler(int n);
-
+                /**
+                 * Verify that the user authenticated
+                 * successfuly.
+                 * @return true or false
+                 */
+                bool verify();
+                
                 sqlite3pp::database db;
                 Proxy *proxy;
                 Filters *filters;
-                twitCurl twitterObj;
                 static bool gotExitSignal;
+
+                friend Proxy;   // access to twitterObj
+                friend Filters; // access to twitterObj 
         private:
+                twitCurl twitterObj;
                 string username;
                 string password;
                 string consumer_key;

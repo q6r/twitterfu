@@ -226,18 +226,21 @@ int main()
 	}
 
 	/* Set up proxy if found */
-	if (!user->proxy->getAddress().empty() && !user->proxy->getPort().empty()) {
-		user->twitterObj.setProxyServerIp(user->proxy->getAddress());
-		user->twitterObj.setProxyServerPort(user->proxy->getPort());
-		cout << "[+] Using proxy " << user->proxy->getAddress() << ":" << user->proxy->getPort() << endl;
-		/* Set password if found */
-		if (!user->proxy->getUsername().empty()
-		    && !user->proxy->getPassword().empty()) {
-			user->twitterObj.setProxyUserName(user->proxy->getUsername());
-			user->twitterObj.setTwitterPassword(user->proxy->getPassword());
-		}
-	}
-
+        user->proxy->setup();
+/*
+ *        if (!user->proxy->getAddress().empty() && !user->proxy->getPort().empty()) {
+ *                user->twitterObj.setProxyServerIp(user->proxy->getAddress());
+ *                user->twitterObj.setProxyServerPort(user->proxy->getPort());
+ *                cout << "[+] Using proxy " << user->proxy->getAddress() << ":" << user->proxy->getPort() << endl;
+ *                [> Set password if found <]
+ *                if (!user->proxy->getUsername().empty()
+ *                    && !user->proxy->getPassword().empty()) {
+ *                        user->twitterObj.setProxyUserName(user->proxy->getUsername());
+ *                        user->twitterObj.setTwitterPassword(user->proxy->getPassword());
+ *                }
+ *        }
+ *
+ */
 	/* Authenticate our user */
 	if (user->authenticate() == false) {
 		cerr << "[-] Failed while authenticating" << endl;
@@ -261,7 +264,7 @@ int main()
 	}
 
 	/* Verifying authentication */
-	if (user->twitterObj.accountVerifyCredGet() == true) {
+        if(user->verify() == true) {
 		// get following
 		if (user->lastResponse("user.friends_count", user->getFollowing() ) == false) {
 			    cerr <<
