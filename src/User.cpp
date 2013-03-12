@@ -245,6 +245,57 @@ vector < string > User::getFollowers(string username)
 
 	return ids;
 }
+
+bool User::authenticate()
+{
+	string q, authurl, pin;
+
+	// set twitter user, pass, and consumer {key,secret}
+        User::twitterObj.setTwitterUsername(User::getUsername());
+	User::twitterObj.setTwitterPassword(User::getPassword());
+	User::twitterObj.getOAuth().setConsumerKey(User::getConsumerKey());
+	User::twitterObj.getOAuth().setConsumerSecret(User::getConsumerSecret());
+
+	// if we already have oauth keys
+	if (User::getAccessTokenKey().size() && User::getAccessTokenSecret().size()) {
+		User::twitterObj.getOAuth().setOAuthTokenKey(User::getAccessTokenKey());
+		User::twitterObj.getOAuth().
+		    setOAuthTokenSecret(User::getAccessTokenSecret());
+		return true;
+	} else {		// if we don't
+		// get pin
+		if(User::twitterObj.oAuthRequestToken(authurl) == false) {
+                        cerr << "[-] Failed while trying to get auth url" << endl;
+                        return false;
+                }
+		cout <<
+		    "Visit twitter and authorize the application then enter the PIN."
+		    << endl << authurl << endl;
+		cout << "PIN : ";
+		cin >> pin;
+		User::twitterObj.getOAuth().setOAuthPin(pin);
+		User::twitterObj.oAuthAccessToken();
+
+		// update database with access keys
+		User::twitterObj.getOAuth().getOAuthTokenKey(User::getAccessTokenKey());
+		User::twitterObj.getOAuth().
+		    getOAuthTokenSecret(User::getAccessTokenSecret());
+
+		q = "UPDATE Config SET access_key = \"" +
+		    User::getAccessTokenKey() + "\" WHERE Id=1;";
+		if (User::db.execute(q.c_str()) != 0)
+			return false;
+		q = "UPDATE Config SET access_secret = \"" +
+		    User::getAccessTokenSecret() + "\" WHERE Id=1;";
+		if (User::db.execute(q.c_str()) != 0)
+			return false;
+		return true;
+	}
+
+	return false;
+}
+
+
 void User::follow(vector < string > to_follow)
 {
 	User::gotExitSignal = false;

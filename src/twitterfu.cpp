@@ -183,55 +183,6 @@ void optionShow()
 	cout << "8) Quit" << endl;
 }
 
-bool authenticate(User * &user)
-{
-	string q, authurl, pin;
-
-	// set twitter user, pass, and consumer {key,secret}
-        user->twitterObj.setTwitterUsername(user->getUsername());
-	user->twitterObj.setTwitterPassword(user->getPassword());
-	user->twitterObj.getOAuth().setConsumerKey(user->getConsumerKey());
-	user->twitterObj.getOAuth().setConsumerSecret(user->getConsumerSecret());
-
-	// if we already have oauth keys
-	if (user->getAccessTokenKey().size() && user->getAccessTokenSecret().size()) {
-		user->twitterObj.getOAuth().setOAuthTokenKey(user->getAccessTokenKey());
-		user->twitterObj.getOAuth().
-		    setOAuthTokenSecret(user->getAccessTokenSecret());
-		return true;
-	} else {		// if we don't
-		// get pin
-		if(user->twitterObj.oAuthRequestToken(authurl) == false) {
-                        cerr << "[-] Failed while trying to get auth url" << endl;
-                        return false;
-                }
-		cout <<
-		    "Visit twitter and authorize the application then enter the PIN."
-		    << endl << authurl << endl;
-		cout << "PIN : ";
-		cin >> pin;
-		user->twitterObj.getOAuth().setOAuthPin(pin);
-		user->twitterObj.oAuthAccessToken();
-
-		// update database with access keys
-		user->twitterObj.getOAuth().getOAuthTokenKey(user->getAccessTokenKey());
-		user->twitterObj.getOAuth().
-		    getOAuthTokenSecret(user->getAccessTokenSecret());
-
-		q = "UPDATE Config SET access_key = \"" +
-		    user->getAccessTokenKey() + "\" WHERE Id=1;";
-		if (user->db.execute(q.c_str()) != 0)
-			return false;
-		q = "UPDATE Config SET access_secret = \"" +
-		    user->getAccessTokenSecret() + "\" WHERE Id=1;";
-		if (user->db.execute(q.c_str()) != 0)
-			return false;
-		return true;
-	}
-
-	return false;
-}
-
 int main()
 {
 	string error;
@@ -288,7 +239,7 @@ int main()
 	}
 
 	/* Authenticate our user */
-	if (authenticate(user) == false) {
+	if (user->authenticate() == false) {
 		cerr << "[-] Failed while authenticating" << endl;
 		return -1;
 	}

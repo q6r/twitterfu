@@ -38,6 +38,12 @@ class User {
                 string & getFollowers();
                 string & getFollowing();
                 /**
+                 * Authenticate the user
+                 * @param user the user object
+                 * @return true of user authenticated successfuly
+                 */
+                bool authenticate();
+                /**
                  * Get the limit
                  * @param user the user object
                  * @return number of remaining hits

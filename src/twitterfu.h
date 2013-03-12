@@ -75,12 +75,6 @@ bool fileExists(string filename);
  */
 int randomize(int from, int to);
 /**
- * Authenticate the user
- * @param user the user object
- * @return true of user authenticated successfuly
- */
-bool authenticate(User * &user);
-/**
  * Back to the first line and erase n characters
  * @param n number of blanks
  */
