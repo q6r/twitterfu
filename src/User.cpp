@@ -5,11 +5,13 @@ bool User::gotExitSignal = false;
 User::User() {
         filters = new Filters(this);
         proxy = new Proxy(this);
+        database = new Database(this);
 }
 
 User::~User() {
         delete filters;
         delete proxy;
+        delete database;
 }
 
 void User::setUsername(string n) {
@@ -313,7 +315,7 @@ void User::follow(vector < string > to_follow)
 		return;
 	}
 	// remove duplicates
-	if (removeDuplicatesInToFollow(this) == false) {
+	if (User::database->removeDuplicatesInToFollow() == false) {
 		cerr << "(Err:Unable to remove duplicates)" << endl;
 		return;
 	}
@@ -393,7 +395,7 @@ void User::follow(vector < string > to_follow)
 		cout << endl << "We have followed " << followed.
 		    size() << "/" << to_follow.size() - ignored << endl;
 
-	if (toDB(this, followed, "Followed", "userid") == false) {
+	if (User::database->toDB(followed, "Followed", "userid") == false) {
 		cerr << "[-] Error : toDB" << endl;
 		return;
 	}
@@ -454,7 +456,7 @@ bool User::configure()
 		break;
 	case 3:		// purge to follow
 		{
-			if (purgeTable(this, "ToFollow") == false)
+			if (User::database->purgeTable("ToFollow") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable toi purge ToFollow" <<
@@ -463,7 +465,7 @@ bool User::configure()
 		break;
 	case 4:		// purge followed
 		{
-			if (purgeTable(this, "Followed") == false)
+			if (User::database->purgeTable("Followed") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable to purge Followed" <<
@@ -472,7 +474,7 @@ bool User::configure()
 		break;
 	case 5:		// purge unfollowed
 		{
-			if (purgeTable(this, "UnFollowed") == false)
+			if (User::database->purgeTable("UnFollowed") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable to purge UnFollowed" <<
@@ -481,7 +483,7 @@ bool User::configure()
 		break;
 	case 6:
 		{
-			if (purgeTable(this, "MyFollowers") == false)
+			if (User::database->purgeTable("MyFollowers") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
@@ -490,24 +492,24 @@ bool User::configure()
 		break;
 	case 7:		// purge all
 		{
-			if (purgeTable(this, "ToFollow") == false)
+			if (User::database->purgeTable("ToFollow") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable to purge ToFollow" <<
 				    endl;
 
-			if (purgeTable(this, "Followed") == false)
+			if (User::database->purgeTable("Followed") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable to purge Followed" <<
 				    endl;
 
-			if (purgeTable(this, "UnFollowed") == false)
+			if (User::database->purgeTable("UnFollowed") == false)
 				
 				    cerr << "[-] Error : Unable to purge " <<
 				    endl;
 
-			if (purgeTable(this, "MyFollowers") == false)
+			if (User::database->purgeTable("MyFollowers") == false)
 				
 				    cerr <<
 				    "[-] Error : Unable to purge MyFollowers" <<
@@ -526,8 +528,7 @@ bool User::configure()
 
 void User::unfollow()
 {
-	vector < string >
-	    followers(getVal(this, "MyFollowers", "userid"));
+	vector < string > followers(User::database->getVal("MyFollowers", "userid"));
 	vector < string >::iterator it;
 	vector < string > result;
 	string who;
@@ -619,7 +620,7 @@ void User::unfollow()
 	    followers.size() << endl;
 
 	// write results to db
-	if (toDB(this, result, "UnFollowed", "userid") == false)
+	if (User::database->toDB(result, "UnFollowed", "userid") == false)
 		cerr << "[-] Error : Unable to write to db" << endl;
 }
 
@@ -630,13 +631,13 @@ bool User::status()
 	string remaining_hits, hourly_limit;
 
 	vector < string >
-	    tofollow(toVector(this, "ToFollow", "userid"));
+	    tofollow(User::database->toVector( "ToFollow", "userid"));
 	vector < string >
-	    followed(toVector(this, "Followed", "userid"));
+	    followed(User::database->toVector( "Followed", "userid"));
 	vector < string >
-	    unfollowed(toVector(this, "UnFollowed", "userid"));
+	    unfollowed(User::database->toVector( "UnFollowed", "userid"));
 	vector < string >
-	    myfollowers(toVector(this, "MyFollowers", "userid"));
+	    myfollowers(User::database->toVector( "MyFollowers", "userid"));
 
 	cout << "\tDatabase Status :" << endl;
 	cout << "\t\tFollowed     : " << followed.size() << endl;

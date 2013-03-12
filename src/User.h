@@ -7,11 +7,13 @@
 #include "sqlite3pp.h"
 #include "Proxy.h"
 #include "Filters.h"
+#include "Database.h"
 #include "twitterfu.h"
 
 using namespace std;
 class Filters;
 class Proxy;
+class Database;
 
 class User {
         public:
@@ -119,10 +121,6 @@ class User {
                  */
                 bool verify();               
                 /**
-                 * sqlite3 database
-                 */ 
-                sqlite3pp::database db;
-                /**
                  * The User's Proxy
                  */ 
                 Proxy *proxy;
@@ -131,12 +129,21 @@ class User {
                  */ 
                 Filters *filters;
                 /**
+                 *
+                 */
+                Database *database; 
+                /**
                  * signal flag for signal handling
                  */  
                 static bool gotExitSignal;
                 friend Proxy;   // access to twitterObj
                 friend Filters; // access to twitterObj 
+                friend Database; // access to db, twitterObj
         private:
+                /**
+                 * sqlite3 database
+                 */ 
+                sqlite3pp::database db;
                 twitCurl twitterObj; /** twitterObject of the user */
                 string username; /** username */
                 string password; /** password */

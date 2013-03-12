@@ -62,7 +62,7 @@ void optionParse(User * user, int opt)
 			cout << "Username : ";
 			cin >> username;
 
-			if (removeDuplicatesInToFollow(user) == false) {
+			if (user->database->removeDuplicatesInToFollow() == false) {
 				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    endl;
@@ -72,7 +72,7 @@ void optionParse(User * user, int opt)
 
 			ids = user->getFollowers(username);
 
-			if (toDB(user, ids, "ToFollow", "userid") == false) {
+			if (user->database->toDB(ids, "ToFollow", "userid") == false) {
 				cerr << "[-] Error : toDB" << endl;
 				return;
 			}
@@ -86,7 +86,7 @@ void optionParse(User * user, int opt)
 			cout << "Username : ";
 			cin >> username;
 
-			if (removeDuplicatesInToFollow(user) == false) {
+			if (user->database->removeDuplicatesInToFollow() == false) {
 				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    endl;
@@ -95,7 +95,7 @@ void optionParse(User * user, int opt)
 
 			ids = user->getFollowing(username);
 
-			if (toDB(user, ids, "ToFollow", "userid") == false) {
+			if (user->database->toDB( ids, "ToFollow", "userid") == false) {
 				cerr << "[-] Error : toDB" << endl;
 				return;
 			}
@@ -112,7 +112,7 @@ void optionParse(User * user, int opt)
 			cin.ignore();
 			getline(cin, query);
 
-			if (removeDuplicatesInToFollow(user) == false) {
+			if (user->database->removeDuplicatesInToFollow() == false) {
 				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    endl;
@@ -121,7 +121,7 @@ void optionParse(User * user, int opt)
 
 			ids = user->search(query);
 
-			if (toDB(user, ids, "ToFollow", "userid") == false) {
+			if (user->database->toDB( ids, "ToFollow", "userid") == false) {
 				cerr << "[-] Error : toDB" << endl;
 				return;
 			}
@@ -131,14 +131,14 @@ void optionParse(User * user, int opt)
 		break;
 	case 4:		// follow users
 		{
-			if (removeDuplicatesInToFollow(user) == false) {
+			if (user->database->removeDuplicatesInToFollow() == false) {
 				cerr <<
 				    "[-] Error : Unable to remove duplicates" <<
 				    endl;
 				return;
 			}
 
-			user->follow(toVector(user, "ToFollow", "userid"));
+			user->follow(user->database->toVector("ToFollow", "userid"));
 		}
 		break;
 	case 5:		// our status
@@ -202,27 +202,27 @@ int main()
 	user->setConsumerSecret("EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
 
 	/* Initalize database */
-	if (initalize(user) == false) {
+	if (user->database->initalize() == false) {
 		cerr << "[-] Error : Unable to initalize database" << 
 		    endl;
 		return -1;
 	}
 	// we should see if the Config table has someone or not
-	if (userExist(user) == false) {
-		// create the username, password
-		if (createUser(user) == false) {
+	if (user->database->userExist() == false) {
+		// create the username, password in database
+		if (user->database->createUser() == false) {
 			cerr << "Unable to create user" << endl;
 			return -1;
 		}
 	} else {		// Get all needed values from DB
-		user->setUsername(getVal(user, "Config", "username").at(0));
-		user->setAccessTokenKey(getVal(user, "Config", "access_key").at(0));
-		user->setAccessTokenSecret(getVal(user, "Config", "access_secret").at(0));
-		user->setTimezone(getVal(user, "Config", "timezone").at(0));
-		user->proxy->setAddress(getVal(user, "Config", "proxy_address").at(0));
-		user->proxy->setPort(getVal(user, "Config", "proxy_port").at(0));
-		user->proxy->setUsername(getVal(user, "Config", "proxy_username").at(0));
-		user->proxy->setPassword(getVal(user, "Config", "proxy_password").at(0));
+		user->setUsername(user->database->getVal( "Config", "username").at(0));
+		user->setAccessTokenKey(user->database->getVal( "Config", "access_key").at(0));
+		user->setAccessTokenSecret(user->database->getVal( "Config", "access_secret").at(0));
+		user->setTimezone(user->database->getVal( "Config", "timezone").at(0));
+		user->proxy->setAddress(user->database->getVal( "Config", "proxy_address").at(0));
+		user->proxy->setPort(user->database->getVal( "Config", "proxy_port").at(0));
+		user->proxy->setUsername(user->database->getVal( "Config", "proxy_username").at(0));
+		user->proxy->setPassword(user->database->getVal( "Config", "proxy_password").at(0));
 	}
 
 	/* Set up proxy if found */
@@ -290,19 +290,24 @@ int main()
 				    endl;
 				return -1;
 			} else {
-				user->db.connect(user->getDBname().c_str());
-				query =
-				    "UPDATE Config SET timezone = \"" +
-				    user->getTimezone() + "\";";
-				if (user->db.execute(query.c_str()) != 0) {
-					
-					    cerr << "Unable to update timezone"
-					    << endl;
-				}
-				user->db.disconnect();
-				cout << "We have set the timezone to " <<
-				    user->getTimezone() << endl;
-			}
+                                user->database->setupTimezone(
+                                        user->getTimezone() );
+                        /*
+			 *        user->db.connect(user->getDBname().c_str());
+			 *        query =
+			 *            "UPDATE Config SET timezone = \"" +
+			 *            user->getTimezone() + "\";";
+			 *        if (user->db.execute(query.c_str()) != 0) {
+			 *                
+			 *                    cerr << "Unable to update timezone"
+			 *                    << endl;
+			 *        }
+			 *        user->db.disconnect();
+			 *        cout << "We have set the timezone to " <<
+			 *            user->getTimezone() << endl;
+			 *}
+                         */
+                        }
 		}
 	} else {
 		cerr << "[-] Error : Unable to authenticate." << endl;
@@ -335,12 +340,12 @@ int main()
 	if (myFollowers.size() != 0) {
 		cout << "Adding a result of " << myFollowers.size() <<
 		    " to MyFollowers;" << endl;
-		if (toDB(user, myFollowers, "MyFollowers", "userid") == false) {
+		if (user->database->toDB( myFollowers, "MyFollowers", "userid") == false) {
 			cerr << "[-] Error : Unable to toDB" << endl;
 		}
 	}
 	// Before entering the main loop fix the databases
-	if (removeDuplicatesInToFollow(user) == false) {
+	if (user->database->removeDuplicatesInToFollow() == false) {
 		cerr << "[-] Error : Unable to remove duplicates" << 
 		    endl;
 		return -1;

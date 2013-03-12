@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <vector>
 #include "sqlite3pp.h"
-#include "database.h"
 #include "User.h"
 
 using namespace std;
