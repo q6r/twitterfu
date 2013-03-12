@@ -117,27 +117,37 @@ class User {
                  * successfuly.
                  * @return true or false
                  */
-                bool verify();
-                
+                bool verify();               
+                /**
+                 * sqlite3 database
+                 */ 
                 sqlite3pp::database db;
+                /**
+                 * The User's Proxy
+                 */ 
                 Proxy *proxy;
+                /**
+                 * The USers' Filters
+                 */ 
                 Filters *filters;
+                /**
+                 * signal flag for signal handling
+                 */  
                 static bool gotExitSignal;
-
                 friend Proxy;   // access to twitterObj
                 friend Filters; // access to twitterObj 
         private:
-                twitCurl twitterObj;
-                string username;
-                string password;
-                string consumer_key;
-                string consumer_secret;
-                string access_token_key;
-                string access_token_secret;
-                string db_name;
-                string timezone;
-                string followers;
-                string following;
+                twitCurl twitterObj; /** twitterObject of the user */
+                string username; /** username */
+                string password; /** password */
+                string consumer_key; /** consumer key */
+                string consumer_secret; /** consumer secret */
+                string access_token_key; /** access token key */
+                string access_token_secret; /** access token secret */
+                string db_name; /** database name used for sqlite3 */
+                string timezone; /** timezone of the user */
+                string followers; /** # of followers of the user */
+                string following; /** # of following of the user */
 
 };
 #endif
