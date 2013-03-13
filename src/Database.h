@@ -10,6 +10,11 @@ class User;
 
 class Database {
         public:
+                /**
+                 * Initalize the users's database
+                 * create necessary tables
+                 * @param p parent User
+                 */ 
                 Database(User *p);
                 ~Database();
                 /**
@@ -58,12 +63,6 @@ class Database {
                  */
                 vector < string > getVal(string table,
                                                    string col);
-                /**
-                 * It creates necessary tables if they don't exists
-                 * @param user the user object
-                 * @return false if unable to connect to database
-                 */
-                bool initalize();
                 /** 
                  * Will insert or replace UNIQUE a vector<string>.
                  * @param user the user object

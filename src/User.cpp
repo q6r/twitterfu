@@ -2,16 +2,22 @@
 
 bool User::gotExitSignal = false;
 
-User::User() {
-        filters = new Filters(this);
+User::User(string _database, string _consumer_key, string _consumer_secret) {
+        User::setDBname(_database);
+        User::setConsumerKey(_consumer_key);
+        User::setConsumerSecret(_consumer_secret);
+        
         proxy = new Proxy(this);
+        filters  = new Filters(this);
         database = new Database(this);
+
+        proxy->setup(); // set up proxy
 }
 
 User::~User() {
+        delete database;
         delete filters;
         delete proxy;
-        delete database;
 }
 
 void User::setUsername(string n) {
@@ -54,43 +60,43 @@ void User::setFollowing(string n) {
         following = n;        
 }
 
-string & User::getUsername() {
+string User::getUsername() {
         return username;
 }
 
-string & User::getPassword() {
+string User::getPassword() {
         return password;
 }
 
-string & User::getConsumerKey() {
+string User::getConsumerKey() {
         return consumer_key;
 }
 
-string & User::getConsumerSecret() {
+string User::getConsumerSecret() {
         return consumer_secret;
 }
 
-string & User::getAccessTokenKey() {
+string User::getAccessTokenKey() {
         return access_token_key;
 }
 
-string & User::getAccessTokenSecret() {
+string User::getAccessTokenSecret() {
         return access_token_secret;
 }
 
-string & User::getDBname() {
+string User::getDBname() {
         return db_name;
 }
 
-string & User::getTimezone() {
+string User::getTimezone() {
         return timezone;
 }
 
-string & User::getFollowers() {
+string User::getFollowers() {
         return followers;
 }
 
-string & User::getFollowing() {
+string User::getFollowing() {
         return following;
 }
 
@@ -255,12 +261,12 @@ vector < string > User::getFollowers(string username)
 bool User::authenticate()
 {
 	string q, authurl, pin;
-
+        
 	// set twitter user, pass, and consumer {key,secret}
-        User::twitterObj.setTwitterUsername(User::getUsername());
-	User::twitterObj.setTwitterPassword(User::getPassword());
-	User::twitterObj.getOAuth().setConsumerKey(User::getConsumerKey());
-	User::twitterObj.getOAuth().setConsumerSecret(User::getConsumerSecret());
+        User::twitterObj.setTwitterUsername(User::username);
+	User::twitterObj.setTwitterPassword(User::password);
+	User::twitterObj.getOAuth().setConsumerKey(User::consumer_key);
+	User::twitterObj.getOAuth().setConsumerSecret(User::consumer_secret);
 
 	// if we already have oauth keys
 	if (User::getAccessTokenKey().size() && User::getAccessTokenSecret().size()) {
@@ -283,9 +289,8 @@ bool User::authenticate()
 		User::twitterObj.oAuthAccessToken();
 
 		// update database with access keys
-		User::twitterObj.getOAuth().getOAuthTokenKey(User::getAccessTokenKey());
-		User::twitterObj.getOAuth().
-		    getOAuthTokenSecret(User::getAccessTokenSecret());
+		User::twitterObj.getOAuth().getOAuthTokenKey(User::access_token_key);
+		User::twitterObj.getOAuth().getOAuthTokenSecret(User::access_token_secret);
 
 		q = "UPDATE Config SET access_key = \"" +
 		    User::getAccessTokenKey() + "\" WHERE Id=1;";

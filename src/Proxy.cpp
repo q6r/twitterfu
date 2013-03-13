@@ -7,7 +7,8 @@ Proxy::~Proxy() {
 }
 
 void Proxy::setup() {
-        if(Proxy::getAddress().empty() && !Proxy::getPort().empty()) {
+        // If we have proxy settings either from db or else.
+        if(!Proxy::getAddress().empty() && !Proxy::getPort().empty()) {
                 parent->twitterObj.setProxyServerIp( Proxy::getAddress() );
                 parent->twitterObj.setProxyPassword( Proxy::getPort() );
                 cout << "[+] Using proxy " << Proxy::getAddress() << ":" << Proxy::getPort() << endl;
@@ -16,6 +17,8 @@ void Proxy::setup() {
                         parent->twitterObj.setProxyPassword( Proxy::getPassword() );
                 }
         }
+
+
 }
 
 void Proxy::setAddress(string n) {

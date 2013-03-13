@@ -17,7 +17,16 @@ class Database;
 
 class User {
         public:
-                User();
+                /**
+                 * Construct the user and initalize necessary things.
+                 * create database,
+                 * create filters,
+                 * create proxy, and set it up.
+                 * @param _database the database name
+                 * @param _consumer_key the consumer key
+                 * @param _consumer_secret the consumer secret
+                 */ 
+                User(string _database, string _consumer_key, string _consumer_secret);
                 ~User();
                 void setUsername(string n);
                 void setPassword(string n);
@@ -29,16 +38,16 @@ class User {
                 void setTimezone(string n);
                 void setFollowers(string n);
                 void setFollowing(string n);
-                string & getUsername();
-                string & getPassword();
-                string & getConsumerKey();
-                string & getConsumerSecret();
-                string & getAccessTokenKey();
-                string & getAccessTokenSecret();
-                string & getDBname();
-                string & getTimezone();
-                string & getFollowers();
-                string & getFollowing();
+                string getUsername();
+                string getPassword();
+                string getConsumerKey();
+                string getConsumerSecret();
+                string getAccessTokenKey();
+                string getAccessTokenSecret();
+                string getDBname();
+                string getTimezone();
+                string getFollowers();
+                string getFollowing();
                 /**
                  * Authenticate the user
                  * @param user the user object

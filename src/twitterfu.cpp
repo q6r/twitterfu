@@ -187,60 +187,17 @@ int main()
 {
 	string error;
 	vector < string > myFollowers;
-	User *user = new User;
 	string result, temp, query;
 	int opt, remainingHits;
 	struct passwd *pw = getpwuid(getuid());
-
-	srand(time(NULL));	// random seed
-
-	/* get users directory */
         string dbtemp = pw->pw_dir;
         dbtemp += "/.twitterfu.sql";
-        user->setDBname( dbtemp );
-	user->setConsumerKey("nYFCp8lj4LHqmLTnVHFc0Q");
-	user->setConsumerSecret("EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
+	User *user;
+	srand(time(NULL));	// random seed
+        
+        // Create a user
+        user = new User(dbtemp, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
 
-	/* Initalize database */
-	if (user->database->initalize() == false) {
-		cerr << "[-] Error : Unable to initalize database" << 
-		    endl;
-		return -1;
-	}
-	// we should see if the Config table has someone or not
-	if (user->database->userExist() == false) {
-		// create the username, password in database
-		if (user->database->createUser() == false) {
-			cerr << "Unable to create user" << endl;
-			return -1;
-		}
-	} else {		// Get all needed values from DB
-		user->setUsername(user->database->getVal( "Config", "username").at(0));
-		user->setAccessTokenKey(user->database->getVal( "Config", "access_key").at(0));
-		user->setAccessTokenSecret(user->database->getVal( "Config", "access_secret").at(0));
-		user->setTimezone(user->database->getVal( "Config", "timezone").at(0));
-		user->proxy->setAddress(user->database->getVal( "Config", "proxy_address").at(0));
-		user->proxy->setPort(user->database->getVal( "Config", "proxy_port").at(0));
-		user->proxy->setUsername(user->database->getVal( "Config", "proxy_username").at(0));
-		user->proxy->setPassword(user->database->getVal( "Config", "proxy_password").at(0));
-	}
-
-	/* Set up proxy if found */
-        user->proxy->setup();
-/*
- *        if (!user->proxy->getAddress().empty() && !user->proxy->getPort().empty()) {
- *                user->twitterObj.setProxyServerIp(user->proxy->getAddress());
- *                user->twitterObj.setProxyServerPort(user->proxy->getPort());
- *                cout << "[+] Using proxy " << user->proxy->getAddress() << ":" << user->proxy->getPort() << endl;
- *                [> Set password if found <]
- *                if (!user->proxy->getUsername().empty()
- *                    && !user->proxy->getPassword().empty()) {
- *                        user->twitterObj.setProxyUserName(user->proxy->getUsername());
- *                        user->twitterObj.setTwitterPassword(user->proxy->getPassword());
- *                }
- *        }
- *
- */
 	/* Authenticate our user */
 	if (user->authenticate() == false) {
 		cerr << "[-] Failed while authenticating" << endl;
@@ -265,67 +222,43 @@ int main()
 
 	/* Verifying authentication */
         if(user->verify() == true) {
-		// get following
-		if (user->lastResponse("user.friends_count", user->getFollowing() ) == false) {
-			    cerr <<
-			    "[-] Error : Unable to find user.friends_count" <<
-			    endl;
+		// get and set following
+		if (user->lastResponse("user.friends_count", temp) == false) {
+			cerr << "[-] Error : Unable to find user.friends_count" << endl;
 			return -1;
-		}
-		// get followers
-		if (user->lastResponse("user.followers_count",
-				 user->getFollowers()) == false) {
-			cerr <<
-			    "[-] Error : Unable to find user.followers_count" <<
-			    endl;
+		} else {
+                        user->setFollowing( temp );
+                }
+		// get and set followers
+		if (user->lastResponse("user.followers_count",temp) == false) {
+                        cerr << "[-] Error : Unable to find user.followers_count" << endl;
 			return -1;
-		}
-		// set timezone if not set
+		} else {
+                        user->setFollowers( temp );
+                }
+		// get and set timezone if not set
 		if (user->getTimezone().empty()) {
-			if (user->lastResponse("user.time_zone", user->getTimezone())
-			    == false) {
-				
-				    cerr <<
-				    "[-] Error : Unable to find timezone" <<
-				    endl;
+			if (user->lastResponse("user.time_zone", temp) == false) {
+                                cerr << "[-] Error : Unable to find timezone" << endl;
 				return -1;
 			} else {
-                                user->database->setupTimezone(
-                                        user->getTimezone() );
-                        /*
-			 *        user->db.connect(user->getDBname().c_str());
-			 *        query =
-			 *            "UPDATE Config SET timezone = \"" +
-			 *            user->getTimezone() + "\";";
-			 *        if (user->db.execute(query.c_str()) != 0) {
-			 *                
-			 *                    cerr << "Unable to update timezone"
-			 *                    << endl;
-			 *        }
-			 *        user->db.disconnect();
-			 *        cout << "We have set the timezone to " <<
-			 *            user->getTimezone() << endl;
-			 *}
-                         */
+                                // if there's timezone put it in db
+                                user->setTimezone( temp );
+                                user->database->setupTimezone( user->getTimezone() );
                         }
 		}
-	} else {
+	} else { // Unable to verify/authenticate
 		cerr << "[-] Error : Unable to authenticate." << endl;
 		if (!user->proxy->getAddress().empty() && !user->proxy->getPort().empty()) {
-			cout <<
-			    "If this is due to misconfiguration you can change it"
-			    << endl;
+			cout << "If this is due to misconfiguration you can change it" << endl;
+                        // configure the user
 			if (user->configure() == false) {
-				
-				    cerr << "[-] Error : Unable to configure" <<
-				    endl;
+			        cerr << "[-] Error : Unable to configure" << endl;
 				return -1;
 			}
 			
-			    cout << "Rerun the application to apply changes." <<
-			    endl;
+                        cout << "Rerun the application to apply changes." <<endl;
 		}
-
 		return -1;
 	}
 

@@ -1,7 +1,40 @@
 #include "Database.h"
 
 Database::Database(User *p) : parent(p) {
+        string query;
 
+	// Connect to database and create tables if
+	// needed
+	if (parent->db.connect(parent->getDBname().c_str()) == 0) {
+                // Create necessary tables
+                parent->db.execute
+                    ("CREATE TABLE MyFollowers(Id integer PRIMARY KEY,userid text UNIQUE);");
+                parent->db.execute
+                    ("CREATE TABLE ToFollow(Id integer PRIMARY KEY,userid text UNIQUE);");
+                parent->db.execute
+                    ("CREATE TABLE Followed(Id integer PRIMARY KEY,userid text UNIQUE);");
+                parent->db.execute
+                    ("CREATE TABLE UnFollowed(Id integer PRIMARY KEY,userid text UNIQUE);");
+                parent->db.execute
+                    ("CREATE TABLE Config(Id integer PRIMARY KEY, username text, password text, access_key text, access_secret text, proxy_username text, proxy_password text, proxy_address text, proxy_port text, timezone text);");
+                parent->db.disconnect();
+        }
+
+        // If database doesn't have a user then create it
+        // otherwise just set the parent according to what we have
+        // in the database
+        if(Database::userExist() == false) {
+                Database::createUser();
+        } else {
+                parent->setUsername(Database::getVal( "Config", "username").at(0));
+		parent->setAccessTokenKey(Database::getVal( "Config", "access_key").at(0));
+		parent->setAccessTokenSecret(Database::getVal( "Config", "access_secret").at(0));
+		parent->setTimezone(Database::getVal( "Config", "timezone").at(0));
+                parent->proxy->setAddress( Database::getVal( "Config", "proxy_address").at(0));
+                parent->proxy->setPort(Database::getVal( "Config", "proxy_port").at(0));
+                parent->proxy->setUsername(Database::getVal( "Config", "proxy_username").at(0));
+                parent->proxy->setPassword(Database::getVal( "Config", "proxy_password").at(0));
+       }
 }
 
 Database::~Database() { 
@@ -200,30 +233,6 @@ bool Database::createUser()
 		}
 
 	}
-
-	return true;
-}
-
-bool Database::initalize()
-{
-	string query;
-
-	// Connect to database
-	if (parent->db.connect(parent->getDBname().c_str()) != 0)
-		return false;
-
-	// Create necessary tables
-	parent->db.execute
-	    ("CREATE TABLE MyFollowers(Id integer PRIMARY KEY,userid text UNIQUE);");
-	parent->db.execute
-	    ("CREATE TABLE ToFollow(Id integer PRIMARY KEY,userid text UNIQUE);");
-	parent->db.execute
-	    ("CREATE TABLE Followed(Id integer PRIMARY KEY,userid text UNIQUE);");
-	parent->db.execute
-	    ("CREATE TABLE UnFollowed(Id integer PRIMARY KEY,userid text UNIQUE);");
-	parent->db.execute
-	    ("CREATE TABLE Config(Id integer PRIMARY KEY, username text, password text, access_key text, access_secret text, proxy_username text, proxy_password text, proxy_address text, proxy_port text, timezone text);");
-	parent->db.disconnect();
 
 	return true;
 }
