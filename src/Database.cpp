@@ -113,25 +113,19 @@ bool Database::removeDuplicatesInToFollow()
 	deque < string >::iterator it;
 
 	// remove anything in myfollowers from tofollow list
-	for (it = v_myfollowers.begin(); it != v_myfollowers.end(); it++) {
-		v_tofollow.erase(remove
-				 (v_tofollow.begin(), v_tofollow.end(), *it),
-				 v_tofollow.end());
-	}
+    v_myfollowers.erase(remove_if(v_myfollowers.begin(), v_myfollowers.end(), [&v_tofollow](string x) {
+                return (find(v_tofollow.begin(),v_tofollow.end(), x)!=v_tofollow.end()) ? true : false;
+    }), v_myfollowers.end());
 
 	// remove anything in followed from tofollow list
-	for (it = v_followed.begin(); it != v_followed.end(); it++) {
-		v_tofollow.erase(remove
-				 (v_tofollow.begin(), v_tofollow.end(), *it),
-				 v_tofollow.end());
-	}
+    v_followed.erase(remove_if(v_followed.begin(), v_followed.end(), [&v_tofollow](string x) {
+                return (find(v_tofollow.begin(),v_tofollow.end(), x)!=v_tofollow.end()) ? true : false;
+    }), v_followed.end());
 
 	// remove anything in unfollowed from tofollow list
-	for (it = v_unfollowed.begin(); it != v_unfollowed.end(); it++) {
-		v_tofollow.erase(remove
-				 (v_tofollow.begin(), v_tofollow.end(), *it),
-				 v_tofollow.end());
-	}
+    v_unfollowed.erase(remove_if(v_unfollowed.begin(), v_unfollowed.end(), [&v_tofollow](string x) {
+                return (find(v_tofollow.begin(),v_tofollow.end(), x)!=v_tofollow.end()) ? true : false;
+    }), v_unfollowed.end());
 
 	// Write the new tofollow to ToFollow table
 	if (parent->db.connect(parent->getDBname().c_str()) == 1)
