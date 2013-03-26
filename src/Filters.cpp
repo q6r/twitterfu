@@ -204,7 +204,7 @@ void Filters::filterList()
 bool Filters::predictTimezone(string timezone)
 {
 	size_t timezoneAt;
-	vector < string > tzs;
+	deque < string > tzs;
 	tzs.push_back("International Date Line West");
 	tzs.push_back("Midway Island");
 	tzs.push_back("American Samoa");
@@ -351,8 +351,8 @@ bool Filters::predictTimezone(string timezone)
 	tzs.push_back("Samoa");
 
 	// get the index of our timezone in the
-	// vector
-	vector < string >::iterator it =
+	// deque
+	deque < string >::iterator it =
 	    find(tzs.begin(), tzs.end(), parent->getTimezone());
 	if (it != tzs.end()) {
 		timezoneAt = it - tzs.begin();

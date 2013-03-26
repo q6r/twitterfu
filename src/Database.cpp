@@ -27,9 +27,9 @@ Database::Database(User *p) : parent(p) {
                 Database::createUser();
         } else {
                 parent->setUsername(Database::getVal( "Config", "username").at(0));
-		parent->setAccessTokenKey(Database::getVal( "Config", "access_key").at(0));
-		parent->setAccessTokenSecret(Database::getVal( "Config", "access_secret").at(0));
-		parent->setTimezone(Database::getVal( "Config", "timezone").at(0));
+                parent->setAccessTokenKey(Database::getVal( "Config", "access_key").at(0));
+                parent->setAccessTokenSecret(Database::getVal( "Config", "access_secret").at(0));
+                parent->setTimezone(Database::getVal( "Config", "timezone").at(0));
                 parent->proxy->setAddress( Database::getVal( "Config", "proxy_address").at(0));
                 parent->proxy->setPort(Database::getVal( "Config", "proxy_port").at(0));
                 parent->proxy->setUsername(Database::getVal( "Config", "proxy_username").at(0));
@@ -41,10 +41,10 @@ Database::~Database() {
 
 }
 
-vector < string > Database::toVector(string table,
+deque < string > Database::toVector(string table,
 				     string value)
 {
-	vector < string > results;
+	deque < string > results;
 	string userid;
 	sqlite3pp::query::iterator it;
 	string q = "SELECT " + value + " FROM " + table + ";";
@@ -95,8 +95,7 @@ bool Database::purgeTable(string table)
 {
 	string q;
 
-	//parent->db.connect(parent->db_name.c_str());
-        parent->db.connect(parent->getDBname().c_str());
+    parent->db.connect(parent->getDBname().c_str());
 	q = "DELETE FROM " + table + ";";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
@@ -107,11 +106,11 @@ bool Database::purgeTable(string table)
 
 bool Database::removeDuplicatesInToFollow()
 {
-	vector < string > v_tofollow(Database::toVector("ToFollow", "userid"));
-	vector < string > v_followed(Database::toVector("Followed", "userid"));
-	vector < string > v_unfollowed(Database::toVector("UnFollowed", "userid"));
-	vector < string > v_myfollowers(Database::toVector("MyFollowers", "userid"));
-	vector < string >::iterator it;
+	deque < string > v_tofollow(Database::toVector("ToFollow", "userid"));
+	deque < string > v_followed(Database::toVector("Followed", "userid"));
+	deque < string > v_unfollowed(Database::toVector("UnFollowed", "userid"));
+	deque < string > v_myfollowers(Database::toVector("MyFollowers", "userid"));
+	deque < string >::iterator it;
 
 	// remove anything in myfollowers from tofollow list
 	for (it = v_myfollowers.begin(); it != v_myfollowers.end(); it++) {
@@ -149,11 +148,11 @@ bool Database::removeDuplicatesInToFollow()
 	return true;
 }
 
-vector < string > Database::getVal(string table,
+deque < string > Database::getVal(string table,
 				   string col)
 {
 	string val, q;
-	vector < string > vals;
+	deque < string > vals;
 	sqlite3pp::query::iterator it;
 
 	q = "SELECT " + col + " FROM " + table + ";";
@@ -238,11 +237,11 @@ bool Database::createUser()
 }
 
 bool
-Database::toDB(vector < string > v,
+Database::toDB(deque < string > v,
      string table, string values)
 {
 	string query;
-	vector < string >::iterator it;
+	deque < string >::iterator it;
 
 	// chose database
 	if (parent->db.connect(parent->getDBname().c_str()) == 1)

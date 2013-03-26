@@ -2,7 +2,7 @@
 #define FILTERS_H_
 #include <iostream>
 #include <string>
-#include <vector>
+#include <deque>
 #include "User.h"
 
 using namespace std;
@@ -40,7 +40,7 @@ class Filters {
                 bool mainFilter(string userid);
                 /**
                  * Check if user's timezone is near us by -4 or +4 timezones
-                 * the timezones in the vector is pushed in order of their
+                 * the timezones in the deque is pushed in order of their
                  * distance.
                  *
                  * @param user the user object

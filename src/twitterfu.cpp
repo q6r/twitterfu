@@ -17,9 +17,9 @@ int optionSelect()
 	return opt;
 }
 
-vector < string > fileToVector(string filename)
+deque < string > fileToVector(string filename)
 {
-	vector < string > v;
+	deque < string > v;
 	string temp;
 	fstream fs(filename.c_str(), fstream::in);
 
@@ -54,7 +54,7 @@ bool fileExists(string filename)
 void optionParse(User * user, int opt)
 {
 	string username;
-	vector < string > ids;
+	deque < string > ids;
 
 	switch (opt) {
 	case 1:		// Get followers of a user
@@ -186,7 +186,7 @@ void optionShow()
 int main()
 {
 	string error;
-	vector < string > myFollowers;
+	deque < string > myFollowers;
 	string result, temp, query;
 	int opt, remainingHits;
 	struct passwd *pw = getpwuid(getuid());
@@ -303,7 +303,7 @@ void cleanLine(int n)
 }
 
 template < class T > void
-concatVectors(vector < T > &dest, vector < T > src)
+concatVectors(deque < T > &dest, deque < T > src)
 {
 	dest.insert(dest.end(), src.begin(), src.end());
 }

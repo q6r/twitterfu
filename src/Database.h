@@ -2,7 +2,7 @@
 #define DATABASE_H_
 #include <iostream>
 #include <string>
-#include <vector>
+#include <deque>
 #include "User.h"
 
 using namespace std;
@@ -33,14 +33,14 @@ class Database {
                 bool purgeTable(string table);
                 /**
                  * Reads a specific table and return the results in the value
-                 * as a vector of strings
+                 * as a deque of strings
                  * @param user the user object
                  * @param table the table name in the database
                  * @param value the value to get from table
                  * @return the result of select value from table in
-                 * as string vector
+                 * as string deque
                  */
-                vector < string > toVector(string table, string value);
+                deque < string > toVector(string table, string value);
                 /**
                  * Setup timezone in database
                  * @param n the timezone
@@ -55,24 +55,24 @@ class Database {
                  */
                 bool createUser();
                 /**
-                 * Get a value col from a table return vector.
+                 * Get a value col from a table return deque.
                  * @param user the user object
                  * @param table the table in database
                  * @param col the column in database
-                 * @return vector string of data in column in table in database
+                 * @return deque string of data in column in table in database
                  */
-                vector < string > getVal(string table,
+                deque < string > getVal(string table,
                                                    string col);
                 /** 
-                 * Will insert or replace UNIQUE a vector<string>.
+                 * Will insert or replace UNIQUE a deque<string>.
                  * @param user the user object
-                 * @param v the vector to be inserted into the database
+                 * @param v the deque to be inserted into the database
                  * @param table the table to be used
                  * @param values the values /col
                  * @return false if unable to insert
                  */
                 bool
-                toDB(vector < string > v, string table,
+                toDB(deque < string > v, string table,
                      string values);
                 /**
                  * Check if there's a user in the DB.

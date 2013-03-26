@@ -78,37 +78,37 @@ class User {
                  */
                 bool configure();
                 /** 
-                 * It will follow a vector of user ids
-                 * @param to_follow the users to follow vector
+                 * It will follow a deque of user ids
+                 * @param to_follow the users to follow deque
                  * @param user the user object
                  */
-                void follow(vector < string > to_follow);
+                void follow(deque < string > to_follow);
                 /**
-                 * Get the followers of a user and create a vector
-                 * of their userIDs and return that vector
+                 * Get the followers of a user and create a deque
+                 * of their userIDs and return that deque
                  * @param user the user object
                  * @param username the username to get his followers
-                 * @return username followers as vector
+                 * @return username followers as deque
                  */
-                vector < string > getFollowers(string username);
+                deque < string > getFollowers(string username);
                 /**
-                 * Fetch the following of a user and create a vector
-                 * of their userids and return that vector
+                 * Fetch the following of a user and create a deque
+                 * of their userids and return that deque
                  * @param user the user object
                  * @param username the username to get his following
-                 * @return vector of username following
+                 * @return deque of username following
                  */
-                vector < string > getFollowing(string username);
+                deque < string > getFollowing(string username);
                 /**
-                 * Will take a query and return a vector of
+                 * Will take a query and return a deque of
                  * user ids to be added to the to follow list. This function
                  * is limited to 15 results since pages are not supported
                  * by twitCurl.
                  * @param user the user object
                  * @param what the query to search for
-                 * @return vector of results
+                 * @return deque of results
                  */
-                vector < string > search(string what);
+                deque < string > search(string what);
                 /**
                  * Parse the last web response and get a
                  * value of a node, save the value in T v

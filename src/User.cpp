@@ -127,11 +127,11 @@ void User::signalHandler(int n)
 	User::gotExitSignal = true;
 }
 
-vector < string > User::search(string query)
+deque < string > User::search(string query)
 {
 	string jsonResult;
 	boost::property_tree::ptree pt;
-	vector < string > ids;
+	deque < string > ids;
 
 	// replace all spaces with %20
 	for (size_t pos = query.find(' '); pos != string::npos;
@@ -142,7 +142,7 @@ vector < string > User::search(string query)
 	if (User::twitterObj.search(query) == false)
 		return ids;
 
-	// Get results, parse then and push to ids vector
+	// Get results, parse then and push to ids deque
 	User::twitterObj.getLastWebResponse(jsonResult);
 	stringstream ss(jsonResult);
 
@@ -161,10 +161,10 @@ vector < string > User::search(string query)
 	return ids;
 }
 
-vector < string > User::getFollowing(string username)
+deque < string > User::getFollowing(string username)
 {
 	string result, err, next_cursor;
-	vector < string > ids;
+	deque < string > ids;
 	next_cursor = "-1";
 
 	cout << "[+] Getting following of @" << username << endl;
@@ -209,10 +209,10 @@ vector < string > User::getFollowing(string username)
 	return ids;
 }
 
-vector < string > User::getFollowers(string username)
+deque < string > User::getFollowers(string username)
 {
 	string result, err, next_cursor;
-	vector < string > ids;
+	deque < string > ids;
 	boost::property_tree::ptree pt;
 
 	next_cursor = "-1";
@@ -307,12 +307,12 @@ bool User::authenticate()
 }
 
 
-void User::follow(vector < string > to_follow)
+void User::follow(deque < string > to_follow)
 {
 	User::gotExitSignal = false;
 	string username, error, result;
-	vector < string > followed;
-	vector < string >::iterator it;
+	deque < string > followed;
+	deque < string >::iterator it;
 	int ignored = 0;
 
 	if (to_follow.size() == 0) {
@@ -533,9 +533,9 @@ bool User::configure()
 
 void User::unfollow()
 {
-	vector < string > followers(User::database->getVal("MyFollowers", "userid"));
-	vector < string >::iterator it;
-	vector < string > result;
+	deque < string > followers(User::database->getVal("MyFollowers", "userid"));
+	deque < string >::iterator it;
+	deque < string > result;
 	string who;
 	string isfollow = "true";
 	long unfollowed = 0;
@@ -635,13 +635,13 @@ bool User::status()
 	string result, followers, following, reset_time;
 	string remaining_hits, hourly_limit;
 
-	vector < string >
+	deque < string >
 	    tofollow(User::database->toVector( "ToFollow", "userid"));
-	vector < string >
+	deque < string >
 	    followed(User::database->toVector( "Followed", "userid"));
-	vector < string >
+	deque < string >
 	    unfollowed(User::database->toVector( "UnFollowed", "userid"));
-	vector < string >
+	deque < string >
 	    myfollowers(User::database->toVector( "MyFollowers", "userid"));
 
 	cout << "\tDatabase Status :" << endl;

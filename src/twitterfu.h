@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <ctime>
 #include <algorithm>
-#include <vector>
+#include <deque>
 #include "sqlite3pp.h"
 #include "User.h"
 
@@ -32,18 +32,18 @@ class User;
 
 /**
  * This will take src and add it to dest
- * @param dest the destination vector
- * @param src the source vector
+ * @param dest the destination deque
+ * @param src the source deque
  */
-template < class T > void concatVectors(vector < T > &dest,
-					vector < T > src);
+template < class T > void concatVectors(deque < T > &dest,
+					deque < T > src);
 /**
  * Takes a filename opens it get's the content
- * convert it to a vector and
+ * convert it to a deque and
  * @param filename the filename
- * @return vector.
+ * @return deque.
  */
-vector < string > fileToVector(string filename);
+deque < string > fileToVector(string filename);
 /**
  * Take user input from stdin
  * @return selected option number
