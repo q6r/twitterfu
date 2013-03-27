@@ -3,12 +3,16 @@
 
 #include <iostream>
 #include <string>
+#include <signal.h>
+#include <boost/foreach.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <twitcurl.h>
 #include "sqlite3pp.h"
 #include "Proxy.h"
 #include "Filters.h"
 #include "Database.h"
-#include "twitterfu.h"
 
 using namespace std;
 class Filters;

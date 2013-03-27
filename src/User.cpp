@@ -435,7 +435,8 @@ bool User::configure()
 	cout << "7) Pruge all" << endl;
 	cout << "8) Return" << endl;
 
-	opt = optionSelect();
+    cout << "> ";
+    cin >> opt;
 
 	switch (opt) {
 	case 1:		// configure proxy

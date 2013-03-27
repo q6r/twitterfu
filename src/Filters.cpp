@@ -159,8 +159,8 @@ void Filters::filterList()
 		    Filters::getNearTimezone() << endl;
 		cout << "6) return" << endl;
 
-		opt = optionSelect();
-                cout << "Option is " << opt << endl;
+        cout << "> ";
+        cin >> opt;
 		switch (opt) {
 		case 1:
                         if(Filters::getProfilePicture() == true)
