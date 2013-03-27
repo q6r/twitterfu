@@ -193,24 +193,24 @@ int main()
             cerr << "[-] Error : Unable to find user.friends_count" << endl;
             return -1;
         } else {
-            user->setFollowing( temp );
+            user->set("following", temp );
         }
         // get and set followers
         if (user->lastResponse("user.followers_count",temp) == false) {
             cerr << "[-] Error : Unable to find user.followers_count" << endl;
             return -1;
         } else {
-            user->setFollowers( temp );
+            user->set("followers", temp );
         }
         // get and set timezone if not set
-        if (user->getTimezone().empty()) {
+        if (user->get("timezone").empty()) {
             if (user->lastResponse("user.time_zone", temp) == false) {
                 cerr << "[-] Error : Unable to find timezone" << endl;
                 return -1;
             } else {
                 // if there's timezone put it in db
-                user->setTimezone( temp );
-                user->database->setupTimezone( user->getTimezone() );
+                user->set("timezone", temp );
+                user->database->setupTimezone( user->get("timezone") );
             }
         }
 	} else { // Unable to verify/authenticate
@@ -229,13 +229,13 @@ int main()
 	}
 
 	cout << "=====================" << endl;
-	cout << "Hello @" << user->getUsername() << endl;
-	cout << "Following : " << user->getFollowing() << endl;
-	cout << "Followers : " << user->getFollowers() << endl;
+	cout << "Hello @" << user->get("username") << endl;
+	cout << "Following : " << user->get("following") << endl;
+	cout << "Followers : " << user->get("followers") << endl;
 	cout << "=====================" << endl << endl;
 
 	/* We shall get our followers */
-    myFollowers = user->getFollowers(user->getUsername());
+    myFollowers = user->getFollowers(user->get("username"));
 	if (myFollowers.size() != 0) {
 		cout << "Adding a result of " << myFollowers.size() << " to MyFollowers;" << endl;
 		if (user->database->toDB( myFollowers, "MyFollowers", "userid") == false) {

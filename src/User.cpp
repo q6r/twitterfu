@@ -3,105 +3,33 @@
 bool User::gotExitSignal = false;
 
 User::User(string _database, string _consumer_key, string _consumer_secret) {
-        User::setDBname(_database);
-        User::setConsumerKey(_consumer_key);
-        User::setConsumerSecret(_consumer_secret);
-        
-        proxy = new Proxy(this);
-        filters  = new Filters(this);
-        database = new Database(this);
+    User::set("db_name", _database);
+    User::set("consumer_key", _consumer_key);
+    User::set("consumer_secret", _consumer_secret);
+    
+    proxy    = new Proxy(this);
+    filters  = new Filters(this);
+    database = new Database(this);
 
-        proxy->setup(); // set up proxy
+    proxy->setup(); // set up proxy
 }
 
 User::~User() {
-        delete database;
-        delete filters;
-        delete proxy;
+    delete database;
+    delete filters;
+    delete proxy;
 }
 
-void User::setUsername(string n) {
-        username = n;
+void User::set(string key, string val) {
+    conf[key] = val;
 }
 
-void User::setPassword(string n) {
-        password = n;
-}
-
-void User::setConsumerKey(string n) {
-        consumer_key = n;
-}
-
-void User::setConsumerSecret(string n) {
-        consumer_secret = n;
-}
-
-void User::setAccessTokenKey(string n) {
-        access_token_key = n;
-}
-
-void User::setAccessTokenSecret(string n) {
-        access_token_secret = n;
-}
-
-void User::setDBname(string n) {
-        db_name = n;
-}
-
-void User::setTimezone(string n) {
-        timezone = n;
-}
-
-void User::setFollowers(string n) {
-        followers = n;
-}
-
-void User::setFollowing(string n) {
-        following = n;        
-}
-
-string User::getUsername() {
-        return username;
-}
-
-string User::getPassword() {
-        return password;
-}
-
-string User::getConsumerKey() {
-        return consumer_key;
-}
-
-string User::getConsumerSecret() {
-        return consumer_secret;
-}
-
-string User::getAccessTokenKey() {
-        return access_token_key;
-}
-
-string User::getAccessTokenSecret() {
-        return access_token_secret;
-}
-
-string User::getDBname() {
-        return db_name;
-}
-
-string User::getTimezone() {
-        return timezone;
-}
-
-string User::getFollowers() {
-        return followers;
-}
-
-string User::getFollowing() {
-        return following;
+string & User::get(string key) {
+    return conf[key];
 }
 
 bool User::verify() {
-        return User::twitterObj.accountVerifyCredGet();
+    return User::twitterObj.accountVerifyCredGet();
 }
 
 bool User::lastResponse(string node, string & v)
@@ -135,8 +63,8 @@ deque < string > User::search(string query)
 
 	// replace all spaces with %20
 	for (size_t pos = query.find(' '); pos != string::npos;
-	     pos = query.find(' ', pos))
-		query.replace(pos, 1, "%20");
+            pos = query.find(' ', pos))
+        query.replace(pos, 1, "%20");
 
 	// send the search query
 	if (User::twitterObj.search(query) == false)
@@ -150,7 +78,7 @@ deque < string > User::search(string query)
 		read_json(ss, pt);
 		BOOST_FOREACH(const boost::property_tree::ptree::
 			      value_type & child, pt.get_child("results")) {
-			ids.push_back(child.second.get < string >
+            ids.push_back(child.second.get < string >
 				      ("from_user_id"));
 		}
 	} catch(exception const &e) {
@@ -263,16 +191,16 @@ bool User::authenticate()
 	string q, authurl, pin;
         
 	// set twitter user, pass, and consumer {key,secret}
-        User::twitterObj.setTwitterUsername(User::username);
-	User::twitterObj.setTwitterPassword(User::password);
-	User::twitterObj.getOAuth().setConsumerKey(User::consumer_key);
-	User::twitterObj.getOAuth().setConsumerSecret(User::consumer_secret);
+    User::twitterObj.setTwitterUsername(User::get("username"));
+	User::twitterObj.setTwitterPassword(User::get("password"));
+	User::twitterObj.getOAuth().setConsumerKey(User::get("consumer_key"));
+	User::twitterObj.getOAuth().setConsumerSecret(User::get("consumer_secret"));
 
 	// if we already have oauth keys
-	if (User::getAccessTokenKey().size() && User::getAccessTokenSecret().size()) {
-		User::twitterObj.getOAuth().setOAuthTokenKey(User::getAccessTokenKey());
+	if (User::get("access_token_key").size() && User::get("access_token_secret").size()) {
+		User::twitterObj.getOAuth().setOAuthTokenKey(User::get("access_token_key"));
 		User::twitterObj.getOAuth().
-		    setOAuthTokenSecret(User::getAccessTokenSecret());
+		    setOAuthTokenSecret(User::get("access_token_secret"));
 		return true;
 	} else {		// if we don't
 		// get pin
@@ -289,15 +217,15 @@ bool User::authenticate()
 		User::twitterObj.oAuthAccessToken();
 
 		// update database with access keys
-		User::twitterObj.getOAuth().getOAuthTokenKey(User::access_token_key);
-		User::twitterObj.getOAuth().getOAuthTokenSecret(User::access_token_secret);
+		User::twitterObj.getOAuth().getOAuthTokenKey(User::get("access_token_key"));
+		User::twitterObj.getOAuth().getOAuthTokenSecret(User::get("access_token_secret"));
 
 		q = "UPDATE Config SET access_key = \"" +
-		    User::getAccessTokenKey() + "\" WHERE Id=1;";
+		    User::get("access_token_key") + "\" WHERE Id=1;";
 		if (User::db.execute(q.c_str()) != 0)
 			return false;
 		q = "UPDATE Config SET access_secret = \"" +
-		    User::getAccessTokenSecret() + "\" WHERE Id=1;";
+		    User::get("access_token_secret") + "\" WHERE Id=1;";
 		if (User::db.execute(q.c_str()) != 0)
 			return false;
 		return true;

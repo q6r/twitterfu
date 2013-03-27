@@ -38,7 +38,7 @@ bool Proxy::change_proxy(string address, string port,
     Proxy::set("username", username);
     Proxy::set("password", password);
 
-	parent->db.connect(parent->getDBname().c_str());
+	parent->db.connect(parent->get("db_name").c_str());
 
 	// update DB with new proxy
 	q = "UPDATE Config SET proxy_address = \"" + Proxy::get("address") +

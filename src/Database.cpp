@@ -5,7 +5,7 @@ Database::Database(User *p) : parent(p) {
 
 	// Connect to database and create tables if
 	// needed
-	if (parent->db.connect(parent->getDBname().c_str()) == 0) {
+	if (parent->db.connect(parent->get("db_name").c_str()) == 0) {
         // Create necessary tables
         parent->db.execute
             ("CREATE TABLE MyFollowers(Id integer PRIMARY KEY,userid text UNIQUE);");
@@ -26,10 +26,10 @@ Database::Database(User *p) : parent(p) {
     if(Database::userExist() == false) {
         Database::createUser();
     } else {
-        parent->setUsername(Database::getVal( "Config", "username").at(0));
-        parent->setAccessTokenKey(Database::getVal( "Config", "access_key").at(0));
-        parent->setAccessTokenSecret(Database::getVal( "Config", "access_secret").at(0));
-        parent->setTimezone(Database::getVal( "Config", "timezone").at(0));
+        parent->set("username", Database::getVal( "Config", "username").at(0));
+        parent->set("access_token_key", Database::getVal( "Config", "access_key").at(0));
+        parent->set("access_token_secret", Database::getVal( "Config", "access_secret").at(0));
+        parent->set("timezone", Database::getVal( "Config", "timezone").at(0));
         parent->proxy->set("address", Database::getVal( "Config", "proxy_address").at(0));
         parent->proxy->set("port", Database::getVal( "Config", "proxy_port").at(0));
         parent->proxy->set("username", Database::getVal( "Config", "proxy_username").at(0));
@@ -49,15 +49,15 @@ deque < string > Database::toVector(string table,
 	sqlite3pp::query::iterator it;
 	string q = "SELECT " + value + " FROM " + table + ";";
 
-        parent->db.connect(parent->getDBname().c_str());
-        sqlite3pp::query qry(parent->db, q.c_str());
+    parent->db.connect(parent->get("db_name").c_str());
+    sqlite3pp::query qry(parent->db, q.c_str());
 
 	for (it = qry.begin(); it != qry.end(); ++it) {
 		(*it).getter() >> userid;
 		results.push_back(userid);
 	}
 
-        parent->db.disconnect();
+    parent->db.disconnect();
 
 	return results;
 }
@@ -65,7 +65,7 @@ deque < string > Database::toVector(string table,
 bool Database::setupTimezone(string n) {
         string query;
 
-        parent->db.connect(parent->getDBname().c_str());
+        parent->db.connect(parent->get("db_name").c_str());
 
         query = "UPDATE Config SET timezone = \"" + n + "\";";
 
@@ -81,7 +81,7 @@ bool Database::setupTimezone(string n) {
 
 bool Database::userExist()
 {
-        parent->db.connect(parent->getDBname().c_str());
+        parent->db.connect(parent->get("db_name").c_str());
 	sqlite3pp::query qry(parent->db, "SELECT * from Config;");
 
 	if (qry.begin() == qry.end())
@@ -95,7 +95,7 @@ bool Database::purgeTable(string table)
 {
 	string q;
 
-    parent->db.connect(parent->getDBname().c_str());
+    parent->db.connect(parent->get("db_name").c_str());
 	q = "DELETE FROM " + table + ";";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
@@ -128,7 +128,7 @@ bool Database::removeDuplicatesInToFollow()
     }), v_unfollowed.end());
 
 	// Write the new tofollow to ToFollow table
-	if (parent->db.connect(parent->getDBname().c_str()) == 1)
+	if (parent->db.connect(parent->get("db_name").c_str()) == 1)
 		return false;
 
 	if (parent->db.execute("DELETE FROM ToFollow;") == 1)
@@ -150,7 +150,7 @@ deque < string > Database::getVal(string table,
 	sqlite3pp::query::iterator it;
 
 	q = "SELECT " + col + " FROM " + table + ";";
-	parent->db.connect(parent->getDBname().c_str());
+	parent->db.connect(parent->get("db_name").c_str());
 
 	sqlite3pp::query qry(parent->db, q.c_str());
 
@@ -167,15 +167,15 @@ deque < string > Database::getVal(string table,
 bool Database::createUser()
 {
 	string q;
-        string temp;
+    string temp;
 	cout << "Creating a user" << endl;
 
 	cout << "username : ";
 	cin >> temp;
-        parent->setUsername(temp);
+    parent->set("username", temp);
 	cout << "password : ";
 	cin >> temp;
-        parent->setPassword(temp);
+    parent->set("password", temp);
 
 	// Do we want to use proxies ?
 	cout << "Do you want to use a proxy [y/n] ? ";
@@ -184,21 +184,20 @@ bool Database::createUser()
 		cout << "Proxy address  : ";
 		//cin >> parent->proxy->address;
 		cin >> temp;
-                parent->proxy->set("address",temp);
+        parent->proxy->set("address",temp);
 		cout << "Proxy port     : ";
-                cin >> temp;
-                parent->proxy->set("port",temp);
+        cin >> temp;
+        parent->proxy->set("port",temp);
 		
-		    cout <<
-		    "Do you want to use a proxy username, password [y/n] ? ";
+        cout << "Do you want to use a proxy username, password [y/n] ? ";
 		cin >> q;
 		if (q == "y" || q == "Y") {
 			cout << "Proxy username : ";
-                        cin >> temp;
-                        parent->proxy->set("username",temp);
+            cin >> temp;
+            parent->proxy->set("username",temp);
 			cout << "Proxy password : ";
 			cin >> temp;
-                        parent->proxy->set("password",temp);
+            parent->proxy->set("password",temp);
 		}
 	}
 	// Create inital user row
@@ -208,11 +207,11 @@ bool Database::createUser()
 		return false;
 
 	// update values in Config table
-	q = "UPDATE Config SET username = \"" + parent->getUsername() +
+	q = "UPDATE Config SET username = \"" + parent->get("username") +
 	    "\" WHERE Id=1;";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
-	q = "UPDATE Config SET password = \"" + parent->getPassword() +
+	q = "UPDATE Config SET password = \"" + parent->get("password") +
 	    "\" WHERE Id=1;";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
@@ -220,8 +219,7 @@ bool Database::createUser()
 		if (parent->proxy->change_proxy
 		    (parent->proxy->get("address"), parent->proxy->get("port"),
 		     parent->proxy->get("username"), parent->proxy->get("password")) == false) {
-			cerr << "[-] Error : Unable to set proxy" << 
-			    endl;
+			cerr << "[-] Error : Unable to set proxy" << endl;
 			return false;
 		}
 
@@ -230,15 +228,13 @@ bool Database::createUser()
 	return true;
 }
 
-bool
-Database::toDB(deque < string > v,
-     string table, string values)
+bool Database::toDB(deque < string > v, string table, string values)
 {
 	string query;
 	deque < string >::iterator it;
 
 	// chose database
-	if (parent->db.connect(parent->getDBname().c_str()) == 1)
+	if (parent->db.connect(parent->get("db_name").c_str()) == 1)
 		return false;
 
 	// Inserting into the database

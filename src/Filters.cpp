@@ -124,7 +124,7 @@ bool Filters::mainFilter(string userid)
 			return false;
 		}
 		// if he or us don't have timezones then false;
-		if (timezone.empty() || parent->getTimezone().empty()) {
+		if (timezone.empty() || parent->get("timezone").empty()) {
 			return false;
 		}
 		if (Filters::predictTimezone(timezone) == true)
@@ -353,7 +353,7 @@ bool Filters::predictTimezone(string timezone)
 	// get the index of our timezone in the
 	// deque
 	deque < string >::iterator it =
-	    find(tzs.begin(), tzs.end(), parent->getTimezone());
+	    find(tzs.begin(), tzs.end(), parent->get("timezone"));
 	if (it != tzs.end()) {
 		timezoneAt = it - tzs.begin();
 	} else {		// parent->timezone is invalid timezone 'or not defined'
