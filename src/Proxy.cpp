@@ -7,50 +7,24 @@ Proxy::~Proxy() {
 }
 
 void Proxy::setup() {
-        // If we have proxy settings either from db or else.
-        if(!Proxy::getAddress().empty() && !Proxy::getPort().empty()) {
-                parent->twitterObj.setProxyServerIp( Proxy::getAddress() );
-                parent->twitterObj.setProxyPassword( Proxy::getPort() );
-                cout << "[+] Using proxy " << Proxy::getAddress() << ":" << Proxy::getPort() << endl;
-                if(!Proxy::getUsername().empty() && !Proxy::getPassword().empty()) {
-                        parent->twitterObj.setProxyUserName( Proxy::getUsername() );
-                        parent->twitterObj.setProxyPassword( Proxy::getPassword() );
-                }
+    // If we have proxy settings either from db or else.
+    if(!Proxy::get("address").empty() && !Proxy::get("port").empty()) {
+        parent->twitterObj.setProxyServerIp( Proxy::get("address") );
+        parent->twitterObj.setProxyPassword( Proxy::get("port") );
+        cout << "[+] Using proxy " << Proxy::get("address") << ":" << Proxy::get("port") << endl;
+        if(!Proxy::get("username").empty() && !Proxy::get("password").empty()) {
+                parent->twitterObj.setProxyUserName( Proxy::get("username") );
+                parent->twitterObj.setProxyPassword( Proxy::get("password") );
         }
-
-
+    }
 }
 
-void Proxy::setAddress(string n) {
-        address = n;
+void Proxy::set(string name, string & data) {
+    conf[name] = data;
 }
 
-void Proxy::setPort(string n) {
-        port = n;
-}
-
-void Proxy::setUsername(string n) {
-        username = n;
-}
-
-void Proxy::setPassword(string n) {
-        password = n;
-}
-
-string & Proxy::getAddress() {
-        return address;
-}
-
-string & Proxy::getPort() {
-        return port;
-}
-
-string & Proxy::getUsername() {
-        return username;
-}
-
-string & Proxy::getPassword() {
-        return password;
+string & Proxy::get(string name) {
+    return conf[name];
 }
 
 bool Proxy::change_proxy(string address, string port,
@@ -59,30 +33,30 @@ bool Proxy::change_proxy(string address, string port,
 
 	string q;
 
-        Proxy::setAddress(address);
-        Proxy::setPort(port);
-        Proxy::setUsername(username);
-        Proxy::setPassword(password);
+    Proxy::set("address", address);
+    Proxy::set("port", port);
+    Proxy::set("username", username);
+    Proxy::set("password", password);
 
 	parent->db.connect(parent->getDBname().c_str());
 
 	// update DB with new proxy
-	q = "UPDATE Config SET proxy_address = \"" + Proxy::getAddress() +
+	q = "UPDATE Config SET proxy_address = \"" + Proxy::get("address") +
 	    "\" WHERE Id=1;";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
 
-	q = "UPDATE Config SET proxy_port = \"" + Proxy::getPort() +
+	q = "UPDATE Config SET proxy_port = \"" + Proxy::get("port") +
 	    "\" WHERE Id=1;";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
 
-	q = "UPDATE Config SET proxy_username = \"" + Proxy::getUsername() +
+	q = "UPDATE Config SET proxy_username = \"" + Proxy::get("username") +
 	    "\" WHERE Id=1;";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;
 
-	q = "UPDATE Config SET proxy_password = \"" + Proxy::getPassword() +
+	q = "UPDATE Config SET proxy_password = \"" + Proxy::get("password") +
 	    "\" WHERE Id=1;";
 	if (parent->db.execute(q.c_str()) != 0)
 		return false;

@@ -215,7 +215,7 @@ int main()
         }
 	} else { // Unable to verify/authenticate
 		cerr << "[-] Error : Unable to authenticate." << endl;
-		if (!user->proxy->getAddress().empty() && !user->proxy->getPort().empty()) {
+		if (!user->proxy->get("address").empty() && !user->proxy->get("port").empty()) {
 			cout << "If this is due to misconfiguration you can change it" << endl;
             // configure the user
 			if (user->configure() == false) {
