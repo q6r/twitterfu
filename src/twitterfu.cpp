@@ -17,40 +17,6 @@ int optionSelect()
 	return opt;
 }
 
-deque < string > fileToVector(string filename)
-{
-	deque < string > v;
-	string temp;
-	fstream fs(filename.c_str(), fstream::in);
-
-	if (fs.is_open() == false) {
-		
-		    cerr << "\t[-] Error : Unable to open " << filename << 
-		    endl;
-		return v;
-	}
-
-	while (fs.eof() == false) {
-		getline(fs, temp);
-		if (temp.length() != 0)
-			v.push_back(temp);
-	}
-
-	fs.close();
-	return v;
-}
-
-int randomize(int from, int to)
-{
-	return rand() % to + from;
-}
-
-bool fileExists(string filename)
-{
-	struct stat fi;
-	return stat(filename.c_str(), &fi) == 0;
-}
-
 void optionParse(User * user, int opt)
 {
 	string username;
@@ -190,13 +156,13 @@ int main()
 	string result, temp, query;
 	int opt, remainingHits;
 	struct passwd *pw = getpwuid(getuid());
-        string dbtemp = pw->pw_dir;
-        dbtemp += "/.twitterfu.sql";
+    string dbtemp = pw->pw_dir;
+    dbtemp += "/.twitterfu.sql";
 	User *user;
 	srand(time(NULL));	// random seed
         
-        // Create a user
-        user = new User(dbtemp, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
+    // Create a user
+    user = new User(dbtemp, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
 
 	/* Authenticate our user */
 	if (user->authenticate() == false) {
@@ -221,43 +187,43 @@ int main()
 	}
 
 	/* Verifying authentication */
-        if(user->verify() == true) {
-		// get and set following
-		if (user->lastResponse("user.friends_count", temp) == false) {
-			cerr << "[-] Error : Unable to find user.friends_count" << endl;
-			return -1;
-		} else {
-                        user->setFollowing( temp );
-                }
-		// get and set followers
-		if (user->lastResponse("user.followers_count",temp) == false) {
-                        cerr << "[-] Error : Unable to find user.followers_count" << endl;
-			return -1;
-		} else {
-                        user->setFollowers( temp );
-                }
-		// get and set timezone if not set
-		if (user->getTimezone().empty()) {
-			if (user->lastResponse("user.time_zone", temp) == false) {
-                                cerr << "[-] Error : Unable to find timezone" << endl;
-				return -1;
-			} else {
-                                // if there's timezone put it in db
-                                user->setTimezone( temp );
-                                user->database->setupTimezone( user->getTimezone() );
-                        }
-		}
+    if(user->verify() == true) {
+        // get and set following
+        if (user->lastResponse("user.friends_count", temp) == false) {
+            cerr << "[-] Error : Unable to find user.friends_count" << endl;
+            return -1;
+        } else {
+            user->setFollowing( temp );
+        }
+        // get and set followers
+        if (user->lastResponse("user.followers_count",temp) == false) {
+            cerr << "[-] Error : Unable to find user.followers_count" << endl;
+            return -1;
+        } else {
+            user->setFollowers( temp );
+        }
+        // get and set timezone if not set
+        if (user->getTimezone().empty()) {
+            if (user->lastResponse("user.time_zone", temp) == false) {
+                cerr << "[-] Error : Unable to find timezone" << endl;
+                return -1;
+            } else {
+                // if there's timezone put it in db
+                user->setTimezone( temp );
+                user->database->setupTimezone( user->getTimezone() );
+            }
+        }
 	} else { // Unable to verify/authenticate
 		cerr << "[-] Error : Unable to authenticate." << endl;
 		if (!user->proxy->getAddress().empty() && !user->proxy->getPort().empty()) {
 			cout << "If this is due to misconfiguration you can change it" << endl;
-                        // configure the user
+            // configure the user
 			if (user->configure() == false) {
-			        cerr << "[-] Error : Unable to configure" << endl;
+                cerr << "[-] Error : Unable to configure" << endl;
 				return -1;
 			}
 			
-                        cout << "Rerun the application to apply changes." <<endl;
+            cout << "Rerun the application to apply changes." <<endl;
 		}
 		return -1;
 	}
@@ -269,18 +235,16 @@ int main()
 	cout << "=====================" << endl << endl;
 
 	/* We shall get our followers */
-        myFollowers = user->getFollowers(user->getUsername());
+    myFollowers = user->getFollowers(user->getUsername());
 	if (myFollowers.size() != 0) {
-		cout << "Adding a result of " << myFollowers.size() <<
-		    " to MyFollowers;" << endl;
+		cout << "Adding a result of " << myFollowers.size() << " to MyFollowers;" << endl;
 		if (user->database->toDB( myFollowers, "MyFollowers", "userid") == false) {
 			cerr << "[-] Error : Unable to toDB" << endl;
 		}
 	}
 	// Before entering the main loop fix the databases
 	if (user->database->removeDuplicatesInToFollow() == false) {
-		cerr << "[-] Error : Unable to remove duplicates" << 
-		    endl;
+		cerr << "[-] Error : Unable to remove duplicates" << endl;
 		return -1;
 	}
 
@@ -292,18 +256,4 @@ int main()
 	}
 
 	return 0;
-}
-
-void cleanLine(int n)
-{
-	for (int i = 0; i < n; i++)
-		cout << " ";
-	cout << "\xd";
-	flush(cout);
-}
-
-template < class T > void
-concatVectors(deque < T > &dest, deque < T > src)
-{
-	dest.insert(dest.end(), src.begin(), src.end());
 }

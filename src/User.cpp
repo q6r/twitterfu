@@ -408,6 +408,19 @@ void User::follow(deque < string > to_follow)
 		cout << "\tWe have Ignored : " << ignored << endl;
 }
 
+int User::randomize(int from, int to)
+{
+	return rand() % to + from;
+}
+
+void User::cleanLine(int n)
+{
+	for (int i = 0; i < n; i++)
+		cout << " ";
+	cout << "\xd";
+	flush(cout);
+}
+
 bool User::configure()
 {
 	string address, port, username, password, q;

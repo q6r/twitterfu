@@ -164,6 +164,17 @@ class User {
                 string timezone; /** timezone of the user */
                 string followers; /** # of followers of the user */
                 string following; /** # of following of the user */
-
+                /**
+                 * return a random number between from and to
+                 * @param from the from number
+                 * @param to the to number
+                 * @return number between [from,two]
+                 */
+                int randomize(int from, int to);
+                /**
+                 * Back to the first line and erase n characters
+                 * @param n number of blanks
+                 */
+                void cleanLine(int n);
 };
 #endif

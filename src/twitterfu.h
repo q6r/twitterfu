@@ -31,20 +31,6 @@ using namespace std;
 class User;
 
 /**
- * This will take src and add it to dest
- * @param dest the destination deque
- * @param src the source deque
- */
-template < class T > void concatVectors(deque < T > &dest,
-					deque < T > src);
-/**
- * Takes a filename opens it get's the content
- * convert it to a deque and
- * @param filename the filename
- * @return deque.
- */
-deque < string > fileToVector(string filename);
-/**
  * Take user input from stdin
  * @return selected option number
  */
@@ -60,22 +46,4 @@ void optionParse(User * user, int opt);
  * Show available option to the user
  */
 void optionShow();
-/**
- * Check if file exists
- * @param filename the filename
- * @return true if file exists
- */
-bool fileExists(string filename);
-/**
- * return a random number between from and to
- * @param from the from number
- * @param to the to number
- * @return number between [from,two]
- */
-int randomize(int from, int to);
-/**
- * Back to the first line and erase n characters
- * @param n number of blanks
- */
-void cleanLine(int n);
 #endif
