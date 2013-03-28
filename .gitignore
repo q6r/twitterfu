@@ -1,3 +1,4 @@
+src/.*
 config.status
 src/config.h
 config.log
