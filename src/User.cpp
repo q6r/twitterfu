@@ -21,6 +21,12 @@ bool User::isAuthenticated() {
     return authenticated;
 }
 
+bool User::reachedLimit() {
+    bool limit = false;
+    (User::getRemainingHits()==0) ? limit=true:limit=false;
+    return limit;
+}
+
 User::~User() {
     delete database;
     delete filters;

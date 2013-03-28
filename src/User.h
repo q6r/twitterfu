@@ -36,17 +36,17 @@ public:
     void set(string key, string val);
     string & get(string key);
     /**
-     * Get the limit
-     * @param user the user object
-     * @return number of remaining hits
-     */
-    int getRemainingHits();
-    /**
      * Show database, account and API status.
      * @param user the user object
      * @return true of can read status
      */
     bool status();
+    /**
+     *
+     * Reached limit ? true reached, false
+     * haven't reached.
+     */
+    bool reachedLimit();
     /**
      * Return the authenticated flag
      * true if authenticated, false if failed
@@ -172,6 +172,11 @@ private:
      */
     bool authenticate();
     bool authenticated;   /* Is authenticated */ 
-    
+    /**
+     * Get the limit
+     * @param user the user object
+     * @return number of remaining hits
+     */
+    int getRemainingHits();
 };
 #endif

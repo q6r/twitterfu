@@ -154,7 +154,7 @@ int main()
 	string error;
 	deque < string > myFollowers;
 	string result, temp, query;
-	int opt, remainingHits;
+	int opt;
 	struct passwd *pw = getpwuid(getuid());
     string dbtemp = pw->pw_dir;
     dbtemp += "/.twitterfu.sql";
@@ -170,21 +170,16 @@ int main()
         return -1;
     }
 
-	/* If we don't have enough hits suggest using a proxy
-	 * and exit 
-	 **/
-	remainingHits = user->getRemainingHits();
-	if (remainingHits == 0) {
-		cerr <<
-		    "[-] Error : You have reached the limit, maybe using a proxy might help"
-		    << endl;
-		if (user->configure() == false) {
-			cerr << "[-] Error : Unable to configure" << 
-			    endl;
-			return -1;
-		}
-		return -1;
-	}
+	/* If we don't have enough hits suggest using a proxy and exit */
+    if(user->reachedLimit()) {
+        cerr << "[-] Reached limit" << endl;
+        // reconfigure
+        if(user->configure() == false) {
+            cerr << "[-] Unable to configure" << endl;
+            return -1;
+        }
+        return -1;
+    }
 
 	/* Verifying authentication */
     if(user->verify() == true) {
