@@ -8,7 +8,8 @@ Automated twitter follower and unfollower. It will use your twitter account and 
 - [Sqlite3](http://sqlite.org)
 
 ### Compile
-Just run `./build.sh` and it will compile twitcurl and twitterfu then `./src/twitterfu`
+Type `cmake .` Then `make` that will build libtwitcurl and twitterfu and link it and all. The binary will be
+at `src/twitterfu` if things went fine, you can install it by typing `make install`
 
 ### Configure
 When you run the application `./src/twitterfu` for the first time you will be asked to enter
