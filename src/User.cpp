@@ -42,7 +42,40 @@ string & User::get(string key) {
 }
 
 bool User::verify() {
-    return User::twitterObj.accountVerifyCredGet();
+    bool verified = User::twitterObj.accountVerifyCredGet();
+    string temp;
+
+    // If user is verified
+    if(verified) {
+        // get and set following
+        if (User::lastResponse("user.friends_count", temp) == false) {
+            cerr << "[-] Error : Unable to find user.friends_count" << endl;
+            return -1;
+        } else {
+            User::set("following", temp );
+        }
+        // get and set followers
+        if (User::lastResponse("user.followers_count",temp) == false) {
+            cerr << "[-] Error : Unable to find user.followers_count" << endl;
+            return -1;
+        } else {
+            User::set("followers", temp );
+        }
+        // get and set timezone if not set
+        if (User::get("timezone").empty()) {
+            if (User::lastResponse("user.time_zone", temp) == false) {
+                cerr << "[-] Error : Unable to find timezone" << endl;
+                return -1;
+            } else {
+                // if there's timezone put it in db
+                User::set("timezone", temp );
+                User::database->setupTimezone( User::get("timezone") );
+            }
+        }
+    }
+
+    return verified;
+
 }
 
 bool User::lastResponse(string node, string & v)

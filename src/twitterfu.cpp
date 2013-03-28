@@ -151,9 +151,7 @@ void optionShow()
 
 int main()
 {
-	string error;
 	deque < string > myFollowers;
-	string result, temp, query;
 	int opt;
 	struct passwd *pw = getpwuid(getuid());
     string dbtemp = pw->pw_dir;
@@ -182,34 +180,10 @@ int main()
     }
 
 	/* Verifying authentication */
-    if(user->verify() == true) {
-        // get and set following
-        if (user->lastResponse("user.friends_count", temp) == false) {
-            cerr << "[-] Error : Unable to find user.friends_count" << endl;
-            return -1;
-        } else {
-            user->set("following", temp );
-        }
-        // get and set followers
-        if (user->lastResponse("user.followers_count",temp) == false) {
-            cerr << "[-] Error : Unable to find user.followers_count" << endl;
-            return -1;
-        } else {
-            user->set("followers", temp );
-        }
-        // get and set timezone if not set
-        if (user->get("timezone").empty()) {
-            if (user->lastResponse("user.time_zone", temp) == false) {
-                cerr << "[-] Error : Unable to find timezone" << endl;
-                return -1;
-            } else {
-                // if there's timezone put it in db
-                user->set("timezone", temp );
-                user->database->setupTimezone( user->get("timezone") );
-            }
-        }
-	} else { // Unable to verify/authenticate
-		cerr << "[-] Error : Unable to authenticate." << endl;
+    if(!user->verify()) {
+		cerr << "[-] Error : Unable to authenticate/verify." << endl;
+        // if proxy is set might need to change it because it's
+        // causing the problem
 		if (!user->proxy->get("address").empty() && !user->proxy->get("port").empty()) {
 			cout << "If this is due to misconfiguration you can change it" << endl;
             // configure the user
@@ -217,7 +191,6 @@ int main()
                 cerr << "[-] Error : Unable to configure" << endl;
 				return -1;
 			}
-			
             cout << "Rerun the application to apply changes." <<endl;
 		}
 		return -1;
