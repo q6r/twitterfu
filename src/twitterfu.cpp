@@ -164,11 +164,11 @@ int main()
     // Create a user
     user = new User(dbtemp, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
 
-	/* Authenticate our user */
-	if (user->authenticate() == false) {
-		cerr << "[-] Failed while authenticating" << endl;
-		return -1;
-	}
+    // Check if user authenticated
+    if(user->isAuthenticated() == false) {
+        cerr << "[-] Failed to authenticate user" << endl;
+        return -1;
+    }
 
 	/* If we don't have enough hits suggest using a proxy
 	 * and exit 

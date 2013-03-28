@@ -12,6 +12,13 @@ User::User(string _database, string _consumer_key, string _consumer_secret) {
     database = new Database(this);
 
     proxy->setup(); // set up proxy
+    
+    /* Authenticate the user and set the flag accordingly */ 
+    (User::authenticate()==true) ? User::authenticated=true:User::authenticated=false;
+}
+
+bool User::isAuthenticated() {
+    return authenticated;
 }
 
 User::~User() {

@@ -36,12 +36,6 @@ public:
     void set(string key, string val);
     string & get(string key);
     /**
-     * Authenticate the user
-     * @param user the user object
-     * @return true of user authenticated successfuly
-     */
-    bool authenticate();
-    /**
      * Get the limit
      * @param user the user object
      * @return number of remaining hits
@@ -53,6 +47,12 @@ public:
      * @return true of can read status
      */
     bool status();
+    /**
+     * Return the authenticated flag
+     * true if authenticated, false if failed
+     * to authenticated.
+     */
+    bool isAuthenticated();
     /**
      * Unfollow users who haven't followed me back
      * @param user the user object
@@ -167,5 +167,11 @@ private:
      * @param n number of blanks
      */
     void cleanLine(int n);
+    /**
+     * Authenticate the user
+     */
+    bool authenticate();
+    bool authenticated;   /* Is authenticated */ 
+    
 };
 #endif
