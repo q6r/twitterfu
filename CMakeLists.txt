@@ -6,9 +6,17 @@ project (TWITTERFU)
 # the project's entire directory structure. 
 #add_subdirectory (libtwitcurl)
 FIND_PACKAGE(PkgConfig)
-include_directories(${PKGS_INCLUDEDIRS})
+pkg_check_modules(boost sqlite3 libcurl)
+include_directories(${PKG_INCLUDE_DIRS})
+
+#gtkmm
+pkg_check_modules(GTKMM gtkmm-3.0)
+include_directories(${GTKMM_INCLUDE_DIRS})
+link_directories(${GTKMM_LIBRARY_DIRS})
+
+
 set(libtwitcurlSrcs libtwitcurl/base64.cpp libtwitcurl/HMAC_SHA1.cpp libtwitcurl/oauthlib.cpp libtwitcurl/SHA1.cpp libtwitcurl/urlencode.cpp libtwitcurl/twitcurl.cpp)
 add_library (libtwitcurl STATIC ${libtwitcurlSrcs})
-set(twitterfuSrcs User.cpp Database.cpp Proxy.cpp Filters.cpp twitterfu.cpp sqlite3pp.cpp)
+set(twitterfuSrcs User.cpp Database.cpp Proxy.cpp Filters.cpp twitterfu.cpp sqlite3pp.cpp GtkTwitterfu.cpp)
 add_subdirectory (src)
 

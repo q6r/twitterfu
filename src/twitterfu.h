@@ -7,6 +7,7 @@
 #include <iostream>
 #include <pwd.h>
 #include "User.h"
+#include "GtkTwitterfu.h"
 
 using namespace std;
 
