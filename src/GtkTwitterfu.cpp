@@ -99,6 +99,10 @@ GtkTwitterfu::GtkTwitterfu() :
     scrolledwindow.add(treeview);
     scrolledwindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
+    // Ref to treemodel
+    refTreeModel              = Gtk::ListStore::create(columns);
+    treeview.set_model(refTreeModel);
+
     // add to vbox
     vbox.pack_start(scrolledwindow);
     vbox.pack_start(buttonbox, Gtk::PACK_SHRINK);
@@ -132,6 +136,17 @@ GtkTwitterfu::GtkTwitterfu() :
     button_quit.signal_clicked().connect( sigc::mem_fun(*this,
                 &GtkTwitterfu::on_button_quit));
 
+    //////// Getting users
+    //
+    pw = getpwuid(getuid());
+    dbtemp = pw->pw_dir;
+    dbtemp += "/.twitterfu.sql";
+    srand(time(NULL));
+    user = new User(dbtemp, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
+
+    // TODO check auth ..etc
+
+    //////// Getting users
 
     this->show_all_children();
 }
@@ -142,21 +157,32 @@ GtkTwitterfu::ModelColumns::ModelColumns() {
 }
 
 void GtkTwitterfu::addUser(Glib::ustring username, Glib::ustring id) {
-    refTreeModel              = Gtk::ListStore::create(columns);
-    treeview.set_model(refTreeModel);
     Gtk::TreeModel::Row row   = *(refTreeModel->append());
     row[columns.m_col_text]   = username;
     row[columns.m_col_number] = id;
 }
 
 void GtkTwitterfu::find_followers() {
-    std::cout << "Finding followers for " << input->getResult() << std::endl;
+    char *username = input->getResult();
+
+    deque< string > user_followers = user->getFollowing(username);
+    for_each(user_followers.begin(), user_followers.end(), [&](string id_) {
+            this->addUser("",id_);
+            });
+
+    delete username;
     delete input;
     input = NULL;
 }
 
 void GtkTwitterfu::find_following() {
-    std::cout << "Finding following for " << input->getResult() << std::endl;
+    char *username = input->getResult();
+    
+    deque < string > user_following = user->getFollowers(username);
+    for_each(user_following.begin(), user_following.end(), [&](string id_) {
+            this->addUser("", id_);
+            });
+    delete username;
     delete input;
     input = NULL;
 }

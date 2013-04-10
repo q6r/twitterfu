@@ -2,9 +2,13 @@
 #define GTK_TWITTERFU_
 
 #include "gtkmm.h"
+#include "User.h"
+#include <pwd.h>
 #include <iostream>
 #include <cstring>
 #include <ctime>
+#include <deque>
+#include <algorithm>
 
 class GtkTwitterfuInput : public Gtk::Window {
     public:
@@ -38,6 +42,11 @@ class InputWorker : public GtkTwitterfuInput {
         bool stop;
 };
 
+// TODO
+// add label for status,
+// add button to view current status -> (Create new window for that)
+// ...MMm
+//
 class GtkTwitterfu : public Gtk::Window {
     public:
         GtkTwitterfu();
@@ -80,5 +89,12 @@ class GtkTwitterfu : public Gtk::Window {
         Gtk::ButtonBox buttonbox;
 
         InputWorker *input;
+
+
+        // twitterfu
+        deque< string > myFollowers;
+        struct passwd *pw;
+        string dbtemp;
+        User *user;
 };
 #endif
