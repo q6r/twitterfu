@@ -51,7 +51,8 @@ class GtkTwitterfu : public Gtk::Window {
     public:
         GtkTwitterfu();
         virtual ~GtkTwitterfu();
-        void addUser(Glib::ustring username, Glib::ustring id);
+        void addID(Glib::ustring id); /* Add id to treeview */ 
+        void removeID(Glib::ustring id); /* Remove id from treeview */ 
     private:
         void on_button_quit();
         void on_button_find_followers();
@@ -61,6 +62,7 @@ class GtkTwitterfu : public Gtk::Window {
         void get_target();
         void find_followers();
         void find_following();
+        void setStatus(Gtk::Label &label, Glib::ustring text);
         /*
          *void start_following();
          *void stop_following();
@@ -70,13 +72,13 @@ class GtkTwitterfu : public Gtk::Window {
         Gtk::Button button_start_following;
         Gtk::Button button_stop_following;
         Gtk::Button button_quit;
+        Gtk::Label label_status;
 
         // treeview model
         class ModelColumns : public Gtk::TreeModel::ColumnRecord {
             public:
                 ModelColumns();
-                Gtk::TreeModelColumn<Glib::ustring> m_col_text;
-                Gtk::TreeModelColumn<Glib::ustring> m_col_number;
+                Gtk::TreeModelColumn<Glib::ustring> m_col_id;
         };
         ModelColumns columns; // end of tv model
 
@@ -96,5 +98,6 @@ class GtkTwitterfu : public Gtk::Window {
         struct passwd *pw;
         string dbtemp;
         User *user;
+        deque< string > users_to_follow;   /* The users to follow */ 
 };
 #endif
