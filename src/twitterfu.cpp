@@ -151,8 +151,9 @@ void optionShow()
 
 int main(int argc, char *argv[]) {
 
+    Glib::thread_init();
     Glib::RefPtr< Gtk::Application > app = Gtk::Application::create(argc, argv, "org.gtkmm.twitterfu");
-    
+
     GtkTwitterfu ui;
 
     return app->run(ui);
