@@ -6,6 +6,8 @@ GtkTwitterfu::GtkTwitterfu() :
     button_find_following("Find following"),
     button_start_following("Start following"),
     button_stop_following("Stop following"),
+    button_start_unfollowing("Start unfollowing"),
+    button_stop_unfollowing("Stop unfollowing"),
     button_quit("Quit"),
     label_status("Status:"),
     input(NULL),
@@ -53,6 +55,8 @@ GtkTwitterfu::GtkTwitterfu() :
     buttonbox.pack_start(button_find_following, Gtk::PACK_SHRINK);
     buttonbox.pack_start(button_start_following, Gtk::PACK_SHRINK);
     buttonbox.pack_start(button_stop_following, Gtk::PACK_SHRINK);
+    buttonbox.pack_start(button_start_unfollowing, Gtk::PACK_SHRINK);
+    buttonbox.pack_start(button_stop_unfollowing, Gtk::PACK_SHRINK);
     buttonbox.pack_start(button_quit, Gtk::PACK_SHRINK);
 
     buttonbox.set_layout(Gtk::BUTTONBOX_END);
@@ -70,9 +74,12 @@ GtkTwitterfu::GtkTwitterfu() :
                 &GtkTwitterfu::on_button_find_following));
     button_start_following.signal_clicked().connect(
             sigc::mem_fun(*this, &GtkTwitterfu::on_button_start_following));
-
     button_stop_following.signal_clicked().connect(
             sigc::mem_fun(*this, &GtkTwitterfu::on_button_stop_following));
+    button_start_unfollowing.signal_clicked().connect(
+            sigc::mem_fun(*this, &GtkTwitterfu::on_button_start_unfollowing));
+    button_stop_unfollowing.signal_clicked().connect(
+            sigc::mem_fun(*this, &GtkTwitterfu::on_button_stop_unfollowing));
     button_quit.signal_clicked().connect( sigc::mem_fun(*this,
                 &GtkTwitterfu::on_button_quit));
 
@@ -240,6 +247,19 @@ void GtkTwitterfu::on_button_start_following() {
     follow_worker = new FollowWorker(this->user, this->users_to_follow);
     follow_worker->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::followed_user));
     follow_worker->start();
+}
+
+void GtkTwitterfu::on_button_start_unfollowing() {
+    // TODO implement a unfollow worker
+    if(this->user->my_following.size() == 0) {
+        this->setStatus( this->label_status, "No one to unfollow");
+        return;
+    }
+
+}
+
+void GtkTwitterfu::on_button_stop_unfollowing() {
+    // TODO stop that implemented unfollow worker
 }
 
 void GtkTwitterfu::removeID(Glib::ustring id) {

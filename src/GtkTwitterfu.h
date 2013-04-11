@@ -28,6 +28,8 @@ class GtkTwitterfu : public Gtk::Window {
         void on_button_find_following();    /* InputWorker get input */ 
         void on_button_start_following();   /* Start the FollowingWorker */ 
         void on_button_stop_following();    /* Stop the FollowingWorker thread if running */ 
+        void on_button_start_unfollowing(); /* Start unfollowing */ 
+        void on_button_stop_unfollowing();  /* Stop unfollowing */ 
         void find_followers();              /* Works after InputWorker sigdone to get followers */ 
         void find_following();              /* Works after InputWorker sigdone to get following */ 
         void setStatus(Gtk::Label &label, Glib::ustring text);
@@ -38,6 +40,8 @@ class GtkTwitterfu : public Gtk::Window {
         Gtk::Button button_find_following;
         Gtk::Button button_start_following;
         Gtk::Button button_stop_following;
+        Gtk::Button button_start_unfollowing;
+        Gtk::Button button_stop_unfollowing;
         Gtk::Button button_quit;
         Gtk::Label label_status;
 
