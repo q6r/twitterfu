@@ -10,34 +10,7 @@
 #include <algorithm>
 #include "GtkLogin.h"
 #include "InputWorker.h"
-
-// Follow user worker this will have access to 
-// GtkTwitterfu so it can add/remove/change shit to the ui
-class FollowWorker {
-    public:
-        // TODO follow worker should also have access to the tree
-        // model in GtkTwitterfu so it can update it of followed users
-        // it will user GtkTwitterfu::removeID for each followed id
-        FollowWorker(User *_user, deque<string> _id);
-        /**
-         * Start thread
-         */
-        void start();
-        /**
-         * Stop thread
-         */
-        void stopThread();
-        ~FollowWorker();
-        // Dispatcher when done, TODO Do we need one ?
-        Glib::Dispatcher sig_done;
-    private:
-        void run();
-        Glib::Thread * thread;
-        Glib::Mutex mutex;
-        bool stop;
-        deque<string> ids;   /* IDs to follow */ 
-        User *user;         /* This is a ptr to the object in gtktwitterfu */
-};
+#include "FollowWorker.h"
 
 // TODO
 // add button to view current status -> (Create new window for that)
