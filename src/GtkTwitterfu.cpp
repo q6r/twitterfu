@@ -1,84 +1,5 @@
 #include "GtkTwitterfu.h"
 
-/******** Input class : this is derived by InputWorker for threading */
-GtkTwitterfuInput::GtkTwitterfuInput(Glib::ustring text_info) : 
-    button_okay("Ok"),
-    vbox(Gtk::ORIENTATION_VERTICAL)
-{
-    result = new char[128](); // TODO user job to delete
-
-    this->set_title(text_info);
-    this->set_size_request(200, 100);
-
-    entry.set_max_length( 50 );
-    entry.set_text("");
-
-    // Create button_ok connection
-    button_okay.signal_clicked().connect(
-            sigc::mem_fun(*this, &GtkTwitterfuInput::on_button_okay));
-
-    vbox.pack_start(entry, Gtk::PACK_SHRINK);
-    vbox.pack_start(button_okay, Gtk::PACK_SHRINK);
-
-    // button def.
-    button_okay.set_can_default( true );
-    button_okay.grab_default();
-
-    this->add(vbox);
-    this->show_all_children();
-    this->show_all();
-}
-
-/******** Worker : public Input */
-InputWorker::InputWorker(Glib::ustring username) :
-    thread(0),
-    stop(false),
-    GtkTwitterfuInput(username) { }
-
-void InputWorker::start() {
-    thread = Glib::Thread::create(sigc::mem_fun(*this, &InputWorker::run), true);
-}
-
-InputWorker::~InputWorker() {
-    { 
-        Glib::Mutex::Lock lock(mutex);
-        stop = true;
-    }
-    
-    if(thread)
-        thread->join();
-}
-
-void InputWorker::run() {
-    // run until we get input
-    // TODO take it easy
-    while(true) {
-        {
-            Glib::Mutex::Lock lock (mutex);
-            if(stop) break;
-        }
-        // if button_ok was clicked and result has
-        // something
-        if(this->getResult()[0] != 0x00) {
-            sig_done(); // send the signal
-            break;
-        }
-    }
-}
-
-char * GtkTwitterfuInput::getResult() {
-    return this->result;
-}
-
-void GtkTwitterfuInput::on_button_okay() {
-    strncpy(result, this->entry.get_text().c_str(), 127);
-    this->hide();
-}
-
-GtkTwitterfuInput::~GtkTwitterfuInput() {
-}
-
-/******** Main gtk class */
 GtkTwitterfu::GtkTwitterfu() :
     vbox(Gtk::ORIENTATION_VERTICAL),
     button_find_followers("Find followers"),
@@ -90,6 +11,20 @@ GtkTwitterfu::GtkTwitterfu() :
     input(NULL),
     follow_worker(NULL)
 {
+
+    string *username = new string; // Will be passed to GtkLogin 
+    string *password = new string; // Will be passed to GtkLogin
+
+    // Create Login window
+    // TODO this is very very bad, if kit is deleted
+    // segfault! find another way
+    Gtk::Main *kit    = new Gtk::Main(true);
+    GtkLogin *loginUI = new GtkLogin(username, password);
+    kit->run(*loginUI);
+    delete loginUI;
+    /*
+     *delete kit;
+     */
 
     this->set_title("Twitterfu");
     this->set_border_width(10);
@@ -143,13 +78,28 @@ GtkTwitterfu::GtkTwitterfu() :
 
     //////// Getting users
     //
-    pw = getpwuid(getuid());
-    dbtemp = pw->pw_dir;
-    dbtemp += "/.twitterfu.sql";
-    srand(time(NULL));
-    user = new User(dbtemp, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
+    user = new User(*username, *password, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
 
     // TODO check auth ..etc
+    if(user->isAuthenticated() == false) {
+        std::cout << "Error : Unable to authenticate" << std::endl;
+    }
+
+    // Verify and if failed keep asking for login until authenticated
+    // and verified.
+    if(user->verify() == false) {
+        std::cout << "Unable to verify" << std::endl;
+        // Then relogin authenticate!
+        do {
+            delete user;
+            loginUI = new GtkLogin(username, password, "Invalid username or password");
+            kit->run(*loginUI);
+            delete loginUI;
+            user = new User(*username, *password, "nYFCp8lj4LHqmLTnVHFc0Q", "EbTvHApayhq9FRPHzKU3EPxyqKgGrNEwFNssRo5UY4");
+
+        } while(!user->verify() || !user->isAuthenticated() );
+    }
+
 
     //////// Getting users
 
@@ -172,6 +122,12 @@ void GtkTwitterfu::addID(Glib::ustring id) {
 
 void GtkTwitterfu::find_followers() {
     char *username = input->getResult();
+    if(username[0] == 0x00) {
+        delete username; username = NULL;
+        delete input; input = NULL;
+        return;
+    }
+
 
     // Status
     this->setStatus( this->label_status, "Getting followers of " + Glib::ustring(username));
@@ -194,12 +150,18 @@ void GtkTwitterfu::find_followers() {
     std::cout << "Total users to follow " << users_to_follow.size() << std::endl;
 
     delete username;
+    username = NULL;
     delete input;
     input = NULL;
 }
 
 void GtkTwitterfu::find_following() {
     char *username = input->getResult();
+    if(username[0] == 0x00) {
+        delete username; username = NULL;
+        delete input; input = NULL;
+        return;
+    }
 
     // Status
     this->setStatus( this->label_status, "Getting following of " + Glib::ustring(username));
@@ -223,6 +185,7 @@ void GtkTwitterfu::find_following() {
     std::cout << "Total users to follow " << users_to_follow.size() << std::endl;
 
     delete username;
+    username = NULL;
     delete input;
     input = NULL;
 }
@@ -230,8 +193,10 @@ void GtkTwitterfu::find_following() {
 void GtkTwitterfu::on_button_find_followers() {
     
     // InputWorker still waiting for input.
-    if(input != NULL)
+    if(input != NULL) {
+        std::cout << "waiting for input" << std::endl;
         return;
+    }
 
     input = new InputWorker("Enter username");
     input->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::find_followers));
@@ -240,8 +205,10 @@ void GtkTwitterfu::on_button_find_followers() {
 
 void GtkTwitterfu::on_button_find_following() {
     // Input worker still waiting for input.
-    if(input != NULL)
+    if(input != NULL) {
+        std::cout << "waiting for input" << std::endl;
         return;
+    }
 
     input = new InputWorker("Enter username");
     input->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::find_following));

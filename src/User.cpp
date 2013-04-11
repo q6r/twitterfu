@@ -2,13 +2,18 @@
 
 bool User::gotExitSignal = false;
 
-User::User(string _database, string _consumer_key, string _consumer_secret) {
-    User::set("db_name", _database);
+User::User(string _username, string _password, string _consumer_key, string _consumer_secret) :
+    authenticated(false)
+{
+
+    srand(time(NULL));
+
+    User::set("username", _username);
+    User::set("password", _password);
     User::set("consumer_key", _consumer_key);
     User::set("consumer_secret", _consumer_secret);
     
     proxy    = new Proxy(this);
-    database = new Database(this);
     filters  = new Filters(this);
 
     proxy->setup(); // set up proxy
@@ -18,21 +23,20 @@ User::User(string _database, string _consumer_key, string _consumer_secret) {
     my_following = this->getFollowing( this->get("username") );
 
     /* Authenticate the user and set the flag accordingly */ 
-    (User::authenticate()==true) ? User::authenticated=true:User::authenticated=false;
+    (this->authenticate()==true) ? this->authenticated=true: this->authenticated=false;
 }
 
 bool User::isAuthenticated() {
-    return authenticated;
+    return this->authenticated;
 }
 
 bool User::reachedLimit() {
     bool limit = false;
-    (User::getRemainingHits()==0) ? limit=true:limit=false;
+    (this->getRemainingHits()==0) ? limit=true:limit=false;
     return limit;
 }
 
 User::~User() {
-    delete database;
     delete filters;
     delete proxy;
 }
@@ -52,30 +56,21 @@ bool User::verify() {
     // If user is verified
     if(verified) {
         // get and set following
-        if (User::lastResponse("user.friends_count", temp) == false) {
-            cerr << "[-] Error : Unable to find user.friends_count" << endl;
-            return -1;
-        } else {
+        if (this->lastResponse("user.friends_count", temp) == false)
+            return false;
+        else
             User::set("following", temp );
-        }
         // get and set followers
-        if (User::lastResponse("user.followers_count",temp) == false) {
-            cerr << "[-] Error : Unable to find user.followers_count" << endl;
-            return -1;
-        } else {
+        if (this->lastResponse("user.followers_count",temp) == false)
+            return false;
+        else
             User::set("followers", temp );
-        }
+
         // get and set timezone if not set
-        if (User::get("timezone").empty()) {
-            if (User::lastResponse("user.time_zone", temp) == false) {
-                cerr << "[-] Error : Unable to find timezone" << endl;
-                return -1;
-            } else {
-                // if there's timezone put it in db
-                User::set("timezone", temp );
-                User::database->setupTimezone( User::get("timezone") );
-            }
-        }
+        if (this->lastResponse("user.time_zone", temp) == false)
+            return false;
+        else
+            User::set("timezone", temp );
     }
 
     return verified;
@@ -117,7 +112,7 @@ deque < string > User::search(string query)
         query.replace(pos, 1, "%20");
 
 	// send the search query
-	if (User::twitterObj.search(query) == false)
+	if (this->twitterObj.search(query) == false)
 		return ids;
 
 	// Get results, parse then and push to ids deque
@@ -148,7 +143,7 @@ deque < string > User::getFollowing(string username)
 	cout << "[+] Getting following of @" << username << endl;
 
 	do {
-		if (User::twitterObj.friendsIdsGet(next_cursor, username,
+		if (this->twitterObj.friendsIdsGet(next_cursor, username,
 						   false) == true) {
 			User::twitterObj.getLastWebResponse(result);
 			boost::property_tree::ptree pt;
@@ -156,7 +151,7 @@ deque < string > User::getFollowing(string username)
 			read_xml(ss, pt);
 
 			/* Catched and error ? */
-			if (User::lastResponse("hash.error", err) == true) {
+			if (this->lastResponse("hash.error", err) == true) {
 				cerr << "[-] " << err << endl;
 				return ids;
 			}
@@ -198,14 +193,14 @@ deque < string > User::getFollowers(string username)
 	cout << "[+] Getting followers of @" << username << endl;
 
 	do {
-		if (User::twitterObj.followersIdsGet(next_cursor, username,
+		if (this->twitterObj.followersIdsGet(next_cursor, username,
 						     false) == true) {
 			User::twitterObj.getLastWebResponse(result);
 			stringstream ss(result);
 			read_xml(ss, pt);
 
 			/* Catched error ? */
-			if (User::lastResponse("hash.error", err) == true) {
+			if (this->lastResponse("hash.error", err) == true) {
 				cerr << "[-] " << err << endl;
 				return ids;
 			}
@@ -238,50 +233,29 @@ deque < string > User::getFollowers(string username)
 
 bool User::authenticate()
 {
-	string q, authurl, pin;
-        
+	string authurl;
+
 	// set twitter user, pass, and consumer {key,secret}
-    User::twitterObj.setTwitterUsername(User::get("username"));
-	User::twitterObj.setTwitterPassword(User::get("password"));
-	User::twitterObj.getOAuth().setConsumerKey(User::get("consumer_key"));
-	User::twitterObj.getOAuth().setConsumerSecret(User::get("consumer_secret"));
+    User::twitterObj.setTwitterUsername(this->get("username"));
+	User::twitterObj.setTwitterPassword(this->get("password"));
+	User::twitterObj.getOAuth().setConsumerKey(this->get("consumer_key"));
+	User::twitterObj.getOAuth().setConsumerSecret(this->get("consumer_secret"));
 
-	// if we already have oauth keys
-	if (User::get("access_token_key").size() && User::get("access_token_secret").size()) {
-		User::twitterObj.getOAuth().setOAuthTokenKey(User::get("access_token_key"));
-		User::twitterObj.getOAuth().
-		    setOAuthTokenSecret(User::get("access_token_secret"));
-		return true;
-	} else {		// if we don't
-		// get pin
-		if(User::twitterObj.oAuthRequestToken(authurl) == false) {
-                        cerr << "[-] Failed while trying to get auth url" << endl;
-                        return false;
-                }
-		cout <<
-		    "Visit twitter and authorize the application then enter the PIN."
-		    << endl << authurl << endl;
-		cout << "PIN : ";
-		cin >> pin;
-		User::twitterObj.getOAuth().setOAuthPin(pin);
-		User::twitterObj.oAuthAccessToken();
+    // get authentication url
+    if(this->twitterObj.oAuthRequestToken(authurl) == false) {
+        cerr << "[-] Failed while trying to get auth url" << endl;
+        return false;
+    }
 
-		// update database with access keys
-		User::twitterObj.getOAuth().getOAuthTokenKey(User::get("access_token_key"));
-		User::twitterObj.getOAuth().getOAuthTokenSecret(User::get("access_token_secret"));
+    // pass this url and handle authentication
+    this->twitterObj.oAuthHandlePIN( authurl );
+    this->twitterObj.oAuthAccessToken();
 
-		q = "UPDATE Config SET access_key = \"" +
-		    User::get("access_token_key") + "\" WHERE Id=1;";
-		if (User::db.execute(q.c_str()) != 0)
-			return false;
-		q = "UPDATE Config SET access_secret = \"" +
-		    User::get("access_token_secret") + "\" WHERE Id=1;";
-		if (User::db.execute(q.c_str()) != 0)
-			return false;
-		return true;
-	}
+    // get access token TODO : remove?
+    User::twitterObj.getOAuth().getOAuthTokenKey(this->get("access_token_key"));
+    User::twitterObj.getOAuth().getOAuthTokenSecret(this->get("access_token_secret"));
 
-	return false;
+	return true;
 }
 
 
@@ -292,23 +266,26 @@ bool User::follow(string id)
     std::string error;
 
     // If the user doesn't meet our filter requirements
-    if(User::filters->mainFilter(id) == false)
-    {
-        std::cout << "Ignored " << id << " he doesn't meet our requirement" << std::endl;
-        return false;
-    }
-
+/*
+ *    if(this->filters->mainFilter(id) == false)
+ *    {
+ *        std::cout << "Ignored " << id << " he doesn't meet our requirement" << std::endl;
+ *        return false;
+ *    }
+ *
+ */
     // Create friendship by userid
-    if (User::twitterObj.friendshipCreate(id, true) == true) {
+    if (this->twitterObj.friendshipCreate(id, true) == true) {
 
-        if(User::lastResponse("user.name", username) == true)
+        if(this->lastResponse("user.name", username) == true)
             std::cout << "Followed " << username << std::endl;
 
         // Error found display and return false;
-        if(User::lastResponse("hash.error", error) == true) {
+        if(this->lastResponse("hash.error", error) == true) {
             std::cout << "because : " << error << std::endl;
             return false;
         }
+
 
     } else {
         std::cout << "Unable to follow " << id << std::endl;
@@ -333,11 +310,6 @@ void User::follow(deque < string > to_follow)
 		cerr << "(Err:Please add users to follow)" << endl;
 		return;
 	}
-	// remove duplicates
-	if (User::database->removeDuplicatesInToFollow() == false) {
-		cerr << "(Err:Unable to remove duplicates)" << endl;
-		return;
-	}
 
 	cout << to_follow.size() << " to follow" << endl;
 
@@ -352,11 +324,11 @@ void User::follow(deque < string > to_follow)
 
 		// follow only those that applies to the
 		// by_ratio filter
-		if (User::filters->mainFilter(*it) == true) {
-			if (User::twitterObj.friendshipCreate(*it, true) == true) {	// if followed the user
+		if (this->filters->mainFilter(*it) == true) {
+			if (this->twitterObj.friendshipCreate(*it, true) == true) {	// if followed the user
 				followed.push_back(*it);
-				if (User::lastResponse("user.name", username) == false) {	// if can't get username
-					if (User::lastResponse("hash.error", error) == true) {	// get hash error
+				if (this->lastResponse("user.name", username) == false) {	// if can't get username
+					if (this->lastResponse("hash.error", error) == true) {	// get hash error
 
 						// did we reach follow limit ?
 						if (string::npos !=
@@ -389,7 +361,7 @@ void User::follow(deque < string > to_follow)
 			sleep(randomize(3, 5));
 		} else {	// filter ignored someone
 			// Did we reach API limit?
-			if (User::lastResponse("hash.error", error) == true) {
+			if (this->lastResponse("hash.error", error) == true) {
 				if (string::npos !=
 				    error.find("Clients may not make")) {
 					
@@ -400,7 +372,7 @@ void User::follow(deque < string > to_follow)
 				}
 			}
 			// Who did we ignore ?
-			if (User::lastResponse("user.name", username) == true) {
+			if (this->lastResponse("user.name", username) == true) {
 				cout << "Ignored " << username;
 				cleanLine(120);
 			}
@@ -414,10 +386,6 @@ void User::follow(deque < string > to_follow)
 		cout << endl << "We have followed " << followed.
 		    size() << "/" << to_follow.size() - ignored << endl;
 
-	if (User::database->toDB(followed, "Followed", "userid") == false) {
-		cerr << "[-] Error : toDB" << endl;
-		return;
-	}
 	if (ignored > 0)
 		cout << "\tWe have Ignored : " << ignored << endl;
 }
@@ -435,133 +403,9 @@ void User::cleanLine(int n)
 	flush(cout);
 }
 
-bool User::configure()
-{
-	string address, port, username, password, q;
-	int opt = -1;
-
-	cout << "1) Set proxy" << endl;
-	cout << "2) Filters" << endl;
-	cout << "3) Purge To Follow" << endl;
-	cout << "4) Purge Followed" << endl;
-	cout << "5) Purge Unfollowed" << endl;
-	cout << "6) Purge MyFollowers" << endl;
-	cout << "7) Pruge all" << endl;
-	cout << "8) Return" << endl;
-
-    cout << "> ";
-    cin >> opt;
-
-	switch (opt) {
-	case 1:		// configure proxy
-		{
-			cin.ignore();
-
-			cout << "address  : ";
-			getline(cin, address);
-
-			cout << "port     : ";
-			getline(cin, port);
-
-			
-			    cout <<
-			    "Does this proxy use a username:password [y/n] ? ";
-			getline(cin, q);
-
-			if (q == "y" || q == "Y") {
-				cout << "username : ";
-				getline(cin, username);
-				cout << "password : ";
-				getline(cin, password);
-			}
-
-			if (this->proxy->change_proxy
-			    (address, port, username, password) == false)
-				
-				    cerr << "[-] Error Unable to change proxy"
-				    << endl;
-		}
-		break;
-	case 2:		// filters
-		{
-                        User::filters->filterList();
-		}
-		break;
-	case 3:		// purge to follow
-		{
-			if (User::database->purgeTable("ToFollow") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable toi purge ToFollow" <<
-				    endl;
-		}
-		break;
-	case 4:		// purge followed
-		{
-			if (User::database->purgeTable("Followed") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge Followed" <<
-				    endl;
-		}
-		break;
-	case 5:		// purge unfollowed
-		{
-			if (User::database->purgeTable("UnFollowed") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge UnFollowed" <<
-				    endl;
-		}
-		break;
-	case 6:
-		{
-			if (User::database->purgeTable("MyFollowers") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge MyFollowers" <<
-				    endl;
-		}
-		break;
-	case 7:		// purge all
-		{
-			if (User::database->purgeTable("ToFollow") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge ToFollow" <<
-				    endl;
-
-			if (User::database->purgeTable("Followed") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge Followed" <<
-				    endl;
-
-			if (User::database->purgeTable("UnFollowed") == false)
-				
-				    cerr << "[-] Error : Unable to purge " <<
-				    endl;
-
-			if (User::database->purgeTable("MyFollowers") == false)
-				
-				    cerr <<
-				    "[-] Error : Unable to purge MyFollowers" <<
-				    endl;
-		}
-		break;
-	case 8:		// return
-		break;
-	default:
-		break;
-	}
-
-
-	return true;
-}
-
 void User::unfollow()
 {
-	deque < string > followers(User::database->getVal("MyFollowers", "userid"));
+	deque < string > followers(my_following); // TODO
 	deque < string >::iterator it;
 	deque < string > result;
 	string who;
@@ -594,36 +438,22 @@ void User::unfollow()
 		/* get followed_by and if fails check
 		 * the remaining hits and reconfigure
 		 **/
-		if (User::lastResponse(
+		if (this->lastResponse(
 				 "relationship.source.followed_by",
 				 isfollow) == false) {
 			// check if we reached the limit
 			remainingHits = User::getRemainingHits();
 			if (remainingHits == 0) {
-				cerr <<
-				    "[-] Error : You have reached the limit how about using a proxy ?"
-				    << endl;
-				if (User::configure() == false) {
-					
-					    cerr <<
-					    "[-] Error : Unable to configure" <<
-					    endl;
-				} else {
-					
-					    cout << "Rerun to apply changes" <<
-					    endl;
-				}
+				cerr << "[-] Error : You have reached the limit how about using a proxy ?" << endl;
 			} else {	// unknown exception
-				cerr <<
-				    "(Err: Unable to find relationship.source.followed_by)"
-				    << endl;
+				cerr << "(Err: Unable to find relationship.source.followed_by)" << endl;
 			}
 			break;
 		}
 
 		/* If the user is not following us */
 		if (isfollow == "false") {
-			if (User::lastResponse(
+			if (this->lastResponse(
 					 "relationship.target.screen_name",
 					 who) == false) {
 				
@@ -632,7 +462,7 @@ void User::unfollow()
 				    << endl;
 				break;
 			}
-			if (User::twitterObj.friendshipDestroy(*it, true)) {
+			if (this->twitterObj.friendshipDestroy(*it, true)) {
 				cout << "Unfollowed " << who;
 				unfollowed++;
 				result.push_back(*it);
@@ -649,12 +479,8 @@ void User::unfollow()
 
 	// restart the exit signal flag
 	gotExitSignal = false;
-	cout << "We have unfollowed " << unfollowed << "/" <<
-	    followers.size() << endl;
+	cout << "We have unfollowed " << unfollowed << "/" << followers.size() << endl;
 
-	// write results to db
-	if (User::database->toDB(result, "UnFollowed", "userid") == false)
-		cerr << "[-] Error : Unable to write to db" << endl;
 }
 
 
@@ -663,14 +489,22 @@ bool User::status()
 	string result, followers, following, reset_time;
 	string remaining_hits, hourly_limit;
 
-	deque < string >
-	    tofollow(User::database->toVector( "ToFollow", "userid"));
-	deque < string >
-	    followed(User::database->toVector( "Followed", "userid"));
-	deque < string >
-	    unfollowed(User::database->toVector( "UnFollowed", "userid"));
-	deque < string >
-	    myfollowers(User::database->toVector( "MyFollowers", "userid"));
+/*
+ *    deque < string >
+ *        tofollow(this->database->toVector( "ToFollow", "userid"));
+ *    deque < string >
+ *        followed(this->database->toVector( "Followed", "userid"));
+ *    deque < string >
+ *        unfollowed(this->database->toVector( "UnFollowed", "userid"));
+ *    deque < string >
+ *        myfollowers(this->database->toVector( "MyFollowers", "userid"));
+ *
+ */
+
+    deque < string > tofollow(1);
+    deque < string > followed(1);
+    deque < string > unfollowed(1);
+    deque < string > myfollowers( this->my_followers );
 
 	cout << "\tDatabase Status :" << endl;
 	cout << "\t\tFollowed     : " << followed.size() << endl;
@@ -678,9 +512,9 @@ bool User::status()
 	cout << "\t\tUnfollowed   : " << unfollowed.size() << endl;
 	cout << "\t\tMy followers : " << myfollowers.size() << endl;
 
-	if (User::twitterObj.accountVerifyCredGet() == true) {
+	if (this->twitterObj.accountVerifyCredGet() == true) {
 		cout << "\tAccount Status     :" << endl;
-		if (User::lastResponse("user.followers_count", followers) ==
+		if (this->lastResponse("user.followers_count", followers) ==
 		    false) {
 			
 			    cerr <<
@@ -688,7 +522,7 @@ bool User::status()
 			    << endl;
 			return false;
 		}
-		if (User::lastResponse("user.friends_count", following) ==
+		if (this->lastResponse("user.friends_count", following) ==
 		    false) {
 			
 			    cerr << "\t[-] Error : Unable to find friends_count"
@@ -706,11 +540,11 @@ bool User::status()
 	}
 
 	// API status
-	if (User::twitterObj.accountRateLimitGet() == true) {
+	if (this->twitterObj.accountRateLimitGet() == true) {
 
 
 		cout << "\tAPI Status : " << endl;
-		if (User::lastResponse("hash.remaining-hits", remaining_hits) ==
+		if (this->lastResponse("hash.remaining-hits", remaining_hits) ==
 		    false) {
 			
 			    cerr <<
@@ -719,7 +553,7 @@ bool User::status()
 			return false;
 		}
 
-		if (User::lastResponse("hash.hourly-limit", hourly_limit) ==
+		if (this->lastResponse("hash.hourly-limit", hourly_limit) ==
 		    false) {
 			
 			    cerr <<
@@ -728,7 +562,7 @@ bool User::status()
 			return false;
 		}
 
-		if (User::lastResponse("hash.reset-time", reset_time) == false) {
+		if (this->lastResponse("hash.reset-time", reset_time) == false) {
 			cerr <<
 			    "[-] Error : Unable to get hash.hourly-limit" <<
 			    endl;
@@ -755,8 +589,8 @@ int User::getRemainingHits()
 	int limit;
 
 	// Get account limits remaining hits
-	if (User::twitterObj.accountRateLimitGet() == true) {
-		if (User::lastResponse("hash.remaining-hits", temp_limit) ==
+	if (this->twitterObj.accountRateLimitGet() == true) {
+		if (this->lastResponse("hash.remaining-hits", temp_limit) ==
 		    true) {
 			stringstream ss(temp_limit);
 			ss >> limit;

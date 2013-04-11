@@ -16,19 +16,7 @@ class Filters {
         public:
                 Filters(User *p);
                 ~Filters();
-                void setProfilePicture(bool n);
-                void setDescription(bool n);
-                void setProtectedProfile(bool n);
-                void setFollowRatio(bool n);
-                void setNearTimezone(bool n);
-
-                bool isFollower(string userid);
-                bool getProfilePicture();
-                bool getDescription();
-                bool getProtectedProfile();
-                bool getFollowRatio();
-                bool getNearTimezone();
-                /**
+               /**
                  * We filter users depending on 5 rules
                  * 1) have a profile picture +1
                  * 2) have description +1
@@ -40,6 +28,7 @@ class Filters {
                  * @return true if successfuly filtered
                  */
                 bool mainFilter(string userid);
+        private:
                 /**
                  * Check if user's timezone is near us by -4 or +4 timezones
                  * the timezones in the deque is pushed in order of their
@@ -49,14 +38,22 @@ class Filters {
                  * @param timezones of the userid
                  * @return true if able to predict time zone
                  */
-                bool predictTimezone(string timezones);
-                /**
-                 * Show a list of filters and help
-                 * in toggling them.
-                 * @param user the user object
+                /*
+                 *bool predictTimezone(string timezones);
                  */
-                void filterList();
-        private:
+                void setProfilePicture(const bool &n);
+                void setDescription(const bool &n);
+                void setProtectedProfile(const bool &n);
+                void setFollowRatio(const bool &n);
+                void setNearTimezone(const bool &n);
+
+                bool isFollower(const string &userid) const;
+                bool getProfilePicture() const;
+                bool getDescription() const;
+                bool getProtectedProfile() const;
+                bool getFollowRatio() const;
+                bool getNearTimezone() const;
+
                 /** have profile picture */
                 bool profilePicture;
                 /** have description */

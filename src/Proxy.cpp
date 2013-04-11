@@ -31,36 +31,10 @@ bool Proxy::change_proxy(string address, string port,
 	     string username, string password)
 {
 
-	string q;
-
     Proxy::set("address", address);
     Proxy::set("port", port);
     Proxy::set("username", username);
     Proxy::set("password", password);
 
-	parent->db.connect(parent->get("db_name").c_str());
-
-	// update DB with new proxy
-	q = "UPDATE Config SET proxy_address = \"" + Proxy::get("address") +
-	    "\" WHERE Id=1;";
-	if (parent->db.execute(q.c_str()) != 0)
-		return false;
-
-	q = "UPDATE Config SET proxy_port = \"" + Proxy::get("port") +
-	    "\" WHERE Id=1;";
-	if (parent->db.execute(q.c_str()) != 0)
-		return false;
-
-	q = "UPDATE Config SET proxy_username = \"" + Proxy::get("username") +
-	    "\" WHERE Id=1;";
-	if (parent->db.execute(q.c_str()) != 0)
-		return false;
-
-	q = "UPDATE Config SET proxy_password = \"" + Proxy::get("password") +
-	    "\" WHERE Id=1;";
-	if (parent->db.execute(q.c_str()) != 0)
-		return false;
-
-	parent->db.disconnect();
 	return true;
 }

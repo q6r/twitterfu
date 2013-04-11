@@ -10,10 +10,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <twitcurl.h>
 #include <unordered_map>
-#include "sqlite3pp.h"
 #include "Proxy.h"
 #include "Filters.h"
-#include "Database.h"
 
 using namespace std;
 class Filters;
@@ -24,14 +22,12 @@ class User {
 public:
     /**
      * Construct the user and initalize necessary things.
-     * create database,
      * create filters,
      * create proxy, and set it up.
-     * @param _database the database name
      * @param _consumer_key the consumer key
      * @param _consumer_secret the consumer secret
      */ 
-    User(string _database, string _consumer_key, string _consumer_secret);
+    User(string _username, string _password, string _consumer_key, string _consumer_secret);
     ~User();
     void set(string key, string val);
     string & get(string key);
@@ -58,12 +54,6 @@ public:
      * @param user the user object
      */
     void unfollow();
-    /**
-     * Configure various options for user
-     * @param user the user object
-     * @return true if configured successfuly
-     */
-    bool configure();
     /** 
      * It will follow a deque of user ids
      * @param to_follow the users to follow deque
@@ -130,25 +120,16 @@ public:
      */ 
     Filters *filters;
     /**
-     *
-     */
-    Database *database; 
-    /**
      * signal flag for signal handling
      */  
     static bool gotExitSignal;
     friend Proxy;   // access to twitterObj
     friend Filters; // access to twitterObj 
-    friend Database; // access to db, twitterObj
 
     // self following and followers
     deque< string > my_followers;
     deque< string > my_following;
 private:
-    /**
-     * sqlite3 database
-     */ 
-    sqlite3pp::database db;
     twitCurl twitterObj; /** twitterObject of the user */
     /*
      * keys:

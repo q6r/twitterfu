@@ -3,44 +3,13 @@
 
 #include "gtkmm.h"
 #include "User.h"
-#include <pwd.h>
 #include <iostream>
 #include <cstring>
 #include <ctime>
 #include <deque>
 #include <algorithm>
-
-class GtkTwitterfuInput : public Gtk::Window {
-    public:
-        GtkTwitterfuInput(Glib::ustring text_info);
-        ~GtkTwitterfuInput();
-        char *getResult();
-    private:
-        void on_button_okay();
-        char *result;
-        // child widgets
-        Gtk::Box vbox;
-        Gtk::Button button_okay;
-        Gtk::Entry entry;
-    protected:
-        virtual bool on_delete_event( GdkEventAny *event ) {
-            delete this;
-            return false;
-        }
-};
-
-class InputWorker : public GtkTwitterfuInput {
-    public:
-        InputWorker(Glib::ustring username);
-        void start();
-        ~InputWorker();
-        Glib::Dispatcher sig_done;
-    protected:
-        void run();
-        Glib::Thread * thread;
-        Glib::Mutex mutex;
-        bool stop;
-};
+#include "GtkLogin.h"
+#include "InputWorker.h"
 
 // Follow user worker this will have access to 
 // GtkTwitterfu so it can add/remove/change shit to the ui
@@ -124,8 +93,6 @@ class GtkTwitterfu : public Gtk::Window {
 
         // twitterfu
         deque< string > myFollowers;
-        struct passwd *pw;
-        string dbtemp;
         User *user;
         deque< string > users_to_follow;   /* The users to follow */ 
 };
