@@ -8,11 +8,15 @@ User::User(string _database, string _consumer_key, string _consumer_secret) {
     User::set("consumer_secret", _consumer_secret);
     
     proxy    = new Proxy(this);
-    filters  = new Filters(this);
     database = new Database(this);
+    filters  = new Filters(this);
 
     proxy->setup(); // set up proxy
-    
+
+    // Get our own following and followers
+    my_followers = this->getFollowers( this->get("username") );
+    my_following = this->getFollowing( this->get("username") );
+
     /* Authenticate the user and set the flag accordingly */ 
     (User::authenticate()==true) ? User::authenticated=true:User::authenticated=false;
 }

@@ -46,6 +46,21 @@ bool Filters::getNearTimezone() {
         return nearTimezone;
 }
 
+bool Filters::isFollower(string userid) {
+    // if we're already following userid then return false
+    for(deque<string>::iterator it = parent->my_following.begin();
+            it!= parent->my_following.end(); it ++ )
+    {
+        string my_userid = *it;
+        if(userid == my_userid) {
+            return false;
+        }
+    
+    }
+    return true;
+
+}
+
 bool Filters::mainFilter(string userid)
 {
 	string resultXML, temp_following, temp_followers, timezone;
@@ -67,6 +82,10 @@ bool Filters::mainFilter(string userid)
 	stringstream sb(temp_followers);
 	sa >> following;
 	sb >> followers;
+
+    /* rule #0      : Don't follow someone we've already followed */
+    if(Filters::isFollower(userid) == true)
+        return false;
 
 	/* rule #1      : Following more than followers or a ratio of 75% */
 	if (Filters::getFollowRatio() == true) {

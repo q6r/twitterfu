@@ -140,6 +140,10 @@ public:
     friend Proxy;   // access to twitterObj
     friend Filters; // access to twitterObj 
     friend Database; // access to db, twitterObj
+
+    // self following and followers
+    deque< string > my_followers;
+    deque< string > my_following;
 private:
     /**
      * sqlite3 database

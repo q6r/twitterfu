@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <deque>
+#include <algorithm>
 #include "User.h"
 
 using namespace std;
@@ -21,6 +22,7 @@ class Filters {
                 void setFollowRatio(bool n);
                 void setNearTimezone(bool n);
 
+                bool isFollower(string userid);
                 bool getProfilePicture();
                 bool getDescription();
                 bool getProtectedProfile();
