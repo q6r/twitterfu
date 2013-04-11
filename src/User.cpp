@@ -281,6 +281,42 @@ bool User::authenticate()
 }
 
 
+bool User::follow(string id)
+{
+    User::gotExitSignal = false;
+    std::string username;
+    std::string error;
+
+    // If the user doesn't meet our filter requirements
+    if(User::filters->mainFilter(id) == false)
+    {
+        std::cout << "Ignored " << id << " he doesn't meet our requirement" << std::endl;
+        return false;
+    }
+
+    // Create friendship by userid
+    if (User::twitterObj.friendshipCreate(id, true) == true) {
+
+        if(User::lastResponse("user.name", username) == true)
+            std::cout << "Followed " << username << std::endl;
+
+        // Error found display and return false;
+        if(User::lastResponse("hash.error", error) == true) {
+            std::cout << "because : " << error << std::endl;
+            return false;
+        }
+
+    } else {
+        std::cout << "Unable to follow " << id << std::endl;
+        return false;
+    }
+
+    // temporary sleep so we don't fuckup
+    sleep(2);
+
+    return true;
+}
+
 void User::follow(deque < string > to_follow)
 {
 	User::gotExitSignal = false;

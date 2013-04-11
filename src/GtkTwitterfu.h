@@ -42,8 +42,35 @@ class InputWorker : public GtkTwitterfuInput {
         bool stop;
 };
 
+// Follow user worker this will have access to 
+// GtkTwitterfu so it can add/remove/change shit to the ui
+class FollowWorker {
+    public:
+        // TODO follow worker should also have access to the tree
+        // model in GtkTwitterfu so it can update it of followed users
+        // it will user GtkTwitterfu::removeID for each followed id
+        FollowWorker(User *_user, deque<string> _id);
+        /**
+         * Start thread
+         */
+        void start();
+        /**
+         * Stop thread
+         */
+        void stopThread();
+        ~FollowWorker();
+        // Dispatcher when done, TODO Do we need one ?
+        Glib::Dispatcher sig_done;
+    private:
+        void run();
+        Glib::Thread * thread;
+        Glib::Mutex mutex;
+        bool stop;
+        deque<string> ids;   /* IDs to follow */ 
+        User *user;         /* This is a ptr to the object in gtktwitterfu */
+};
+
 // TODO
-// add label for status,
 // add button to view current status -> (Create new window for that)
 // ...MMm
 //
@@ -51,22 +78,20 @@ class GtkTwitterfu : public Gtk::Window {
     public:
         GtkTwitterfu();
         virtual ~GtkTwitterfu();
-        void addID(Glib::ustring id); /* Add id to treeview */ 
-        void removeID(Glib::ustring id); /* Remove id from treeview */ 
+        void addID(Glib::ustring id);       /* Add id to treeview */ 
+        void removeID(Glib::ustring id);    /* Remove id from treeview */ 
     private:
-        void on_button_quit();
-        void on_button_find_followers();
-        void on_button_find_following();
-        void on_button_start_following();
-        void on_button_stop_following();
-        void get_target();
-        void find_followers();
-        void find_following();
+        void on_button_quit();              /* Just quit */ 
+        void on_button_find_followers();    /* InputWorker get input */ 
+        void on_button_find_following();    /* InputWorker get input */ 
+        void on_button_start_following();   /* Start the FollowingWorker */ 
+        void on_button_stop_following();    /* Stop the FollowingWorker thread if running */ 
+        void find_followers();              /* Works after InputWorker sigdone to get followers */ 
+        void find_following();              /* Works after InputWorker sigdone to get following */ 
         void setStatus(Gtk::Label &label, Glib::ustring text);
-        /*
-         *void start_following();
-         *void stop_following();
-         */
+        void followed_user(); // Called when followWorker is done.
+
+        /* Buttons and labels */ 
         Gtk::Button button_find_followers;
         Gtk::Button button_find_following;
         Gtk::Button button_start_following;
@@ -74,7 +99,9 @@ class GtkTwitterfu : public Gtk::Window {
         Gtk::Button button_quit;
         Gtk::Label label_status;
 
-        // treeview model
+        /*
+         * treeview model
+         */
         class ModelColumns : public Gtk::TreeModel::ColumnRecord {
             public:
                 ModelColumns();
@@ -82,7 +109,9 @@ class GtkTwitterfu : public Gtk::Window {
         };
         ModelColumns columns; // end of tv model
 
-        //child widgets
+        /*
+         * Some widgets
+         */
         Gtk::Box vbox;
         Gtk::TreeView treeview;
         Gtk::ScrolledWindow scrolledwindow;
@@ -90,8 +119,8 @@ class GtkTwitterfu : public Gtk::Window {
         Glib::RefPtr< Gtk::ListStore> refTreeModel;
         Gtk::ButtonBox buttonbox;
 
-        InputWorker *input;
-
+        InputWorker *input;           /* The inputWorker to get work in another thread and not block : separate window */ 
+        FollowWorker *follow_worker;  /* The FollowWorker to follow and report ..etc */ 
 
         // twitterfu
         deque< string > myFollowers;

@@ -1,4 +1,5 @@
-cmake_minimum_required (VERSION 2.6) 
+SET(CMAKE_COMPILER "/usr/local/bin/g++")
+cmake_minimum_required (VERSION 2.6)
 project (TWITTERFU) 
 
 # Recurse into the "Hello" and "Demo" subdirectories. This does not actually 

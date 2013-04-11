@@ -87,7 +87,8 @@ GtkTwitterfu::GtkTwitterfu() :
     button_stop_following("Stop following"),
     button_quit("Quit"),
     label_status("Status:"),
-    input(NULL)
+    input(NULL),
+    follow_worker(NULL)
 {
 
     this->set_title("Twitterfu");
@@ -247,38 +248,31 @@ void GtkTwitterfu::on_button_find_following() {
     input->start();
 }
 
+void GtkTwitterfu::followed_user() {
+    std::cout << "Worker done!" << std::endl;
+    delete follow_worker;
+    follow_worker = NULL;
+}
+
 void GtkTwitterfu::on_button_start_following() {
-
-    // testing removing ids from treeview
-    this->addID("31337");
-    this->addID("22222");
-    this->addID("11222");
-    this->removeID("22222");
-    this->removeID("11222");
-
+    // We should have a worker to do the following
+    // in a thread mode.. let's create a class for that.
+    
+    
     // no one to follow
     if(users_to_follow.size() == 0) {
         this->setStatus(this->label_status, "There's no one to follow!");
         return;
     }
 
-    // Start going through users to follow and follow then
-    std::for_each(users_to_follow.begin(), users_to_follow.end(), [&] (string id) {
-/*
- *
- *            if(this->user->follow(id) == true) {
- *                this->setStatus(this->label_status, "Followed " + Glib::ustring(id));
- *                this->removeID(id);
- *                //remove from deque
- *            } else {
- *                this->setStatus(this->label_status, "Unable to follow " + Glib::ustring(id));
- *                //next;
- *            }
- */
-            
-            });
+    if(follow_worker != NULL) {
+        std::cout << "Please wait follower is working" << std::endl;
+        return;
+    }
 
-
+    follow_worker = new FollowWorker(this->user, this->users_to_follow);
+    follow_worker->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::followed_user));
+    follow_worker->start();
 }
 
 void GtkTwitterfu::removeID(Glib::ustring id) {
@@ -297,7 +291,14 @@ void GtkTwitterfu::removeID(Glib::ustring id) {
             });
 }
 
+// Stop the following worker by setting it's flag,
+// then deallocate it so we can use it sometime later
 void GtkTwitterfu::on_button_stop_following() {
+    if(follow_worker != NULL) {
+        follow_worker->stopThread();
+        delete follow_worker;
+        follow_worker = NULL;
+    }
 }
 
 void GtkTwitterfu::on_button_quit() {
@@ -306,3 +307,66 @@ void GtkTwitterfu::on_button_quit() {
 
 GtkTwitterfu::~GtkTwitterfu() {
 }
+
+
+/****** Follow worker */
+FollowWorker::FollowWorker(User *_user, deque<string> _ids) :
+    thread(0),
+    stop(false),
+    ids(_ids),
+    user(_user)
+{ 
+
+}
+
+FollowWorker::~FollowWorker() { 
+    { 
+        Glib::Mutex::Lock lock(mutex);
+        stop = true;
+    }
+    
+    if(thread)
+        thread->join();
+}
+
+void FollowWorker::start() {
+    thread = Glib::Thread::create(sigc::mem_fun(*this, &FollowWorker::run), true);
+}
+
+void FollowWorker::stopThread() {
+    stop = true;
+}
+
+void FollowWorker::run() {
+    // run until we get input
+    // TODO take it easy
+    int failures = 0;
+    int followed = 0;
+
+    while(true) {
+        {
+            Glib::Mutex::Lock lock (mutex);
+            if(stop) break;
+        }
+
+        for(deque<string>::iterator it = ids.begin(); it != ids.end(); it++) {
+            string id = *it;
+            if(this->user->follow(id) == false)
+                failures++;
+            else
+                followed++;
+            // if we read stop flag!
+            if(this->stop == true) {
+                std::cout << "Stop flag found break!" << std::endl;
+                break;
+            }
+        }
+
+        sig_done();
+        break;
+    }
+
+    std::cout << "failures : " << failures << " followed : " << followed << std::endl;
+
+}
+

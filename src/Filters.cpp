@@ -119,18 +119,21 @@ bool Filters::mainFilter(string userid)
 	/* rule #5      : Predict by near by timezone of -4,+4
 	 * ignore anyone who doesn't have a timezone
 	 */
-	if (Filters::getNearTimezone() == true) {
-		if (parent->lastResponse("user.time_zone", timezone) == false) {
-			return false;
-		}
-		// if he or us don't have timezones then false;
-		if (timezone.empty() || parent->get("timezone").empty()) {
-			return false;
-		}
-		if (Filters::predictTimezone(timezone) == true)
-			prediction++;
-		total++;
-	}
+    /*
+	 *if (Filters::getNearTimezone() == true) {
+	 *    if (parent->lastResponse("user.time_zone", timezone) == false) {
+	 *        return false;
+	 *    }
+	 *    // if he or us don't have timezones then false;
+	 *    if (timezone.empty() || parent->get("timezone").empty()) {
+	 *        return false;
+	 *    }
+	 *    if (Filters::predictTimezone(timezone) == true)
+	 *        prediction++;
+	 *    total++;
+	 *}
+     */
+
 	// if prediction is not 100% then ignore user
 	if (total != 0) {
 		if (prediction / total != 1) {

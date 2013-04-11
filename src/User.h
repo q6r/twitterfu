@@ -71,6 +71,11 @@ public:
      */
     void follow(deque < string > to_follow);
     /**
+     *
+     *
+     */
+    bool follow(string id);
+    /**
      * Get the followers of a user and create a deque
      * of their userIDs and return that deque
      * @param user the user object
