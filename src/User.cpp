@@ -403,6 +403,28 @@ void User::cleanLine(int n)
 	flush(cout);
 }
 
+bool User::unfollow(string id) {
+    string isfollow = "true";
+
+    // Check if the id is following/not following us
+    this->twitterObj.friendshipShow(id, true);
+    if (this->lastResponse("relationship.source.followed_by",isfollow) == false) {
+        std::cout << "Can't find relationship.source.followed_by" << std::endl;
+        return false;
+    }
+
+    /* If the user is not following us */
+    if (isfollow == "false") {
+        if (this->twitterObj.friendshipDestroy(id, true)) {
+            cout << "Unfollowed " << id << std::endl;;
+            return true;
+        } else {
+            cout << "Unable to Unfollow " << id << std::endl;
+            return false;
+        }
+    }
+}
+
 void User::unfollow()
 {
 	deque < string > followers(my_following); // TODO

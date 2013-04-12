@@ -18,6 +18,6 @@ link_directories(${GTKMM_LIBRARY_DIRS})
 
 set(libtwitcurlSrcs libtwitcurl/base64.cpp libtwitcurl/HMAC_SHA1.cpp libtwitcurl/oauthlib.cpp libtwitcurl/SHA1.cpp libtwitcurl/urlencode.cpp libtwitcurl/twitcurl.cpp)
 add_library (libtwitcurl STATIC ${libtwitcurlSrcs})
-set(twitterfuSrcs User.cpp Proxy.cpp Filters.cpp twitterfu.cpp FollowWorker.cpp GtkLogin.cpp GtkTwitterfuInput.cpp InputWorker.cpp GtkTwitterfu.cpp)
+set(twitterfuSrcs User.cpp Proxy.cpp Filters.cpp twitterfu.cpp FollowWorker.cpp GtkLogin.cpp GtkTwitterfuInput.cpp InputWorker.cpp GtkTwitterfu.cpp UnfollowWorker.cpp)
 add_subdirectory (src)
 

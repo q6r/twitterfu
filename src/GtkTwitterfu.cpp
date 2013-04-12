@@ -11,7 +11,8 @@ GtkTwitterfu::GtkTwitterfu() :
     button_quit("Quit"),
     label_status("Status:"),
     input(NULL),
-    follow_worker(NULL)
+    follow_worker(NULL),
+    unfollow_worker(NULL)
 {
 
     string *username = new string; // Will be passed to GtkLogin 
@@ -154,6 +155,7 @@ void GtkTwitterfu::find_followers() {
 
     // Append this to the users to follow to the end
     users_to_follow.insert(users_to_follow.end(), user_followers.begin(), user_followers.end());
+
     std::cout << "Total users to follow " << users_to_follow.size() << std::endl;
 
     delete username;
@@ -256,10 +258,29 @@ void GtkTwitterfu::on_button_start_unfollowing() {
         return;
     }
 
+    if(unfollow_worker != NULL) {
+        std::cout << "Please wait unfollowing is working" << std::endl;
+        return;
+    }
+
+    unfollow_worker = new UnfollowWorker( this->user,  this->user->my_following);// users we want to unfollow
+    unfollow_worker->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::unfollowed_user));
+    unfollow_worker->start();
+}
+
+void GtkTwitterfu::unfollowed_user() {
+    std::cout << "Worker done!" << std::endl;
+    delete unfollow_worker;
+    unfollow_worker = NULL;
 }
 
 void GtkTwitterfu::on_button_stop_unfollowing() {
     // TODO stop that implemented unfollow worker
+    if(unfollow_worker != NULL) {
+        unfollow_worker->stopThread();
+        delete unfollow_worker;
+        unfollow_worker = NULL;
+    }
 }
 
 void GtkTwitterfu::removeID(Glib::ustring id) {

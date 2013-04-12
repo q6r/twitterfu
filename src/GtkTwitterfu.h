@@ -11,6 +11,7 @@
 #include "GtkLogin.h"
 #include "InputWorker.h"
 #include "FollowWorker.h"
+#include "UnfollowWorker.h"
 
 // TODO
 // add button to view current status -> (Create new window for that)
@@ -33,7 +34,10 @@ class GtkTwitterfu : public Gtk::Window {
         void find_followers();              /* Works after InputWorker sigdone to get followers */ 
         void find_following();              /* Works after InputWorker sigdone to get following */ 
         void setStatus(Gtk::Label &label, Glib::ustring text);
-        void followed_user(); // Called when followWorker is done.
+        void followed_user();   // Called when FollowWorker is done.
+                                // TODO When FollowWorker is done/stopped update this->user->followers && GtkTwitterfu.treeview model
+        void unfollowed_user(); // Called when UnfollowWorker is done.
+                                // TODO When unfollow worker is done/stopped update this->user->following,
 
         /* Buttons and labels */ 
         Gtk::Button button_find_followers;
@@ -65,8 +69,10 @@ class GtkTwitterfu : public Gtk::Window {
         Glib::RefPtr< Gtk::ListStore> refTreeModel;
         Gtk::ButtonBox buttonbox;
 
-        InputWorker *input;           /* The inputWorker to get work in another thread and not block : separate window */ 
-        FollowWorker *follow_worker;  /* The FollowWorker to follow and report ..etc */ 
+        InputWorker *input;                /* The inputWorker to get work in another thread and not block : separate window */ 
+        FollowWorker *follow_worker;       /* The FollowWorker to follow and report ..etc */ 
+        UnfollowWorker *unfollow_worker;   /* The UnfollowWorker to unfollow and report ..etc */ 
+        friend class User;
 
         // twitterfu
         deque< string > myFollowers;

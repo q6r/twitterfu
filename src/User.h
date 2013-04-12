@@ -54,6 +54,11 @@ public:
      * @param user the user object
      */
     void unfollow();
+    /**
+     *
+     *
+     */
+    bool unfollow(string id);
     /** 
      * It will follow a deque of user ids
      * @param to_follow the users to follow deque
