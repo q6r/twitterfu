@@ -5,6 +5,11 @@
 #include <deque>
 #include <string>
 #include "gtkmm.h"
+/*
+ *#include "GtkTwitterfu.h"
+ */
+
+class GtkTwitterfu;
 
 /*
  *Follow user worker this will have access to 
@@ -15,7 +20,7 @@ class FollowWorker {
         // TODO follow worker should also have access to the tree
         // model in GtkTwitterfu so it can update it of followed users
         // it will user GtkTwitterfu::removeID for each followed id
-        FollowWorker(User *_user, deque<string> _id);
+        FollowWorker(User *_user, deque<string> _id, GtkTwitterfu *_parent);
         /**
          * Start thread
          */
@@ -29,6 +34,7 @@ class FollowWorker {
         Glib::Dispatcher sig_done;
     private:
         void run();
+        GtkTwitterfu *parent;
         Glib::Thread * thread;
         Glib::Mutex mutex;
         bool stop;

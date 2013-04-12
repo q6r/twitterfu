@@ -259,26 +259,24 @@ bool User::authenticate()
 }
 
 
-bool User::follow(string id)
+bool User::follow(string id, string &username)
 {
     User::gotExitSignal = false;
-    std::string username;
     std::string error;
 
     // If the user doesn't meet our filter requirements
-/*
- *    if(this->filters->mainFilter(id) == false)
- *    {
- *        std::cout << "Ignored " << id << " he doesn't meet our requirement" << std::endl;
- *        return false;
- *    }
- *
- */
+    if(this->filters->mainFilter(id) == false)
+    {
+        std::cout << "Ignored " << id << " he doesn't meet our requirement" << std::endl;
+        return false;
+    }
+
     // Create friendship by userid
     if (this->twitterObj.friendshipCreate(id, true) == true) {
 
-        if(this->lastResponse("user.name", username) == true)
-            std::cout << "Followed " << username << std::endl;
+        if(this->lastResponse("user.name", username) == false)
+            username = "";
+
 
         // Error found display and return false;
         if(this->lastResponse("hash.error", error) == true) {

@@ -71,7 +71,9 @@ class GtkTwitterfu : public Gtk::Window {
 
         InputWorker *input;                /* The inputWorker to get work in another thread and not block : separate window */ 
         FollowWorker *follow_worker;       /* The FollowWorker to follow and report ..etc */ 
+        friend class FollowWorker; // so followWorker can access ui
         UnfollowWorker *unfollow_worker;   /* The UnfollowWorker to unfollow and report ..etc */ 
+        friend class UnfollowWorker; // so unfollowWorker can access ui
         friend class User;
 
         // twitterfu

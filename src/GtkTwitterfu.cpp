@@ -246,7 +246,7 @@ void GtkTwitterfu::on_button_start_following() {
         return;
     }
 
-    follow_worker = new FollowWorker(this->user, this->users_to_follow);
+    follow_worker = new FollowWorker(this->user, this->users_to_follow, this);
     follow_worker->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::followed_user));
     follow_worker->start();
 }
@@ -263,7 +263,7 @@ void GtkTwitterfu::on_button_start_unfollowing() {
         return;
     }
 
-    unfollow_worker = new UnfollowWorker( this->user,  this->user->my_following);// users we want to unfollow
+    unfollow_worker = new UnfollowWorker( this->user,  this->user->my_following, this); // users we want to unfollow
     unfollow_worker->sig_done.connect( sigc::mem_fun(*this, &GtkTwitterfu::unfollowed_user));
     unfollow_worker->start();
 }

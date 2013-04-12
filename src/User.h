@@ -69,7 +69,7 @@ public:
      *
      *
      */
-    bool follow(string id);
+    bool follow(string id, string &username);
     /**
      * Get the followers of a user and create a deque
      * of their userIDs and return that deque

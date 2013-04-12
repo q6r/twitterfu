@@ -6,10 +6,11 @@
 #include <string>
 #include "gtkmm.h"
 
+class GtkTwitterfu;
 
 class UnfollowWorker {
     public:
-        UnfollowWorker(User *_user, deque<string> _ids);
+        UnfollowWorker(User *_user, deque<string> _ids, GtkTwitterfu *_parent);
         ~UnfollowWorker();
         void start();
         void stopThread();
@@ -20,6 +21,7 @@ class UnfollowWorker {
         Glib::Mutex mutex;
         bool stop;
         deque<string> ids;
+        GtkTwitterfu *parent;
         User *user;         /* This is a ptr to the object in gtktwitterfu */
 };
 #endif

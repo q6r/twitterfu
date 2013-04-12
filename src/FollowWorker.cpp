@@ -1,10 +1,12 @@
 #include "FollowWorker.h"
+#include "GtkTwitterfu.h"
 
-FollowWorker::FollowWorker(User *_user, deque<string> _ids) :
+FollowWorker::FollowWorker(User *_user, deque<string> _ids, GtkTwitterfu *_parent) :
     thread(0),
     stop(false),
     ids(_ids),
-    user(_user)
+    user(_user),
+    parent(_parent)
 { 
 
 }
@@ -32,6 +34,8 @@ void FollowWorker::run() {
     // TODO take it easy
     int failures = 0;
     int followed = 0;
+    
+    this->parent->setStatus(this->parent->label_status, "Started following...");
 
     while(true) {
         {
@@ -41,13 +45,18 @@ void FollowWorker::run() {
 
         for(deque<string>::iterator it = ids.begin(); it != ids.end(); it++) {
             string id = *it;
-            if(this->user->follow(id) == false)
+            string username;
+            if(this->user->follow(id, username) == false) {
+                this->parent->setStatus(this->parent->label_status, "Ignored user id " + id);
+                this->parent->removeID(id);
                 failures++;
-            else
+            } else {
+                this->parent->setStatus(this->parent->label_status, "Followed " + username);
+                this->parent->removeID( id );
                 followed++;
+            }
             // if we read stop flag!
             if(this->stop == true) {
-                std::cout << "Stop flag found break!" << std::endl;
                 break;
             }
         }
@@ -56,7 +65,6 @@ void FollowWorker::run() {
         break;
     }
 
-    std::cout << "failures : " << failures << " followed : " << followed << std::endl;
-
+    this->parent->setStatus(this->parent->label_status, "Stopped following. Failures : " + Glib::ustring(to_string(failures)) + " followed : " + Glib::ustring(to_string(followed)));
 }
 
