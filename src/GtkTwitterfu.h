@@ -21,8 +21,9 @@ class GtkTwitterfu : public Gtk::Window {
     public:
         GtkTwitterfu();
         virtual ~GtkTwitterfu();
-        void addID(Glib::ustring id);       /* Add id to treeview */ 
-        void removeID(Glib::ustring id);    /* Remove id from treeview */ 
+        void addID(const Glib::ustring &id);       /* Add id to treeview */ 
+        void removeID(const Glib::ustring &id);    /* Remove id from treeview */ 
+        void setStatus(const Glib::ustring &text);
     private:
         void on_button_quit();              /* Just quit */ 
         void on_button_find_followers();    /* InputWorker get input */ 
@@ -33,7 +34,6 @@ class GtkTwitterfu : public Gtk::Window {
         void on_button_stop_unfollowing();  /* Stop unfollowing */ 
         void find_followers();              /* Works after InputWorker sigdone to get followers */ 
         void find_following();              /* Works after InputWorker sigdone to get following */ 
-        void setStatus(Gtk::Label &label, Glib::ustring text);
         void followed_user();   // Called when FollowWorker is done.
                                 // TODO When FollowWorker is done/stopped update this->user->followers && GtkTwitterfu.treeview model
         void unfollowed_user(); // Called when UnfollowWorker is done.
@@ -71,13 +71,9 @@ class GtkTwitterfu : public Gtk::Window {
 
         InputWorker *input;                /* The inputWorker to get work in another thread and not block : separate window */ 
         FollowWorker *follow_worker;       /* The FollowWorker to follow and report ..etc */ 
-        friend class FollowWorker; // so followWorker can access ui
         UnfollowWorker *unfollow_worker;   /* The UnfollowWorker to unfollow and report ..etc */ 
-        friend class UnfollowWorker; // so unfollowWorker can access ui
-        friend class User;
 
         // twitterfu
-        deque< string > myFollowers;
         User *user;
         deque< string > users_to_follow;   /* The users to follow */ 
 };

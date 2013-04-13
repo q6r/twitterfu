@@ -8,11 +8,11 @@ using namespace std;
 
 class GtkLogin : public Gtk::Window {
     public:
-        GtkLogin(string *_username, string *_password, Glib::ustring _status="");
+        GtkLogin(string *_username, string *_password, const Glib::ustring &_status="");
         ~GtkLogin();
+    private:
         void on_button_okay();
         void on_button_quit();
-    private:
         Gtk::Button button_okay;
         Gtk::Button button_quit;
         Gtk::Entry entry_username;

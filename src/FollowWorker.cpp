@@ -1,7 +1,7 @@
 #include "FollowWorker.h"
 #include "GtkTwitterfu.h"
 
-FollowWorker::FollowWorker(User *_user, deque<string> _ids, GtkTwitterfu *_parent) :
+FollowWorker::FollowWorker(User *_user, const deque<string> &_ids, GtkTwitterfu *_parent) :
     thread(0),
     stop(false),
     ids(_ids),
@@ -35,7 +35,7 @@ void FollowWorker::run() {
     int failures = 0;
     int followed = 0;
     
-    this->parent->setStatus(this->parent->label_status, "Started following...");
+    this->parent->setStatus( "Started following...");
 
     while(true) {
         {
@@ -47,11 +47,11 @@ void FollowWorker::run() {
             string id = *it;
             string username;
             if(this->user->follow(id, username) == false) {
-                this->parent->setStatus(this->parent->label_status, "Ignored user id " + id);
+                this->parent->setStatus( "Ignored user id " + id);
                 this->parent->removeID(id);
                 failures++;
             } else {
-                this->parent->setStatus(this->parent->label_status, "Followed " + username);
+                this->parent->setStatus( "Followed " + username);
                 this->parent->removeID( id );
                 followed++;
             }
@@ -65,6 +65,6 @@ void FollowWorker::run() {
         break;
     }
 
-    this->parent->setStatus(this->parent->label_status, "Stopped following. Failures : " + Glib::ustring(to_string(failures)) + " followed : " + Glib::ustring(to_string(followed)));
+    this->parent->setStatus( "Stopped following. Failures : " + Glib::ustring(to_string(failures)) + " followed : " + Glib::ustring(to_string(followed)));
 }
 

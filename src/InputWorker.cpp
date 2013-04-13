@@ -1,7 +1,6 @@
 #include "InputWorker.h"
 
-/******** Worker : public Input */
-InputWorker::InputWorker(Glib::ustring username) :
+InputWorker::InputWorker(const Glib::ustring &username) :
     thread(0),
     stop(false),
     GtkTwitterfuInput(username) { }

@@ -10,7 +10,7 @@ class GtkTwitterfu;
 
 class UnfollowWorker {
     public:
-        UnfollowWorker(User *_user, deque<string> _ids, GtkTwitterfu *_parent);
+        UnfollowWorker(User *_user, const deque<string> &_ids, GtkTwitterfu *_parent);
         ~UnfollowWorker();
         void start();
         void stopThread();

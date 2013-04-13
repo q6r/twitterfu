@@ -9,7 +9,7 @@
  */
 class GtkTwitterfuInput : public Gtk::Window {
     public:
-        GtkTwitterfuInput(Glib::ustring text_info);
+        GtkTwitterfuInput(const Glib::ustring &text_info);
         ~GtkTwitterfuInput();
         char *getResult();
     private:

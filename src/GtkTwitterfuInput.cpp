@@ -1,6 +1,6 @@
 #include "GtkTwitterfuInput.h"
 
-GtkTwitterfuInput::GtkTwitterfuInput(Glib::ustring text_info) : 
+GtkTwitterfuInput::GtkTwitterfuInput(const Glib::ustring &text_info) : 
     button_okay("Ok"),
     vbox(Gtk::ORIENTATION_VERTICAL),
     result(NULL)

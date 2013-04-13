@@ -5,9 +5,6 @@
 #include <deque>
 #include <string>
 #include "gtkmm.h"
-/*
- *#include "GtkTwitterfu.h"
- */
 
 class GtkTwitterfu;
 
@@ -20,7 +17,8 @@ class FollowWorker {
         // TODO follow worker should also have access to the tree
         // model in GtkTwitterfu so it can update it of followed users
         // it will user GtkTwitterfu::removeID for each followed id
-        FollowWorker(User *_user, deque<string> _id, GtkTwitterfu *_parent);
+        FollowWorker(User *_user, const deque<string> &_id, GtkTwitterfu *_parent);
+        ~FollowWorker();
         /**
          * Start thread
          */
@@ -29,7 +27,6 @@ class FollowWorker {
          * Stop thread
          */
         void stopThread();
-        ~FollowWorker();
         // Dispatcher when done, TODO Do we need one ?
         Glib::Dispatcher sig_done;
     private:

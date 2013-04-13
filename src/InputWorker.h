@@ -6,9 +6,9 @@
 
 class InputWorker : public GtkTwitterfuInput {
     public:
-        InputWorker(Glib::ustring username);
-        void start();
+        InputWorker(const Glib::ustring &username);
         ~InputWorker();
+        void start();
         Glib::Dispatcher sig_done;
     protected:
         void run();

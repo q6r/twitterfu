@@ -27,16 +27,20 @@ public:
      * @param _consumer_key the consumer key
      * @param _consumer_secret the consumer secret
      */ 
-    User(string _username, string _password, string _consumer_key, string _consumer_secret);
+    User(const string &_username, const string &_password, const string &_consumer_key, const string &_consumer_secret);
     ~User();
-    void set(string key, string val);
-    string & get(string key);
+    void set(const string &key, const string &val);
+    string & get(const string &key);
     /**
      * Show database, account and API status.
      * @param user the user object
      * @return true of can read status
      */
     bool status();
+    /**
+     * Get twitterObj of user
+     */
+    twitCurl getTwitterObj() const;
     /**
      *
      * Reached limit ? true reached, false
@@ -48,26 +52,18 @@ public:
      * true if authenticated, false if failed
      * to authenticated.
      */
-    bool isAuthenticated();
+    bool isAuthenticated() const;
     /**
-     * Unfollow users who haven't followed me back
-     * @param user the user object
-     */
-    void unfollow();
-    /**
-     *
-     *
+     * Unfollow user id
+     * @param id user id to unfollow
+     * @return true if unfollowed, false otherwise
      */
     bool unfollow(string id);
-    /** 
-     * It will follow a deque of user ids
-     * @param to_follow the users to follow deque
-     * @param user the user object
-     */
-    void follow(deque < string > to_follow);
     /**
-     *
-     *
+     * Follow user id
+     * @param [out] username username that we followed
+     * @param id id to follow
+     * @return true if followed, false otherwise
      */
     bool follow(string id, string &username);
     /**
@@ -106,11 +102,6 @@ public:
      */
     bool lastResponse(string node, string & v);
     /**
-     * Handler for follow/unfollow to set a exitFlag
-     * @return n the catched signal number
-     */
-    static void signalHandler(int n);
-    /**
      * Verify that the user authenticated
      * successfuly.
      * @return true or false
@@ -124,12 +115,6 @@ public:
      * The USers' Filters
      */ 
     Filters *filters;
-    /**
-     * signal flag for signal handling
-     */  
-    static bool gotExitSignal;
-    friend Proxy;   // access to twitterObj
-    friend Filters; // access to twitterObj 
 
     // self following and followers
     deque< string > my_followers;
@@ -156,12 +141,7 @@ private:
      * @param to the to number
      * @return number between [from,two]
      */
-    int randomize(int from, int to);
-    /**
-     * Back to the first line and erase n characters
-     * @param n number of blanks
-     */
-    void cleanLine(int n);
+    int randomize(const int &from, const int &to) const;
     /**
      * Authenticate the user
      */

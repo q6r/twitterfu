@@ -1,8 +1,6 @@
 #include "User.h"
 
-bool User::gotExitSignal = false;
-
-User::User(string _username, string _password, string _consumer_key, string _consumer_secret) :
+User::User(const string &_username, const string &_password, const string &_consumer_key, const string &_consumer_secret) :
     authenticated(false)
 {
 
@@ -26,7 +24,7 @@ User::User(string _username, string _password, string _consumer_key, string _con
     (this->authenticate()==true) ? this->authenticated=true: this->authenticated=false;
 }
 
-bool User::isAuthenticated() {
+bool User::isAuthenticated() const {
     return this->authenticated;
 }
 
@@ -41,11 +39,11 @@ User::~User() {
     delete proxy;
 }
 
-void User::set(string key, string val) {
+void User::set(const string &key, const string &val) {
     conf[key] = val;
 }
 
-string & User::get(string key) {
+string & User::get(const string &key) {
     return conf[key];
 }
 
@@ -81,7 +79,7 @@ bool User::lastResponse(string node, string & v)
 {
 	string result = "";
 	boost::property_tree::ptree pt;
-	User::twitterObj.getLastWebResponse(result);
+	this->twitterObj.getLastWebResponse(result);
 	stringstream ss(result);
 
 	try {
@@ -93,11 +91,6 @@ bool User::lastResponse(string node, string & v)
 	}
 
 	return true;
-}
-
-void User::signalHandler(int n)
-{
-	User::gotExitSignal = true;
 }
 
 deque < string > User::search(string query)
@@ -132,6 +125,10 @@ deque < string > User::search(string query)
 	}
 
 	return ids;
+}
+
+twitCurl User::getTwitterObj() const {
+    return this->twitterObj;
 }
 
 deque < string > User::getFollowing(string username)
@@ -261,13 +258,11 @@ bool User::authenticate()
 
 bool User::follow(string id, string &username)
 {
-    User::gotExitSignal = false;
     std::string error;
 
     // If the user doesn't meet our filter requirements
     if(this->filters->mainFilter(id) == false)
     {
-        std::cout << "Ignored " << id << " he doesn't meet our requirement" << std::endl;
         return false;
     }
 
@@ -277,7 +272,6 @@ bool User::follow(string id, string &username)
         if(this->lastResponse("user.name", username) == false)
             username = "";
 
-
         // Error found display and return false;
         if(this->lastResponse("hash.error", error) == true) {
             std::cout << "because : " << error << std::endl;
@@ -286,119 +280,18 @@ bool User::follow(string id, string &username)
 
 
     } else {
-        std::cout << "Unable to follow " << id << std::endl;
         return false;
     }
 
     // temporary sleep so we don't fuckup
-    sleep(2);
+    sleep(randomize(1,2));
 
     return true;
 }
 
-void User::follow(deque < string > to_follow)
-{
-	User::gotExitSignal = false;
-	string username, error, result;
-	deque < string > followed;
-	deque < string >::iterator it;
-	int ignored = 0;
-
-	if (to_follow.size() == 0) {
-		cerr << "(Err:Please add users to follow)" << endl;
-		return;
-	}
-
-	cout << to_follow.size() << " to follow" << endl;
-
-	/* Install the signal handler */
-	if (signal((int)SIGINT, User::signalHandler) == SIG_ERR) {
-		cerr << "(Err:Unable to install signalHandler)" << 
-		    endl;
-		return;
-	}
-
-	for (it = to_follow.begin(); it != to_follow.end() && User::gotExitSignal != true; it++) {	// { Users to follow
-
-		// follow only those that applies to the
-		// by_ratio filter
-		if (this->filters->mainFilter(*it) == true) {
-			if (this->twitterObj.friendshipCreate(*it, true) == true) {	// if followed the user
-				followed.push_back(*it);
-				if (this->lastResponse("user.name", username) == false) {	// if can't get username
-					if (this->lastResponse("hash.error", error) == true) {	// get hash error
-
-						// did we reach follow limit ?
-						if (string::npos !=
-						    error.find
-						    ("You are unable to follow more people at this time"))
-						{
-							cout <<
-							    "We have reached the follow limit for today."
-							    << endl;
-							followed.erase(followed.
-								       end());
-							break;
-						} else	// unhandled error (must handle if need to break)
-						{
-							
-							    cerr << "(Err:" <<
-							    error << ")";
-							cleanLine(120);
-							followed.push_back(*it);	// We have followed the user
-						}
-					}
-				} else {	// user followed
-					cout << "Followed " << username;
-					cleanLine(120);
-				}
-			} else {	// unable to create friendship
-				cerr << "(Err:Unable to follow)";
-				cleanLine(120);
-			}
-			sleep(randomize(3, 5));
-		} else {	// filter ignored someone
-			// Did we reach API limit?
-			if (this->lastResponse("hash.error", error) == true) {
-				if (string::npos !=
-				    error.find("Clients may not make")) {
-					
-					    cerr <<
-					    "The client have reached the API limit, please try again in an hour"
-					    << endl;
-					break;
-				}
-			}
-			// Who did we ignore ?
-			if (this->lastResponse("user.name", username) == true) {
-				cout << "Ignored " << username;
-				cleanLine(120);
-			}
-			ignored++;
-		}
-	}			// } users to follow
-
-	/* when signal is caught or when block is over */
-	User::gotExitSignal = false;
-	if (followed.size() != 0)
-		cout << endl << "We have followed " << followed.
-		    size() << "/" << to_follow.size() - ignored << endl;
-
-	if (ignored > 0)
-		cout << "\tWe have Ignored : " << ignored << endl;
-}
-
-int User::randomize(int from, int to)
+int User::randomize(const int &from, const int &to) const
 {
 	return rand() % to + from;
-}
-
-void User::cleanLine(int n)
-{
-	for (int i = 0; i < n; i++)
-		cout << " ";
-	cout << "\xd";
-	flush(cout);
 }
 
 bool User::unfollow(string id) {
@@ -421,88 +314,9 @@ bool User::unfollow(string id) {
             return false;
         }
     }
+
+    sleep(randomize(1,2));
 }
-
-void User::unfollow()
-{
-	deque < string > followers(my_following); // TODO
-	deque < string >::iterator it;
-	deque < string > result;
-	string who;
-	string isfollow = "true";
-	long unfollowed = 0;
-	int remainingHits = 0;
-	User::gotExitSignal = false;
-
-	// Don't do anything if there's no one to unfollow
-	if (followers.size() == 0) {
-		cerr << "(Err:No one to unfollow)" << endl;
-		return;
-	}
-	// Install the signal handler
-	if (signal((int)SIGINT, signalHandler) == SIG_ERR) {
-		cerr << "(Err:Unable to install signalHandler)" << 
-		    endl;
-		return;
-	}
-
-	/*
-	 * Now decide the followers who haven't followed me back
-	 * and unfollow them
-	 * */
-	for (it = followers.begin();
-	     it != followers.end() && gotExitSignal != true; it++) {
-
-		User::twitterObj.friendshipShow(*it, true);
-
-		/* get followed_by and if fails check
-		 * the remaining hits and reconfigure
-		 **/
-		if (this->lastResponse(
-				 "relationship.source.followed_by",
-				 isfollow) == false) {
-			// check if we reached the limit
-			remainingHits = User::getRemainingHits();
-			if (remainingHits == 0) {
-				cerr << "[-] Error : You have reached the limit how about using a proxy ?" << endl;
-			} else {	// unknown exception
-				cerr << "(Err: Unable to find relationship.source.followed_by)" << endl;
-			}
-			break;
-		}
-
-		/* If the user is not following us */
-		if (isfollow == "false") {
-			if (this->lastResponse(
-					 "relationship.target.screen_name",
-					 who) == false) {
-				
-				    cerr <<
-				    "(Err:Unable to find relationship.target.screen_name)"
-				    << endl;
-				break;
-			}
-			if (this->twitterObj.friendshipDestroy(*it, true)) {
-				cout << "Unfollowed " << who;
-				unfollowed++;
-				result.push_back(*it);
-				cleanLine(120);
-				sleep(randomize(3, 5));
-			} else {
-				cout << "Unable to Unfollow " << who;
-				cleanLine(120);
-			}
-		}
-
-		isfollow = "true";
-	}
-
-	// restart the exit signal flag
-	gotExitSignal = false;
-	cout << "We have unfollowed " << unfollowed << "/" << followers.size() << endl;
-
-}
-
 
 bool User::status()
 {

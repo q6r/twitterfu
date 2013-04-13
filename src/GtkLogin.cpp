@@ -1,7 +1,7 @@
 #include "GtkLogin.h"
 
 /******** Login class : */
-GtkLogin::GtkLogin(string *_username, string *_password, Glib::ustring _status) :
+GtkLogin::GtkLogin(string *_username, string *_password, const Glib::ustring &_status) :
     username(_username),
     password(_password),
     vbox(Gtk::ORIENTATION_VERTICAL),

@@ -68,10 +68,10 @@ bool Filters::mainFilter(string userid)
 	int prediction = 0;
 	int total = 0;
 
-	if (parent->twitterObj.userGet(userid, true) == false)
+	if (parent->getTwitterObj().userGet(userid, true) == false)
 		return false;
 
-	parent->twitterObj.getLastWebResponse(resultXML);
+	parent->getTwitterObj().getLastWebResponse(resultXML);
 
 	// get user following, and followers
 	if (parent->lastResponse("user.followers_count", temp_followers) == false)

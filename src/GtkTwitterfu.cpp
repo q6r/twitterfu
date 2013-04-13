@@ -114,16 +114,16 @@ GtkTwitterfu::GtkTwitterfu() :
     this->show_all_children();
 }
 
-void GtkTwitterfu::setStatus(Gtk::Label &label, Glib::ustring text) {
+void GtkTwitterfu::setStatus(const Glib::ustring &text) {
     Glib::ustring _text = "Status : " + text;
-    label.set_text( _text );
+    this->label_status.set_text( _text );
 }
 
 GtkTwitterfu::ModelColumns::ModelColumns() {
     this->add(m_col_id);
 }
 
-void GtkTwitterfu::addID(Glib::ustring id) {
+void GtkTwitterfu::addID(const Glib::ustring &id) {
     Gtk::TreeModel::Row row   = *(refTreeModel->append());
     row[columns.m_col_id] = id;
 }
@@ -138,7 +138,7 @@ void GtkTwitterfu::find_followers() {
 
 
     // Status
-    this->setStatus( this->label_status, "Getting followers of " + Glib::ustring(username));
+    this->setStatus(  "Getting followers of " + Glib::ustring(username));
 
     deque< string > user_followers = user->getFollowing(username);
     for_each(user_followers.begin(), user_followers.end(), [&](string id_) {
@@ -146,11 +146,11 @@ void GtkTwitterfu::find_followers() {
             });
 
     if(user_followers.size() == 0) {
-        this->setStatus( this->label_status, "Didn't get any users");
+        this->setStatus(  "Didn't get any users");
     } else {
         std::stringstream str;
         str << "Added " << user_followers.size() << " ids to follow";
-        this->setStatus( this->label_status, str.str());
+        this->setStatus(  str.str());
     }
 
     // Append this to the users to follow to the end
@@ -173,7 +173,7 @@ void GtkTwitterfu::find_following() {
     }
 
     // Status
-    this->setStatus( this->label_status, "Getting following of " + Glib::ustring(username));
+    this->setStatus(  "Getting following of " + Glib::ustring(username));
 
     deque < string > user_following = user->getFollowers(username);
     for_each(user_following.begin(), user_following.end(), [&](string id_) {
@@ -181,12 +181,12 @@ void GtkTwitterfu::find_following() {
             });
 
     if(user_following.size() == 0) {
-        this->setStatus( this->label_status, "Didn't get any users");
+        this->setStatus(  "Didn't get any users");
     } else
     {
         std::stringstream str;
         str << "Added " << user_following.size() << " ids to follow";
-        this->setStatus( this->label_status, str.str() );
+        this->setStatus(  str.str() );
     }
 
     // Append this to the users to follow
@@ -237,7 +237,7 @@ void GtkTwitterfu::on_button_start_following() {
     
     // no one to follow
     if(users_to_follow.size() == 0) {
-        this->setStatus(this->label_status, "There's no one to follow!");
+        this->setStatus( "There's no one to follow!");
         return;
     }
 
@@ -254,7 +254,7 @@ void GtkTwitterfu::on_button_start_following() {
 void GtkTwitterfu::on_button_start_unfollowing() {
     // TODO implement a unfollow worker
     if(this->user->my_following.size() == 0) {
-        this->setStatus( this->label_status, "No one to unfollow");
+        this->setStatus(  "No one to unfollow");
         return;
     }
 
@@ -283,7 +283,7 @@ void GtkTwitterfu::on_button_stop_unfollowing() {
     }
 }
 
-void GtkTwitterfu::removeID(Glib::ustring id) {
+void GtkTwitterfu::removeID(const Glib::ustring &id) {
     Gtk::TreeModel::Children rows = refTreeModel->children();
     Gtk::TreeModel::iterator it;
 
@@ -314,4 +314,6 @@ void GtkTwitterfu::on_button_quit() {
 }
 
 GtkTwitterfu::~GtkTwitterfu() {
+    if(user!=NULL)
+        delete user;
 }
