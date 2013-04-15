@@ -8,6 +8,11 @@ GtkTwitterfu::GtkTwitterfu() :
     button_stop_following("Stop following"),
     button_start_unfollowing("Start unfollowing"),
     button_stop_unfollowing("Stop unfollowing"),
+    checkbutton_description("Description"),
+    checkbutton_follow_ratio("Follow Ratio"),
+    checkbutton_near_timezone("Near timezone"),
+    checkbutton_profile_picture("Profile picture"),
+    checkbutton_protected_profile("Protected profile"),
     button_quit("Quit"),
     label_status("Status:"),
     input(NULL),
@@ -47,6 +52,7 @@ GtkTwitterfu::GtkTwitterfu() :
     label_status.set_alignment(0, 0 );
 
     // add to vbox
+    vbox.pack_start(checkbox, Gtk::PACK_SHRINK);
     vbox.pack_start(scrolledwindow);
     vbox.pack_start(buttonbox, Gtk::PACK_SHRINK);
     vbox.pack_start(label_status, Gtk::PACK_SHRINK);
@@ -61,6 +67,15 @@ GtkTwitterfu::GtkTwitterfu() :
     buttonbox.pack_start(button_quit, Gtk::PACK_SHRINK);
 
     buttonbox.set_layout(Gtk::BUTTONBOX_END);
+
+    // add checkbuttons to checkbox
+    checkbox.pack_start(checkbutton_description, Gtk::PACK_SHRINK);
+    checkbox.pack_start(checkbutton_follow_ratio, Gtk::PACK_SHRINK);
+    checkbox.pack_start(checkbutton_profile_picture, Gtk::PACK_SHRINK);
+    checkbox.pack_start(checkbutton_protected_profile, Gtk::PACK_SHRINK);
+    checkbox.pack_start(checkbutton_near_timezone, Gtk::PACK_SHRINK);
+
+    checkbox.set_layout(Gtk::BUTTONBOX_END);
 
     // add the treeview's view columns:
     // this will be shown
@@ -108,10 +123,92 @@ GtkTwitterfu::GtkTwitterfu() :
         } while(!user->verify() || !user->isAuthenticated() );
     }
 
+    // Set the status checkbuttons of filters (active/not active)
+    checkbutton_description.signal_clicked().connect(sigc::mem_fun(*this, &GtkTwitterfu::on_checkbutton_description));
+    checkbutton_follow_ratio.signal_clicked().connect(sigc::mem_fun(*this, &GtkTwitterfu::on_checkbutton_follow_ratio));
+    checkbutton_profile_picture.signal_clicked().connect(sigc::mem_fun(*this, &GtkTwitterfu::on_checkbutton_profile_picture));
+    checkbutton_protected_profile.signal_clicked().connect(sigc::mem_fun(*this, &GtkTwitterfu::on_checkbutton_protected_profile));
+    checkbutton_near_timezone.signal_clicked().connect(sigc::mem_fun(*this, &GtkTwitterfu::on_checkbutton_near_timezone));
+
+    // checkbox signals()
+    checkbutton_description.set_active(this->user->filters->getDescription());
+    checkbutton_follow_ratio.set_active(this->user->filters->getFollowRatio());
+    checkbutton_profile_picture.set_active(this->user->filters->getProfilePicture());
+    checkbutton_protected_profile.set_active(this->user->filters->getProtectedProfile());
+    checkbutton_near_timezone.set_active(this->user->filters->getNearTimezone());
+
+    // disable
+    checkbutton_near_timezone.set_visible(false);
+    checkbutton_near_timezone.set_state( Gtk::STATE_INSENSITIVE );
 
     //////// Getting users
 
     this->show_all_children();
+}
+
+void GtkTwitterfu::on_checkbutton_near_timezone() {
+    std::cout << "Clicked near timezone" << std::endl;
+    if(checkbutton_near_timezone.get_active() != user->filters->getNearTimezone()) {
+        (user->filters->getNearTimezone()==true) ? user->filters->setNearTimezone(false) : user->filters->setNearTimezone(true);
+        checkbutton_near_timezone.set_active( user->filters->getNearTimezone());
+        std::cout << "Timezone is ";
+        if(user->filters->getNearTimezone() == true)
+            std::cout << "true" << std::endl;
+        else
+            std::cout << "false" << std::endl;
+    }
+}
+
+void GtkTwitterfu::on_checkbutton_description() {
+    std::cout << "Clicked description" << std::endl;
+    if(checkbutton_description.get_active() != user->filters->getDescription()) {
+        (user->filters->getDescription()==true) ? user->filters->setDescription(false) : user->filters->setDescription(true);
+        checkbutton_description.set_active( user->filters->getDescription() );
+        std::cout << "Description is ";
+        if(user->filters->getDescription() == true)
+            std::cout << "true" << std::endl;
+        else
+            std::cout << "false" << std::endl;
+    }
+}
+
+void GtkTwitterfu::on_checkbutton_follow_ratio() {
+    std::cout << "Clicked follow ratio" << std::endl;
+    if(checkbutton_follow_ratio.get_active() != user->filters->getFollowRatio()) {
+        (user->filters->getFollowRatio()==true) ? user->filters->setFollowRatio(false) : user->filters->setFollowRatio(true);
+        checkbutton_follow_ratio.set_active( user->filters->getFollowRatio());
+        std::cout << "Follow ratio is : ";
+        if(user->filters->getFollowRatio() == true)
+            std::cout << "true" << std::endl;
+        else
+            std::cout << "false" << std::endl;
+    }
+}
+
+void GtkTwitterfu::on_checkbutton_profile_picture() {
+    std::cout << "Clicked profile picture" << std::endl;
+    if(checkbutton_profile_picture.get_active() != user->filters->getProfilePicture()) {
+        (user->filters->getProfilePicture()==true) ? user->filters->setProfilePicture(false) : user->filters->setProfilePicture(true);
+        checkbutton_profile_picture.set_active( user->filters->getProfilePicture());
+        std::cout << "profile picture : ";
+        if(user->filters->getProfilePicture() == true)
+            std::cout << "true" << std::endl;
+        else
+            std::cout << "false" << std::endl;
+    }
+}
+
+void GtkTwitterfu::on_checkbutton_protected_profile() {
+      std::cout << "Clicked protected profile" << std::endl;
+      if(checkbutton_protected_profile.get_active() != user->filters->getProtectedProfile()) {
+          (user->filters->getProtectedProfile()==true) ? user->filters->setProtectedProfile(false) : user->filters->setProtectedProfile(true);
+          checkbutton_protected_profile.set_active( user->filters->getProtectedProfile());
+          std::cout << "protected profile is ";
+          if(user->filters->getProtectedProfile() == true)
+              std::cout << "true" << std::endl;
+          else
+              std::cout << "false" << std::endl;
+      }
 }
 
 void GtkTwitterfu::setStatus(const Glib::ustring &text) {
@@ -314,6 +411,8 @@ void GtkTwitterfu::on_button_quit() {
 }
 
 GtkTwitterfu::~GtkTwitterfu() {
-    if(user!=NULL)
-        delete user;
+    /*
+     *if(user!=NULL)
+     *    delete user;
+     */
 }

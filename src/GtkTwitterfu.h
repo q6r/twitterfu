@@ -32,6 +32,11 @@ class GtkTwitterfu : public Gtk::Window {
         void on_button_stop_following();    /* Stop the FollowingWorker thread if running */ 
         void on_button_start_unfollowing(); /* Start unfollowing */ 
         void on_button_stop_unfollowing();  /* Stop unfollowing */ 
+        void on_checkbutton_description();
+        void on_checkbutton_follow_ratio();
+        void on_checkbutton_profile_picture();
+        void on_checkbutton_protected_profile();
+        void on_checkbutton_near_timezone();
         void find_followers();              /* Works after InputWorker sigdone to get followers */ 
         void find_following();              /* Works after InputWorker sigdone to get following */ 
         void followed_user();   // Called when FollowWorker is done.
@@ -47,6 +52,14 @@ class GtkTwitterfu : public Gtk::Window {
         Gtk::Button button_start_unfollowing;
         Gtk::Button button_stop_unfollowing;
         Gtk::Button button_quit;
+        /*
+         *Gtk::CheckButton checkbutton_near_timezone;
+         */
+        Gtk::CheckButton checkbutton_description;
+        Gtk::CheckButton checkbutton_follow_ratio;
+        Gtk::CheckButton checkbutton_profile_picture;
+        Gtk::CheckButton checkbutton_protected_profile;
+        Gtk::CheckButton checkbutton_near_timezone;
         Gtk::Label label_status;
 
         /*
@@ -68,6 +81,7 @@ class GtkTwitterfu : public Gtk::Window {
 
         Glib::RefPtr< Gtk::ListStore> refTreeModel;
         Gtk::ButtonBox buttonbox;
+        Gtk::ButtonBox checkbox;
 
         InputWorker *input;                /* The inputWorker to get work in another thread and not block : separate window */ 
         FollowWorker *follow_worker;       /* The FollowWorker to follow and report ..etc */ 

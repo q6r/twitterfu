@@ -28,6 +28,16 @@ class Filters {
                  * @return true if successfuly filtered
                  */
                 bool mainFilter(string userid);
+                bool getProfilePicture() const;
+                bool getDescription() const;
+                bool getProtectedProfile() const;
+                bool getFollowRatio() const;
+                bool getNearTimezone() const;
+                void setProfilePicture(const bool &n);
+                void setDescription(const bool &n);
+                void setProtectedProfile(const bool &n);
+                void setFollowRatio(const bool &n);
+                void setNearTimezone(const bool &n);
         private:
                 /**
                  * Check if user's timezone is near us by -4 or +4 timezones
@@ -38,22 +48,8 @@ class Filters {
                  * @param timezones of the userid
                  * @return true if able to predict time zone
                  */
-                /*
-                 *bool predictTimezone(string timezones);
-                 */
-                void setProfilePicture(const bool &n);
-                void setDescription(const bool &n);
-                void setProtectedProfile(const bool &n);
-                void setFollowRatio(const bool &n);
-                void setNearTimezone(const bool &n);
-
+                bool predictTimezone(const string &timezone);
                 bool isFollower(const string &userid) const;
-                bool getProfilePicture() const;
-                bool getDescription() const;
-                bool getProtectedProfile() const;
-                bool getFollowRatio() const;
-                bool getNearTimezone() const;
-
                 /** have profile picture */
                 bool profilePicture;
                 /** have description */
