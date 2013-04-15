@@ -68,13 +68,6 @@ bool Filters::isFollower(const string &userid) const {
 
 bool Filters::mainFilter(string userid)
 {
-    std::cout << "Will be following " << userid << std::endl;
-    std::cout << "Profile picture " << this->getProfilePicture() << std::endl;
-    std::cout << "Protected profile " << this->getProtectedProfile() << std::endl;
-    std::cout << "Neartimezone " << this->getNearTimezone() << std::endl;
-    std::cout << "description " << this->getDescription() << std::endl;
-    std::cout << "follow ratio " << this->getFollowRatio() << std::endl;
-
 	string resultXML, temp_following, temp_followers, timezone;
 	long double following, followers, result;
 	int prediction = 0;
