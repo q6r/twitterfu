@@ -89,9 +89,15 @@ bool Filters::mainFilter(string userid)
 	sa >> following;
 	sb >> followers;
 
-    /* rule #0      : Don't follow someone we've already followed */
+    /* Mandatory rule #0      : Don't follow someone we've already followed */
     if(Filters::isFollower(userid) == true)
         return false;
+
+    // If all filters are disabled then just follow ^ except for mandatory rule
+    if(this->getDescription() == false && this->getNearTimezone() == false && this->getFollowRatio() == false && this->getProfilePicture() == false && this->getProtectedProfile() == false) {
+        return true;
+    }
+
 
 	/* rule #1      : Following more than followers or a ratio of 75% */
 	if (Filters::getFollowRatio() == true) {
