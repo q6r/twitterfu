@@ -15,8 +15,8 @@ class Proxy {
 public:
     Proxy(User *p);
     ~Proxy();
-    void set(string name, string & data);
-    string & get(string name);
+    void set(const string &name, const string &data);
+    string & get(const string &name);
     /**
      * Change proxy and set it in database
      * @param user the user object
@@ -26,12 +26,11 @@ public:
      * @param password password of proxy
      * @return true if successfuly changed proxy
      */
-    bool change_proxy(string address, string port, string username, string password);
-     /**
-      * Check if the parent have set the values of the proxy
-      * if so then setup the parent's twitterObj to use that proxy
-      */
-     void setup();
+    bool change_proxy(const string &address, const string &port, const string &username, const string &password);
+    /**
+     * apply proxy changes
+     */
+    void setup();
 private:
      /* Takes conf[name] = data; */
      unordered_map<std::string, std::string> conf;

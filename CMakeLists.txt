@@ -1,4 +1,5 @@
-cmake_minimum_required (VERSION 2.6) 
+SET(CMAKE_COMPILER "/usr/local/bin/g++")
+cmake_minimum_required(VERSION 2.6)
 project (TWITTERFU) 
 
 # Recurse into the "Hello" and "Demo" subdirectories. This does not actually 
@@ -6,9 +7,17 @@ project (TWITTERFU)
 # the project's entire directory structure. 
 #add_subdirectory (libtwitcurl)
 FIND_PACKAGE(PkgConfig)
-include_directories(${PKGS_INCLUDEDIRS})
+pkg_check_modules(boost libcurl)
+include_directories(${PKG_INCLUDE_DIRS})
+
+#gtkmm
+pkg_check_modules(GTKMM gtkmm-3.0)
+include_directories(${GTKMM_INCLUDE_DIRS})
+link_directories(${GTKMM_LIBRARY_DIRS})
+
+
 set(libtwitcurlSrcs libtwitcurl/base64.cpp libtwitcurl/HMAC_SHA1.cpp libtwitcurl/oauthlib.cpp libtwitcurl/SHA1.cpp libtwitcurl/urlencode.cpp libtwitcurl/twitcurl.cpp)
 add_library (libtwitcurl STATIC ${libtwitcurlSrcs})
-set(twitterfuSrcs User.cpp Database.cpp Proxy.cpp Filters.cpp twitterfu.cpp sqlite3pp.cpp)
+set(twitterfuSrcs User.cpp Proxy.cpp Filters.cpp twitterfu.cpp FollowWorker.cpp GtkLogin.cpp GtkTwitterfuInput.cpp InputWorker.cpp GtkTwitterfu.cpp UnfollowWorker.cpp)
 add_subdirectory (src)
 
