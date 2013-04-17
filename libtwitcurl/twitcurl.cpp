@@ -46,11 +46,13 @@ m_eProtocolType( twitCurlTypes::eTwitCurlProtocolHttp )
 twitCurl::~twitCurl()
 {
     /* Cleanup cURL */
-    if( m_curlHandle )
-    {
-        curl_easy_cleanup( m_curlHandle );
-        m_curlHandle = NULL;
-    }
+    /*
+     *if( m_curlHandle )
+     *{
+     *    curl_easy_cleanup( m_curlHandle );
+     *    m_curlHandle = NULL;
+     *}
+     */
 }
 
 /*++
